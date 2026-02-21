@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>VAgent Professional Dashboard</title>
+    <link href="https://fonts.googleapis.com" rel="preconnect" />
+    <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+      rel="stylesheet"
+    />
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script>
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              primary: "#137fec",
+              "primary-glow": "#137fec80",
+              "secondary-glow": "#f59e0b80",
+              "background-light": "#f6f7f8",
+              "background-dark": "#0b1116",
+              "surface-dark": "#151e29",
+              "surface-border": "#2A3848",
+              "text-secondary": "#9dabb9",
+              "status-safe": "#22c55e",
+              "status-warning": "#f59e0b",
+              "status-alarm": "#ef4444",
+            },
+            fontFamily: {
+              display: ["Inter", "sans-serif"],
+              body: ["Inter", "sans-serif"],
+            },
+            boxShadow: {
+              "neon-blue":
+                '0 0 5px theme("colors.primary"), 0 0 15px theme("colors.primary-glow")',
+              "neon-amber":
+                '0 0 5px theme("colors.status-warning"), 0 0 15px theme("colors.secondary-glow")',
+              glass: "0 8px 32px 0 rgba(0, 0, 0, 0.37)",
+            },
+            animation: {
+              "pulse-fast": "pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite",
+              "load-bar": "load 2s ease-in-out infinite",
+              "fade-in-up": "fadeInUp 0.5s ease-out forwards",
+            },
+            keyframes: {
+              load: {
+                "0%": { width: "0%", opacity: "0.5" },
+                "50%": { width: "40%", opacity: "1" },
+                "100%": { width: "100%", opacity: "0" },
+              },
+              fadeInUp: {
+                "0%": { opacity: "0", transform: "translateY(10px)" },
+                "100%": { opacity: "1", transform: "translateY(0)" },
+              },
+            },
+          },
+        },
+      };
+    </script>
+    <style>
+      ::-webkit-scrollbar {
+        width: 6px;
+        height: 6px;
+      }
+      ::-webkit-scrollbar-track {
+        background: #0b1116;
+      }
+      ::-webkit-scrollbar-thumb {
+        background: #2a3848;
+        border-radius: 4px;
+      }
+      ::-webkit-scrollbar-thumb:hover {
+        background: #3b4754;
+      }
+      .chart-grid line {
+        stroke: #2a3848;
+        stroke-dasharray: 4;
+        stroke-opacity: 0.4;
+      }
+      .chart-grid text {
+        fill: #64748b;
+        font-size: 10px;
+        font-family: monospace;
+      }
+      .lance-bg {
+        background-image: linear-gradient(
+            rgba(21, 30, 41, 0.95),
+            rgba(11, 17, 22, 0.98)
+          ),
+          repeating-linear-gradient(
+            45deg,
+            transparent,
+            transparent 10px,
+            rgba(19, 127, 236, 0.03) 10px,
+            rgba(19, 127, 236, 0.03) 20px
+          );
+      }
+      .glass-panel {
+        background: rgba(21, 30, 41, 0.7);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+      }
+    </style>
+  <script type="importmap">
+{
+  "imports": {
+    "react/": "https://esm.sh/react@^19.2.4/",
+    "react": "https://esm.sh/react@^19.2.4",
+    "react-dom/": "https://esm.sh/react-dom@^19.2.4/"
+  }
+}
+</script>
+<link rel="stylesheet" href="/index.css">
+</head>
+  <body class="bg-background-light dark:bg-background-dark text-white font-display min-h-screen overflow-hidden selection:bg-primary/30">
+    <div id="root"></div>
+  <script type="module" src="/index.tsx"></script>
+</body>
+</html>
