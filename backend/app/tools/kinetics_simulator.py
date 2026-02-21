@@ -2,105 +2,176 @@ from __future__ import annotations
 
 import numpy as np
 from scipy.integrate import odeint
+import math
 
 from ..schemas import SimulationInputs, SimulationPoint, SimulationResult
+
+# Thermodynamic Constants (J/mol O2)
+def delta_g_si(T): return -910000 + 180 * T
+def delta_g_ti(T): return -940000 + 180 * T
+def delta_g_v(T):  return -800000 + 150 * T
+def delta_g_c(T):  return -220000 - 170 * T
+def delta_g_fe(T): return -500000 + 110 * T
+
+# Molar Masses
+M_C = 12.01
+M_Si = 28.09
+M_V = 50.94
+M_Ti = 47.87
+M_Fe = 55.85
+M_O2 = 32.00
+
+# Heat of Reaction (J/kg of Element Oxidized)
+H_REACTION_C = 9000.0 * 1000
+H_REACTION_SI = 28000.0 * 1000
+H_REACTION_TI = 20000.0 * 1000
+H_REACTION_V = 16000.0 * 1000
+H_REACTION_FE = 5000.0 * 1000
+
+# Specific Heat Capacity (J/kg/K)
+CP_STEEL = 760.0
+
+def calculate_kinetics_derivatives(y, t, bath_weight_kg, mols_o2_per_s, heat_loss_w=200000.0):
+    """
+    Core Differential Equation Function for Vanadium Extraction Kinetics.
+    Can be used by ODE solver or Step-wise Simulator.
+    """
+    C, Si, V, Ti, T_c, FeO, V2O5, SiO2 = y
+    T_k = T_c + 273.15
+    
+    # Base Mass Transfer Coefficients (1/s)
+    k_si_base = 0.003
+    k_ti_base = 0.003
+    k_v_base = 0.002
+    k_c_base = 0.0005
+
+    # Rate constants (1/s)
+    r_si = k_si_base * max(0, Si)
+    r_ti = k_ti_base * max(0, Ti)
+    
+    # Crossover Temp Check
+    tc_transition = 1380.0
+    temp_factor = (T_c - tc_transition) / 50.0
+    sigmoid = 1 / (1 + np.exp(-temp_factor))
+    
+    # V oxidation preference at low T
+    # C oxidation preference at high T
+    r_v = k_v_base * max(0, V) * (1.5 - 1.0 * sigmoid)
+    r_c = k_c_base * max(0, C) * (0.1 + 5.0 * sigmoid)
+    
+    r_fe = 0.001 # Background
+
+    # Oxygen Demand (mol/s)
+    # Using kg/mol for Molar Mass to match bath_weight_kg
+    demand_o2_si = ((r_si / 100) * bath_weight_kg / (M_Si / 1000.0)) * 1.0
+    demand_o2_ti = ((r_ti / 100) * bath_weight_kg / (M_Ti / 1000.0)) * 1.0
+    demand_o2_v  = ((r_v / 100) * bath_weight_kg / (M_V / 1000.0)) * 0.75
+    demand_o2_c  = ((r_c / 100) * bath_weight_kg / (M_C / 1000.0)) * 0.5
+    demand_o2_fe = ((r_fe / 100) * bath_weight_kg / (M_Fe / 1000.0)) * 0.5
+    
+    total_demand = demand_o2_si + demand_o2_ti + demand_o2_v + demand_o2_c + demand_o2_fe
+    
+    factor = 1.0
+    if total_demand > mols_o2_per_s:
+        factor = mols_o2_per_s / total_demand
+    
+    # Actual Rates
+    real_o2_si = demand_o2_si * factor
+    real_o2_ti = demand_o2_ti * factor
+    real_o2_v  = demand_o2_v * factor
+    real_o2_c  = demand_o2_c * factor
+    
+    # d[%]/dt
+    dSidt = - (real_o2_si * 1.0 * M_Si / 1000) / bath_weight_kg * 100
+    dTidt = - (real_o2_ti * 1.0 * M_Ti / 1000) / bath_weight_kg * 100
+    dVdt  = - (real_o2_v * (4/3) * M_V / 1000) / bath_weight_kg * 100
+    dCdt  = - (real_o2_c * 2.0 * M_C / 1000) / bath_weight_kg * 100
+    
+    # Heat Balance
+    m_dot_si = abs(dSidt) / 100 * bath_weight_kg
+    m_dot_ti = abs(dTidt) / 100 * bath_weight_kg
+    m_dot_v  = abs(dVdt) / 100 * bath_weight_kg
+    m_dot_c  = abs(dCdt) / 100 * bath_weight_kg
+    
+    heat_gen = (m_dot_si * H_REACTION_SI + 
+                m_dot_ti * H_REACTION_TI + 
+                m_dot_v * H_REACTION_V + 
+                m_dot_c * H_REACTION_C)
+                
+    # Cooling
+    coolant_load = 0.0
+    if t < 300: # First 5 mins
+        coolant_load = 3000000.0 # 3 MW
+        
+    net_heat = heat_gen - heat_loss_w - coolant_load
+    dTdt = net_heat / (bath_weight_kg * CP_STEEL)
+    
+    # Slag
+    dFeOdt = 0.05
+    dV2O5dt = abs(dVdt) * 1.5
+    dSiO2dt = abs(dSidt) * 2.0
+    
+    return [dCdt, dSidt, dVdt, dTidt, dTdt, dFeOdt, dV2O5dt, dSiO2dt]
 
 
 def simulate_blow_path(inp: SimulationInputs) -> SimulationResult:
     """
     L2 动态仿真层 (ODE): 基于动力学微分方程推演熔池状态变化。
-    整合“软测量”技术：若实测数据滞后，利用静态推算值启动仿真。
+    使用基于吉布斯自由能(Delta G)的竞争氧化机制，模拟"保碳提钒"过程。
     """
-    # 软测量逻辑 (Soft-sensing): 检查关键成分是否异常或缺失
+    
+    # --- Initialization ---
     mode = "real-data"
     initial_Si = inp.initial_analysis.Si
     initial_Ti = inp.initial_analysis.Ti
     
-    # 模拟 PLC 滞后：如果 Si 或 Ti 为 0 或 极低（且未明确由用户输入），则进入软测量模式
-    # 实际生产中通常 Si > 0.15, Ti > 0.08
+    # Soft sensing fallback
     if initial_Si < 0.01 or initial_Ti < 0.01:
         mode = "soft-sensing"
-        # 依据达涅利静态模型推算值 (软测量估算)
         initial_Si = 0.22 if initial_Si < 0.01 else initial_Si
         initial_Ti = 0.12 if initial_Ti < 0.01 else initial_Ti
 
-    # 状态变量初始值: [C, Si, V, Ti, T, FeO, V2O5, SiO2]
-    # FeO, V2O5, SiO2 are in slag (mass fraction or relative amount)
-    # Assume initial slag is minimal, mostly FeO from initial oxidation
     y0 = [
         inp.initial_analysis.C,
         initial_Si,
         inp.initial_analysis.V,
         initial_Ti,
         inp.initial_temp_c,
-        50.0, # Initial FeO % in slag (high initially)
-        0.0,  # Initial V2O5 %
-        10.0  # Initial SiO2 %
+        5.0,
+        0.0,
+        1.0
     ]
-
-    # 时间步长: 每 10 秒一个点
-    t = np.linspace(0, inp.duration_s, inp.duration_s // 10 + 1)
-
-    # 提钒动力学微分方程组 (参考 Source 18)
-    def model(y, t_curr):
-        C, Si, V, Ti, T, FeO, V2O5, SiO2 = y
-
-        # 1. 碳氧化抑制逻辑 (Source 93 6)
-        # 当温度低于 1361℃ 时，碳氧化速率受热力学限制大幅降低
-        c_rate_factor = 0.2 if T < 1361.0 else 1.0
-
-        # 2. 元素氧化速率 (简化动力学常数，实际应基于 Arrhenius 方程计算)
-        # 硅氧化：初期极快，后期受扩散限制
-        dSidt = -0.0018 * max(0, Si) if t_curr < 120 else -0.0006 * max(0, Si)
+    
+    bath_weight_kg = 100.0 * 1000
+    if inp.recipe and "iron_weight" in inp.recipe:
+        bath_weight_kg = inp.recipe["iron_weight"] * 1000
         
-        # 钛氧化：比硅稍快，初期迅速降低
-        dTidt = -0.0030 * max(0, Ti)
-        
-        # 钒氧化：核心目标，受界面面积 A_sm 影响
-        # 简化为准一级反应
-        dVdt = -0.0012 * max(0, V - 0.02)
-        
-        # 碳氧化：高温下剧烈，提钒期需控制
-        dCdt = -0.0004 * c_rate_factor * max(0, C - 0.05)
+    oxygen_flow_m3_s = inp.oxygen_flow_rate_m3h / 3600.0
+    mols_o2_per_s = oxygen_flow_m3_s / 0.0224
+    
+    t_eval = np.linspace(0, inp.duration_s, inp.duration_s // 10 + 1)
+    
+    def wrapper(y, t):
+        return calculate_kinetics_derivatives(y, t, bath_weight_kg, mols_o2_per_s)
 
-        # 3. 温度变化率 (dT/dt)
-        # 反应热 (放热) - 冷却剂熔化吸热 - 散热
-        # 简化热系数: Si(25), V(15), Ti(20), C(5)
-        heating = (abs(dSidt) * 28 + abs(dVdt) * 16 + abs(dTidt) * 22 + abs(dCdt) * 8)
-        
-        # 冷却剂吸热 (假设配料在前 150s 内均匀熔化)
-        cooling = 0.0
-        if t_curr < 150:
-            # 简单估算：每吨冷却剂产生约 10-20℃ 温降
-            total_coolant = sum(inp.recipe.values())
-            cooling = (total_coolant * 15.0) / 150.0 # 每秒温降
-
-        dTdt = heating - cooling - 0.02 # 0.02 为基础散热损失
-        
-        # 4. 炉渣成分变化 (简化模型)
-        # Slag mass increases as oxides form
-        # FeO is consumed by Si, V, Ti, C oxidation, but also generated by Fe oxidation (not modeled explicitly but assumed)
-        # Simplified: FeO decreases as stable oxides (SiO2, V2O3/V2O5) increase
-        
-        dFeOdt = -0.1 * (abs(dSidt) + abs(dVdt)) # Consumed by reduction
-        dV2O5dt = abs(dVdt) * 1.5 # V -> V2O5 accumulation
-        dSiO2dt = abs(dSidt) * 2.0 # Si -> SiO2 accumulation
-
-        return [dCdt, dSidt, dVdt, dTidt, dTdt, dFeOdt, dV2O5dt, dSiO2dt]
-
-    # 求解 ODE
-    sol = odeint(model, y0, t)
-
+    # Solve
+    sol = odeint(wrapper, y0, t_eval)
+    
+    # Process Results
     points = []
     tc_crossover_s = None
-
-    for i, ts in enumerate(t):
+    
+    for i, ts in enumerate(t_eval):
+        curr_t = sol[i, 4]
+        if tc_crossover_s is None and curr_t >= 1360.0:
+             tc_crossover_s = int(ts)
+             
         point = SimulationPoint(
             time_s=int(ts),
-            C_pct=round(sol[i, 0], 3),
-            Si_pct=round(sol[i, 1], 3),
-            V_pct=round(sol[i, 2], 3),
-            Ti_pct=round(sol[i, 3], 3),
+            C_pct=max(0, round(sol[i, 0], 3)),
+            Si_pct=max(0, round(sol[i, 1], 3)),
+            V_pct=max(0, round(sol[i, 2], 3)),
+            Ti_pct=max(0, round(sol[i, 3], 3)),
             temp_c=round(sol[i, 4], 1),
             FeO_pct=round(sol[i, 5], 2),
             V2O5_pct=round(sol[i, 6], 2),
@@ -108,34 +179,23 @@ def simulate_blow_path(inp: SimulationInputs) -> SimulationResult:
         )
         points.append(point)
 
-        # 记录碳钒转化临界点 (Tc ~ 1361℃)
-        if tc_crossover_s is None and sol[i, 4] >= 1361.0:
-            tc_crossover_s = int(ts)
-
-    # 预测性建议 (Source: Cloud Brain Pipeline Optimization)
     proactive_advice = None
-    if tc_crossover_s is not None:
-        if tc_crossover_s < 200:
-            proactive_advice = f"预判 Tc 点较早 ({tc_crossover_s}s)，建议在开吹后 60s 内立即投入首批冷却剂，防止早期温升过快导致碳氧化。"
-        else:
-            proactive_advice = f"Tc 点预计在 {tc_crossover_s}s 发生，建议在 {tc_crossover_s - 60}s 时点追加第二批冷却剂，确保钒氧化选择性。"
-    else:
-        if sol[-1, 4] < 1340:
-            proactive_advice = "仿真显示终点温度偏低，建议适当减少末期冷却剂投入或提高供氧强度。"
-
+    if tc_crossover_s:
+         proactive_advice = f"预测 Tc 点 ({tc_crossover_s}s) 即将到达，建议准备提枪或加入冷却剂以抑制碳氧化。"
+    
     return SimulationResult(
         points=points,
         tc_crossover_s=tc_crossover_s,
         final_temp_c=round(sol[-1, 4], 1),
         final_analysis={
-            "C": round(sol[-1, 0], 3),
-            "Si": round(sol[-1, 1], 3),
-            "V": round(sol[-1, 2], 3),
-            "Ti": round(sol[-1, 3], 3),
+            "C": max(0, round(sol[-1, 0], 3)),
+            "Si": max(0, round(sol[-1, 1], 3)),
+            "V": max(0, round(sol[-1, 2], 3)),
+            "Ti": max(0, round(sol[-1, 3], 3)),
             "Slag_FeO": round(sol[-1, 5], 2),
             "Slag_V2O5": round(sol[-1, 6], 2),
             "Slag_SiO2": round(sol[-1, 7], 2)
         },
         proactive_advice=proactive_advice,
-        mode=mode,
+        mode=mode
     )

@@ -72,6 +72,7 @@ class CriticalTempResult(BaseModel):
 class DiagnoseFinding(BaseModel):
     title: str
     severity: Literal["high", "medium", "low"]
+    root_cause: str = Field(..., description="化学反应机理或热力学原因分析")
     evidence: list[str] = Field(default_factory=list)
     recommendation: list[str] = Field(default_factory=list)
 
@@ -87,6 +88,10 @@ class ProcessData(BaseModel):
     coolant_type_used: str | None = None
     coolant_structure_notes: list[str] = Field(default_factory=list)
     events: list[dict[str, Any]] = Field(default_factory=list)
+    # Added for Splashing Prediction
+    lance_height_min: float | None = None
+    final_temp_c: float | None = None
+    oxygen_pressure_mpa: float | None = None
 
 
 class ChatRequest(BaseModel):

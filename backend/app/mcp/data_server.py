@@ -27,6 +27,12 @@ def build_data_router(*, simulator: DataSimulator) -> APIRouter:
 
         return EventSourceResponse(event_generator())
 
+    @router.get("/simulation/history")
+    async def get_simulation_history():
+        return {
+            "history": simulator.state.history
+        }
+
     @router.post("/mcp/data")
     async def mcp_data(req: JsonRpcRequest) -> JsonRpcResponse:
         if req.method == "resources/list":

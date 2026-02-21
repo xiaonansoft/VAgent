@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   ComposedChart,
   Line,
@@ -12,10 +12,6 @@ import {
 } from 'recharts';
 import { useProcessStream } from '../src/hooks/useProcessStream';
 import { useLanguage } from '../src/contexts/LanguageContext';
-
-interface Props {
-  processContext: any;
-}
 
 interface ChartDataPoint {
   time: number;
@@ -32,10 +28,42 @@ interface ChartDataPoint {
   };
 }
 
-const DynamicMonitor: React.FC<Props> = ({ processContext }) => {
+const DynamicMonitor: React.FC = () => {
   const { data, isConnected } = useProcessStream();
   const { t } = useLanguage();
   const [chartData, setChartData] = useState<ChartDataPoint[]>([]);
+
+  // Fetch history on mount
+  useEffect(() => {
+    const fetchHistory = async () => {
+      try {
+        const res = await fetch('/api/simulation/history');
+        const json = await res.json();
+        if (json.history && Array.isArray(json.history)) {
+          const historyPoints = json.history.map((d: any) => ({
+            time: d.process_time,
+            poolTemp: d.temperature?.value,
+            si: d.chemistry?.si ?? 0,
+            v: d.chemistry?.v ?? 0,
+            c: d.chemistry?.c ?? 0,
+            isTempEstimated: !d.temperature?.status?.is_valid,
+            sample: d.latest_sample
+          }));
+          
+          setChartData(prev => {
+             const combined = [...historyPoints, ...prev];
+             // Deduplicate by time
+             const unique = combined.filter((v, i, a) => a.findIndex(t => t.time === v.time) === i);
+             return unique.slice(-600); // Keep last 10 mins (600 points)
+           });
+        }
+      } catch (err) {
+        console.error("Failed to fetch history:", err);
+      }
+    };
+    
+    fetchHistory();
+  }, []);
 
   // Handle incoming stream data
   useEffect(() => {
@@ -59,8 +87,8 @@ const DynamicMonitor: React.FC<Props> = ({ processContext }) => {
           sample: data.latest_sample // Pass sample data if available
         }];
         
-        // Keep last 100 points
-        return newData.slice(-100);
+        // Keep last 600 points
+        return newData.slice(-600);
       });
     } else if (!isConnected) {
       // Optional: Clear or keep stale data on disconnect? 
@@ -146,10 +174,35 @@ const DynamicMonitor: React.FC<Props> = ({ processContext }) => {
                 label={{ value: t('content_axis'), angle: 90, position: 'insideRight', fill: '#137fec', fontSize: 12, dx: -10 }}
               />
               <Tooltip 
-                contentStyle={{ backgroundColor: '#1A2634', borderColor: '#2A3848', borderRadius: '8px', fontSize: '14px' }} 
-                itemStyle={{ fontSize: '14px' }}
-                formatter={(value: number, name: string) => [value.toFixed(name === t('legend_temp') ? 1 : 3), name]}
-                labelFormatter={(label) => `${t('time_label')}: ${label} ${t('min_unit')}`}
+                content={({ active, payload, label }) => {
+                  if (active && payload && payload.length) {
+                    return (
+                      <div className="bg-[#1A2634] border border-[#2A3848] rounded-lg p-2 text-sm shadow-xl">
+                        <div className="text-gray-400 text-xs mb-1 font-mono">
+                          {t('time_label')}: {typeof label === 'number' ? label.toFixed(2) : label} {t('min_unit')}
+                        </div>
+                        {payload.map((entry: any, index: number) => {
+                           // Skip redundant 'time' entries or non-data keys
+                           if (entry.dataKey === 'time' || !entry.name) return null;
+                           // Special formatting for different types
+                           const isTemp = entry.dataKey === 'poolTemp' || entry.dataKey === 'temp';
+                           const isSample = entry.name === t('legend_sample');
+                           const value = typeof entry.value === 'number' ? entry.value.toFixed(isTemp ? 1 : 3) : entry.value;
+                           
+                           return (
+                             <div key={index} className="flex items-center gap-2 py-0.5">
+                               <div className="w-2 h-2 rounded-full" style={{ backgroundColor: entry.color }}></div>
+                               <span className="text-gray-300">{entry.name}:</span>
+                               <span className="font-mono font-bold" style={{ color: entry.color }}>{value}</span>
+                               {isSample && <span className="text-xs text-gray-500 ml-1">({t('sample_note')})</span>}
+                             </div>
+                           );
+                        })}
+                      </div>
+                    );
+                  }
+                  return null;
+                }}
               />
               <ReferenceLine y={1360} yAxisId="temp" stroke="#ef4444" strokeDasharray="5 5" label={{ value: t('crit_temp'), position: 'insideTopRight', fill: '#ef4444', fontSize: 12 }} />
               
@@ -160,7 +213,9 @@ const DynamicMonitor: React.FC<Props> = ({ processContext }) => {
               
               <Scatter 
                 yAxisId="temp" 
-                data={chartData.filter(d => d.sample).map(d => ({ time: d.time, temp: d.sample!.temp }))} 
+                data={chartData
+                  .filter(d => d.sample && Math.abs(d.time - d.sample.time) < 0.05)
+                  .map(d => ({ time: d.sample!.time, temp: d.sample!.temp }))} 
                 dataKey="temp" 
                 name={t('legend_sample')} 
                 shape={<circle r={6} fill="#ef4444" stroke="#fff" strokeWidth={2} />}

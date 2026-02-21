@@ -2,10 +2,9 @@ from __future__ import annotations
 
 import asyncio
 import random
-import math
 from dataclasses import dataclass, field
-from datetime import datetime
-from typing import AsyncIterator, Optional
+from datetime import datetime, timezone
+from typing import AsyncIterator
 
 from pydantic import BaseModel
 from ..core.config import settings
@@ -21,6 +20,8 @@ class SensorStatus(BaseModel):
 
 from .soft_sensor import SoftSensor
 
+from ..tools.kinetics_simulator import calculate_kinetics_derivatives
+
 @dataclass
 class SimState:
     # Process Time
@@ -31,8 +32,14 @@ class SimState:
     c_pct: float = 3.50
     si_pct: float = 0.25
     v_pct: float = 0.35
+    ti_pct: float = 0.15 # Added
     mn_pct: float = 0.20
     
+    # Slag (Percentage/Mass)
+    slag_feo_pct: float = 5.0
+    slag_v2o5_pct: float = 0.0
+    slag_sio2_pct: float = 1.0
+
     # Reaction Rates (stored for soft sensor input)
     d_si: float = 0.0
     d_c: float = 0.0
@@ -56,7 +63,10 @@ class SimState:
     # System Status
     is_emergency_stop: bool = False
 
-    last_ts: datetime = field(default_factory=datetime.utcnow)
+    last_ts: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
+    
+    # History Storage
+    history: list[dict] = field(default_factory=list)
 
 
 class DataSimulator:
@@ -113,7 +123,7 @@ class DataSimulator:
         # 0. Emergency Stop Logic
         if s.is_emergency_stop:
             # Freeze time, stop reactions, just update timestamp
-            s.last_ts = datetime.utcnow()
+            s.last_ts = datetime.now(timezone.utc)
             # Slight cooling due to no reaction and open vessel
             s.temp_c -= 0.1 * (dt_s / 60.0) 
             return
@@ -121,68 +131,48 @@ class DataSimulator:
         # 1. Advance Time
         dt_min = dt_s / 60.0
         s.time_min += dt_min
-        s.last_ts = datetime.utcnow()
+        s.last_ts = datetime.now(timezone.utc)
 
         # Reset if finished (Looping for demo)
         if s.time_min > s.total_duration + 2.0:
             self._reset_state()
             return
 
-        # Reaction Kinetics (Simplified for Vanadium Extraction)
-        # Order: Si > Mn > V > C (at low temp)
-        # V oxidation is favored at low temp (< 1360), C oxidation favored at high temp
+        # 2. Reaction Kinetics (Using Four Balances ODE)
+        # Prepare state vector: [C, Si, V, Ti, T, FeO, V2O5, SiO2]
+        y = [s.c_pct, s.si_pct, s.v_pct, s.ti_pct, s.temp_c, 
+             s.slag_feo_pct, s.slag_v2o5_pct, s.slag_sio2_pct]
         
-        # Reaction Rates (k) - strictly empirical for demo
-        k_si = settings.k_si_base * self.reaction_rate_modifier
-        k_mn = settings.k_mn_base * self.reaction_rate_modifier
-        k_v = settings.k_v_base * self.reaction_rate_modifier
-        k_c = settings.k_c_base  # C is slow initially
+        # Oxygen Supply
+        # Assume 100t bath, standard flow 22000 m3/h
+        bath_kg = 100000.0
+        o2_flow = s.oxygen_flow_nm3_min * 60.0 # m3/h
+        mols_o2_s = (o2_flow / 3600.0) / 0.0224
         
-        # Temperature effect on V vs C (Critical Temp ~1360C)
-        # As Temp rises, k_v decreases, k_c increases
-        temp_factor = (s.temp_c - settings.temp_critical_v_c_switch) / 100.0 
-        # If temp < 1360 (factor < 0), V is fast. If temp > 1360, V slows down.
+        # Calculate Derivatives (per second)
+        # [dC, dSi, dV, dTi, dT, dFeO, dV2O5, dSiO2]
+        derivs = calculate_kinetics_derivatives(y, s.time_min * 60.0, bath_kg, mols_o2_s)
         
-        if temp_factor > 0:
-            k_v *= max(0.1, 1.0 - temp_factor * 2) # Suppress V oxidation at high temp
-            k_c *= (1.0 + temp_factor * 5)         # Accelerate C oxidation at high temp
+        # Apply changes (Euler step)
+        # dX = dX/dt * dt_s
+        s.c_pct  = max(0.01, s.c_pct + derivs[0] * dt_s)
+        s.si_pct = max(0.01, s.si_pct + derivs[1] * dt_s)
+        s.v_pct  = max(0.01, s.v_pct + derivs[2] * dt_s)
+        s.ti_pct = max(0.01, s.ti_pct + derivs[3] * dt_s)
+        s.temp_c = s.temp_c + derivs[4] * dt_s
         
-        # Apply reductions
-        d_si = k_si * s.si_pct * dt_min
-        d_mn = k_mn * s.mn_pct * dt_min
-        d_v = k_v * s.v_pct * dt_min
-        d_c = k_c * s.c_pct * dt_min
+        s.slag_feo_pct  = max(0.0, s.slag_feo_pct + derivs[5] * dt_s)
+        s.slag_v2o5_pct = max(0.0, s.slag_v2o5_pct + derivs[6] * dt_s)
+        s.slag_sio2_pct = max(0.0, s.slag_sio2_pct + derivs[7] * dt_s)
         
-        # Store rates for soft sensor
-        s.d_si = d_si
-        s.d_c = d_c
+        # Safety clamp for raw temperature to prevent runaway
+        s.temp_c = max(1000.0, min(2000.0, s.temp_c))
         
-        s.si_pct = max(0.01, s.si_pct - d_si)
-        s.mn_pct = max(0.05, s.mn_pct - d_mn)
-        s.v_pct = max(0.05, s.v_pct - d_v)
-        s.c_pct = max(3.0, s.c_pct - d_c)
-
-        # 3. Thermal Balance
-        # Exothermic heat from oxidation (kJ/kg roughly converted to Temp rise)
-        # Si: Very high, V: High, C: Medium
-        # Simplified coefficients: degrees per % oxidized
-        heat_gen = (d_si * 180 + d_mn * 60 + d_v * 120 + d_c * 50) * self.heat_efficiency_factor
+        # Store rates for soft sensor (change per minute)
+        s.d_si = abs(derivs[1] * 60.0)
+        s.d_c  = abs(derivs[0] * 60.0)
         
-        # Heat Loss (Radiation + Convection)
-        heat_loss = 0.5 * dt_min * (s.temp_c / 1400.0)
-        
-        # Coolant Effect (Simulated addition at min 3)
-        coolant_effect = 0.0
-        if 2.9 < s.time_min < 3.1:
-             # Add coolant
-             if s.coolant_added_kg < 1000:
-                 added = 50.0 # kg
-                 s.coolant_added_kg += added
-                 coolant_effect = added * 0.5 # deg drop per kg (exaggerated)
-
-        s.temp_c += (heat_gen - heat_loss - coolant_effect)
-        
-        # 4. Simulate Lance Movement Strategy
+        # Simulate Lance Movement Strategy
         if s.time_min < 1.0:
             s.lance_height_mm = 1100
         elif s.time_min < 5.0:
@@ -190,7 +180,7 @@ class DataSimulator:
         else:
             s.lance_height_mm = 1000
 
-        # 5. Simulate Sub-lance Sampling (TSC/TSO)
+        # Simulate Sub-lance Sampling (TSC/TSO)
         # TSC at 2.0 min, TSO at 7.0 min
         # Add random noise to simulate measurement error vs model error
         current_min = round(s.time_min, 1)
@@ -226,10 +216,9 @@ class DataSimulator:
         
         # 2. Apply Soft Sensor (Mechanism Inference)
         # Pass the raw reading and auxiliary signals (reaction rates) to the soft sensor
-        # We need to pass the rate per minute, so we divide the delta by dt_min
-        dt_min = dt_s / 60.0
-        si_rate = s.d_si / dt_min if dt_min > 0 else 0
-        c_rate = s.d_c / dt_min if dt_min > 0 else 0
+        # s.d_si and s.d_c are already in %/min
+        si_rate = s.d_si
+        c_rate = s.d_c
 
         sensor_result = self.soft_sensor.process(
             raw_temp=raw_temp,
@@ -247,7 +236,7 @@ class DataSimulator:
             correction_source=sensor_result['correction_source']
         )
 
-        return {
+        payload = {
             "process_time": round(s.time_min, 2),
             "temperature": {
                 "value": round(temp_status.estimated_value if not temp_status.is_valid else temp_status.raw_value, 1),
@@ -270,6 +259,11 @@ class DataSimulator:
             "is_emergency_stop": s.is_emergency_stop,
             "latest_sample": s.latest_sample
         }
+        
+        # Store history
+        s.history.append(payload)
+        
+        return payload
 
     def _broadcast(self, payload: dict):
         for q in list(self._subscribers):

@@ -110,7 +110,8 @@ export const translations = {
     mode_switch_error: "Failed to switch mode",
     confirm_switch: "Confirm Mode Switch",
     confirm_switch_msg: "Are you sure you want to switch to {mode}?",
-    cancel: "Cancel"
+    cancel: "Cancel",
+    sample_note: "Sample"
   },
   zh: {
     system_online: "系统在线",
@@ -223,7 +224,8 @@ export const translations = {
     mode_switch_error: "切换模式失败",
     confirm_switch: "确认切换",
     confirm_switch_msg: "确定要切换到 {mode} 吗？",
-    cancel: "取消"
+    cancel: "取消",
+    sample_note: "采样"
   }
 };
 
