@@ -77,15 +77,102 @@ app.add_middleware(
 async def health_check():
     return {"status": "ok", "version": "7.0.0"}
 
-@app.post("/api/chat", response_model=ChatResponse)
-async def chat_endpoint(request: ChatRequest):
-    # Mock implementation for chat as I don't have the original code
-    logger.info(f"Chat request: {request.message}")
-    return ChatResponse(
-        reply=f"Echo: {request.message}",
-        tool_calls=[],
-        trace_id="mock-trace-id"
-    )
+from app.agents.core import agent_graph
+import uuid
+from langgraph.errors import GraphInterrupt
+
+# ... existing imports ...
+
+class GraphRunRequest(BaseModel):
+    si: float
+    temp: float
+    is_one_can: bool
+
+@app.post("/api/graph/run")
+async def run_graph(req: GraphRunRequest):
+    thread_id = str(uuid.uuid4())
+    config = {"configurable": {"thread_id": thread_id}}
+    
+    initial_state = {
+        "si": req.si,
+        "temp": req.temp,
+        "is_one_can": req.is_one_can,
+        "messages": []
+    }
+    
+    try:
+        # Run untill end or interrupt
+        result = await agent_graph.ainvoke(initial_state, config=config)
+        return {
+            "thread_id": thread_id,
+            "status": "completed",
+            "result": result
+        }
+    except GraphInterrupt:
+        # Graph paused
+        snapshot = agent_graph.get_state(config)
+        return {
+            "thread_id": thread_id,
+            "status": "interrupted",
+            "next": snapshot.next,
+            "messages": snapshot.values.get("messages", [])
+        }
+    except Exception as e:
+        # In case NodeInterrupt bubbles up as something else or generic error
+        snapshot = agent_graph.get_state(config)
+        if snapshot.next:
+             return {
+                "thread_id": thread_id,
+                "status": "interrupted",
+                "next": snapshot.next,
+                "messages": snapshot.values.get("messages", [])
+            }
+        logger.error(f"Graph execution failed: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+class ApprovalRequest(BaseModel):
+    thread_id: str
+    action: str # "approve", "modify"
+    recipe: Optional[dict] = None
+
+@app.post("/api/graph/approve")
+async def approve_graph(req: ApprovalRequest):
+    config = {"configurable": {"thread_id": req.thread_id}}
+    
+    # Update state based on action
+    update = {"approval_status": "approved" if req.action == "approve" else "modified"}
+    if req.action == "modify" and req.recipe:
+        update["recipe"] = req.recipe
+        
+    await agent_graph.update_state(config, update)
+    
+    try:
+        # Resume execution
+        result = await agent_graph.ainvoke(None, config=config)
+        return {
+            "thread_id": req.thread_id,
+            "status": "completed",
+            "result": result
+        }
+    except GraphInterrupt:
+        snapshot = agent_graph.get_state(config)
+        return {
+            "thread_id": req.thread_id,
+            "status": "interrupted",
+            "next": snapshot.next,
+            "messages": snapshot.values.get("messages", [])
+        }
+    except Exception as e:
+        snapshot = agent_graph.get_state(config)
+        if snapshot.next:
+             return {
+                "thread_id": req.thread_id,
+                "status": "interrupted",
+                "next": snapshot.next,
+                "messages": snapshot.values.get("messages", [])
+            }
+        raise HTTPException(status_code=500, detail=str(e))
+
 
 @app.get("/api/heats")
 async def get_heats(

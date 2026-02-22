@@ -188,6 +188,48 @@ class KnowledgeAgent(BaseAgent):
             tool_calls=[]
         )
 
+class CriticAgent(BaseAgent):
+    def __init__(self):
+        super().__init__("反思专家", "L2/Eq 交叉验证 (Critic)")
+
+    async def _execute(self, context: dict) -> AgentResult:
+        l2_res = context.get("l2_res")
+        l2_eq_res = context.get("l2_eq_res")
+        
+        if not l2_res or not l2_eq_res:
+             return AgentResult(agent_name=self.name, role=self.role, content="缺少推演数据，无法进行交叉验证。")
+
+        lines = []
+        # Logic: Compare Kinetic vs Equilibrium
+        # 1. Temperature Paradox
+        k_temp = l2_res.final_temp_c
+        e_temp = l2_eq_res.get('final_temp_c', 0)
+        
+        if abs(k_temp - e_temp) > 50:
+            lines.append(f"【物理悖论】动力学终点温度 ({k_temp:.1f}℃) 与热力学极限 ({e_temp:.1f}℃) 偏差过大。")
+            lines.append("   - 可能原因：反应热效率系数设定错误，或冷却剂吸热模型偏差。")
+            
+        # 2. C-O Reaction Paradox
+        # If Kinetic says C dropped a lot, but Equilibrium says C should be high at this Temp
+        k_c = l2_res.final_analysis.get('C', 0)
+        e_c = l2_eq_res.get('final_analysis', {}).get('C', 0)
+        
+        # Equilibrium is the limit. Kinetic cannot go beyond equilibrium (lower G).
+        # If Kinetic C < Equilibrium C, it's impossible (overshot equilibrium).
+        if k_c < e_c - 0.5: 
+             lines.append(f"【动力学异常】预测碳含量 ({k_c:.2f}%) 低于热力学平衡值 ({e_c:.2f}%)，违反物理定律。")
+        
+        if not lines:
+            lines.append("模型交叉验证通过：动力学趋势与热力学约束一致。")
+            
+        return AgentResult(
+            agent_name=self.name,
+            role=self.role,
+            content="\n".join(lines),
+            data={"validation_passed": len(lines) == 1},
+             tool_calls=[]
+        )
+
 class CoordinatorAgent(BaseAgent):
     def __init__(self):
         super().__init__("指挥官", "任务调度与整合")

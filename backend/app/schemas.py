@@ -116,6 +116,10 @@ class InitialChargeInputs(BaseModel):
     # L1 Heat Loss Model Inputs
     ladle_transport_time_min: float = Field(default=15.0, ge=0, description="铁水包重包运输时间 (min)")
     ladle_empty_time_min: float = Field(default=30.0, ge=0, description="铁水包空包时间 (min)")
+    
+    # Memory / Context Correction
+    prev_lining_heat: float | None = Field(default=None, description="上一炉次炉衬蓄热量")
+    prev_slag_status: dict[str, float] | None = Field(default=None, description="上一炉次留渣状态")
 
 
 class InitialChargeResult(BaseModel):

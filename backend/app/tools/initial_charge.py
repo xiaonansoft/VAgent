@@ -26,6 +26,14 @@ def calculate_initial_charge(inp: InitialChargeInputs) -> InitialChargeResult:
     si = inp.iron_analysis.Si
     temp = inp.iron_temp_c
     
+    # --- Memory Correction (CheckpointSaver) ---
+    if inp.prev_lining_heat:
+        # Simple heuristic: 1 unit of heat accumulation ~= 0.5 degree effective temp increase
+        correction = inp.prev_lining_heat * 0.5
+        temp += correction
+        # Note: We modify local 'temp' variable used for coolant calculation, 
+        # but not the original input record.
+    
     base_coolant_kg_t = 0.0
     
     # 1300度基准表 (取中间值)
