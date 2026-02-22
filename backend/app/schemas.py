@@ -14,6 +14,19 @@ class UnitValue(BaseModel):
     source: str | None = None
 
 
+class FurnaceLifeStage(str, Enum):
+    EARLY = "early"   # 早期 (0-3000炉) - 底吹效果 100%
+    MIDDLE = "middle" # 中期 (3000-6000炉) - 底吹效果 85%
+    LATE = "late"     # 晚期 (>6000炉) - 底吹效果 70%
+
+
+class OffGasData(BaseModel):
+    flow_rate_nm3_hr: float = Field(..., description="烟气流量 Nm3/h")
+    co_pct: float = Field(..., description="CO 含量 %")
+    co2_pct: float = Field(..., description="CO2 含量 %")
+    timestamp: datetime = Field(default_factory=lambda: datetime.now(datetime.UTC))
+
+
 class IronInitialAnalysis(BaseModel):
     C: float = Field(..., ge=0, le=10.0, description="质量分数，%")
     Si: float = Field(..., ge=0, le=5.0, description="质量分数，%")
@@ -136,6 +149,10 @@ class SimulationInputs(BaseModel):
     recipe: dict[str, float]
     oxygen_flow_rate_m3h: float = Field(default=22000.0, ge=1000.0, le=60000.0)
     duration_s: int = Field(default=360, ge=60, le=3600, description="仿真时长，秒")
+    # New Field: Furnace Life
+    furnace_life_stage: FurnaceLifeStage = Field(default=FurnaceLifeStage.MIDDLE, description="炉役周期")
+    off_gas_correction: bool = Field(default=False, description="是否启用了卡尔曼滤波与炉气反馈修正")
+
 
 
 class SimulationPoint(BaseModel):
@@ -149,6 +166,10 @@ class SimulationPoint(BaseModel):
     FeO_pct: float | None = None
     V2O5_pct: float | None = None
     SiO2_pct: float | None = None
+    
+    # Uncertainty (Standard Deviation) for Confidence Band
+    uncertainty_sigma: float | None = Field(default=None, description="预测不确定性标准差")
+
 
 
 class SimulationResult(BaseModel):
@@ -159,6 +180,7 @@ class SimulationResult(BaseModel):
     proactive_advice: str | None = Field(default=None, description="基于仿真的前瞻性操作建议")
     mode: Literal["real-data", "soft-sensing"] = Field(default="real-data")
     equilibrium_result: dict[str, Any] | None = Field(default=None, description="热力学平衡模型结果（用于交叉验证）")
+
 
 
 class SaveHeatResultsInputs(BaseModel):

@@ -80,6 +80,51 @@ class SoftSensor:
         estimated_temp = last_temp + net_change
         return estimated_temp
 
+    def derive_decarburization_rate(self, 
+                                    flow_rate_nm3_hr: float, 
+                                    co_pct: float, 
+                                    co2_pct: float,
+                                    bath_weight_t: float) -> float:
+        """
+        Derive Decarburization Rate (dC/dt) from Off-gas Analysis.
+        Formula:
+          Carbon in Gas (mol/s) = Flow(Nm3/s) / 0.0224 * (%CO + %CO2)
+          Rate (%/s) = - (Mol_C * M_C) / Bath_Weight * 100
+        
+        Args:
+            flow_rate_nm3_hr: Off-gas flow rate in Nm3/h
+            co_pct: CO content (0-100)
+            co2_pct: CO2 content (0-100)
+            bath_weight_t: Bath weight in tonnes
+        
+        Returns:
+            dC/dt (%/s) - Negative value indicating reduction
+        """
+        # 1. Convert Flow to Nm3/s
+        flow_nm3_s = flow_rate_nm3_hr / 3600.0
+        
+        # 2. Calculate Carbon Molar Flow (mol/s)
+        # 1 Nm3 = 1000/22.4 mol = 44.64 mol (Standard conditions)
+        # Using 0.0224 m3/mol -> 1/0.0224 = 44.64 mol/m3
+        total_molar_flow = flow_nm3_s / 0.0224
+        
+        carbon_fraction = (co_pct + co2_pct) / 100.0
+        c_molar_flow = total_molar_flow * carbon_fraction
+        
+        # 3. Convert to Mass Rate (kg/s)
+        M_C = 0.012 # kg/mol
+        c_mass_flow_kg_s = c_molar_flow * M_C
+        
+        # 4. Convert to Percentage of Bath Weight
+        # bath_weight_kg = bath_weight_t * 1000
+        # Rate (%/s) = (kg/s / kg_total) * 100
+        # Note: This is the REMOVAL rate, so it should be negative for dC/dt
+        
+        rate_pct_s = (c_mass_flow_kg_s / (bath_weight_t * 1000.0)) * 100.0
+        
+        return -rate_pct_s
+
+
     def process(self, 
                 raw_temp: float, 
                 si_rate: float, 

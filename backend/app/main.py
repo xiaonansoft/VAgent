@@ -173,6 +173,21 @@ async def approve_graph(req: ApprovalRequest):
             }
         raise HTTPException(status_code=500, detail=str(e))
 
+from app.schemas import SimulationInputs, SimulationResult
+from app.tools.kinetics_simulator import simulate_blow_path
+
+@app.post("/api/simulation/run", response_model=SimulationResult)
+async def run_simulation_endpoint(inputs: SimulationInputs):
+    try:
+        # Run synchronous simulation in thread pool to avoid blocking
+        import asyncio
+        result = await asyncio.to_thread(simulate_blow_path, inputs)
+        return result
+    except Exception as e:
+        logger.error(f"Simulation failed: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 
 @app.get("/api/heats")
 async def get_heats(
