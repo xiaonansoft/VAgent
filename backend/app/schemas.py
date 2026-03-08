@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from datetime import datetime
+from datetime import datetime, timezone
 from enum import Enum
 from typing import Any, Literal
 
@@ -10,7 +10,7 @@ from pydantic import BaseModel, Field
 class UnitValue(BaseModel):
     value: float
     unit: str
-    ts: datetime = Field(default_factory=lambda: datetime.now(datetime.UTC))
+    ts: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     source: str | None = None
 
 
@@ -24,7 +24,7 @@ class OffGasData(BaseModel):
     flow_rate_nm3_hr: float = Field(..., description="烟气流量 Nm3/h")
     co_pct: float = Field(..., description="CO 含量 %")
     co2_pct: float = Field(..., description="CO2 含量 %")
-    timestamp: datetime = Field(default_factory=lambda: datetime.now(datetime.UTC))
+    timestamp: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 
 class IronInitialAnalysis(BaseModel):
@@ -112,6 +112,7 @@ class ChatRequest(BaseModel):
     iron_temp_c: float | None = None
     si_content_pct: float | None = None
     is_one_can: bool | None = None
+    context: dict[str, Any] | None = None
 
 
 class ChatResponse(BaseModel):
@@ -192,7 +193,8 @@ class SaveHeatResultsInputs(BaseModel):
     actual_final_temp: float
     actual_analysis: dict[str, float]
     advice_adopted: bool
-    timestamp: datetime = Field(default_factory=lambda: datetime.now(datetime.UTC))
+    trace_id: str | None = None
+    timestamp: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 
 class CloudBrainState(BaseModel):
@@ -201,4 +203,3 @@ class CloudBrainState(BaseModel):
     l2_result: SimulationResult | None = None
     diagnosis_result: DiagnoseLowYieldResult | None = None
     timestamp: str
-

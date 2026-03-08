@@ -1,38 +1,26 @@
 import React from 'react';
 import { useProcessStream } from '../src/hooks/useProcessStream';
 import { useLanguage } from '../src/contexts/LanguageContext';
-import { Link, useLocation } from 'react-router-dom';
+import { NavLink } from 'react-router-dom';
 
 const Header: React.FC = () => {
   const { isConnected, data } = useProcessStream();
   const { t, language, setLanguage } = useLanguage();
-  const location = useLocation();
 
   const isEmergencyStop = data?.is_emergency_stop || false;
 
   const handleStop = async () => {
     try {
-      if (isEmergencyStop) {
-        await fetch('/api/mcp/data', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            jsonrpc: "2.0",
-            method: "control/resume",
-            id: 1
-          })
-        });
-      } else {
-        await fetch('/api/mcp/data', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            jsonrpc: "2.0",
-            method: "control/stop",
-            id: 1
-          })
-        });
-      }
+      const method = isEmergencyStop ? "control/resume" : "control/stop";
+      await fetch('/api/mcp/data', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          jsonrpc: "2.0",
+          method,
+          id: 1
+        })
+      });
     } catch (e) {
       console.error("Failed to toggle stop", e);
     }
@@ -53,8 +41,6 @@ const Header: React.FC = () => {
       }
     }
   };
-
-  const isActive = (path: string) => location.pathname === path;
 
   return (
     <header className="flex items-center justify-between whitespace-nowrap border-b border-surface-border px-4 lg:px-6 py-3 bg-surface-dark/80 backdrop-blur-md z-50 overflow-x-hidden">
@@ -80,30 +66,30 @@ const Header: React.FC = () => {
         
         {/* Navigation */}
         <nav className="hidden md:flex items-center gap-4 ml-2 border-l border-surface-border/50 pl-4 lg:pl-6">
-          <Link 
+          <NavLink 
             to="/" 
-            className={`text-sm font-medium transition-colors ${isActive('/') ? 'text-primary' : 'text-text-secondary hover:text-white'}`}
+            className={({ isActive }) => `text-sm font-medium transition-colors ${isActive ? 'text-primary' : 'text-text-secondary hover:text-white'}`}
           >
             {t('nav_dashboard')}
-          </Link>
-          <Link 
+          </NavLink>
+          <NavLink 
             to="/history" 
-            className={`text-sm font-medium transition-colors ${isActive('/history') ? 'text-primary' : 'text-text-secondary hover:text-white'}`}
+            className={({ isActive }) => `text-sm font-medium transition-colors ${isActive ? 'text-primary' : 'text-text-secondary hover:text-white'}`}
           >
             {t('nav_history')}
-          </Link>
-          <Link 
+          </NavLink>
+          <NavLink 
             to="/learning" 
-            className={`text-sm font-medium transition-colors ${isActive('/learning') ? 'text-primary' : 'text-text-secondary hover:text-white'}`}
+            className={({ isActive }) => `text-sm font-medium transition-colors ${isActive ? 'text-primary' : 'text-text-secondary hover:text-white'}`}
           >
             {t('nav_learning')}
-          </Link>
-          <Link 
+          </NavLink>
+          <NavLink 
             to="/settings" 
-            className={`text-sm font-medium transition-colors ${isActive('/settings') ? 'text-primary' : 'text-text-secondary hover:text-white'}`}
+            className={({ isActive }) => `text-sm font-medium transition-colors ${isActive ? 'text-primary' : 'text-text-secondary hover:text-white'}`}
           >
             {t('nav_settings')}
-          </Link>
+          </NavLink>
         </nav>
       </div>
 

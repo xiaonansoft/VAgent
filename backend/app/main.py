@@ -1,6 +1,6 @@
 import logging
 from contextlib import asynccontextmanager
-from typing import Any, AsyncGenerator
+from typing import Any, AsyncGenerator, Optional, Dict, List
 
 from fastapi import FastAPI, Depends, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
@@ -10,11 +10,12 @@ from sqlalchemy import select
 from app.core.config import settings
 from app.core.logger import setup_logging
 from app.db.base import get_db, init_db
-from app.db.models import Heat
+from app.db.models import Heat, AdviceLog
 from app.schemas import ChatRequest, ChatResponse, SaveHeatResultsInputs
 
 from app.mcp.data_server import build_data_router
 from app.data.simulator import DataSimulator
+from app.agents.team import CoordinatorAgent
 from app.core.mode_control import ModeController, SystemMode
 from pydantic import BaseModel
 
@@ -77,6 +78,70 @@ app.add_middleware(
 async def health_check():
     return {"status": "ok", "version": "7.0.0"}
 
+@app.post("/api/chat", response_model=ChatResponse)
+async def chat_with_agent(
+    req: ChatRequest,
+    session: AsyncSession = Depends(get_db)
+):
+    context = req.context or {}
+    si_content_pct = req.si_content_pct if req.si_content_pct is not None else context.get("si_content_pct") or context.get("si")
+    iron_temp_c = req.iron_temp_c if req.iron_temp_c is not None else context.get("iron_temp_c") or context.get("temp")
+    is_one_can = req.is_one_can if req.is_one_can is not None else context.get("is_one_can")
+
+    agent = CoordinatorAgent()
+    result = await agent.run({
+        "message": req.message,
+        "si_content_pct": si_content_pct,
+        "iron_temp_c": iron_temp_c,
+        "is_one_can": is_one_can,
+        "simulator": simulator
+    })
+
+    response = ChatResponse(
+        reply=result.get("reply", ""),
+        tool_calls=result.get("tool_calls", []),
+        trace_id=result.get("trace_id")
+    )
+
+    log = AdviceLog(
+        trace_id=response.trace_id,
+        message=req.message,
+        reply=response.reply,
+        tool_calls=response.tool_calls,
+        context={
+            "si_content_pct": si_content_pct,
+            "iron_temp_c": iron_temp_c,
+            "is_one_can": is_one_can,
+            "raw": context
+        }
+    )
+    session.add(log)
+    await session.commit()
+
+    return response
+
+@app.get("/api/advice")
+async def get_advice_logs(
+    skip: int = 0,
+    limit: int = 20,
+    session: AsyncSession = Depends(get_db)
+) -> list[dict[str, Any]]:
+    result = await session.execute(
+        select(AdviceLog).order_by(AdviceLog.created_at.desc()).offset(skip).limit(limit)
+    )
+    logs = result.scalars().all()
+    return [
+        {
+            "trace_id": log.trace_id,
+            "message": log.message,
+            "reply": log.reply,
+            "tool_calls": log.tool_calls,
+            "context": log.context,
+            "created_at": log.created_at.isoformat()
+        }
+        for log in logs
+    ]
+
 from app.agents.core import agent_graph
 import uuid
 from langgraph.errors import GraphInterrupt
@@ -103,6 +168,28 @@ async def run_graph(req: GraphRunRequest):
     try:
         # Run untill end or interrupt
         result = await agent_graph.ainvoke(initial_state, config=config)
+        
+        # Check if interrupt occurred but was returned in state (LangGraph behavior)
+        if isinstance(result, dict) and result.get("__interrupt__"):
+            snapshot = agent_graph.get_state(config)
+            interrupts = result.get("__interrupt__")
+            reason = "Unknown Interrupt"
+            if isinstance(interrupts, (list, tuple)) and len(interrupts) > 0:
+                 item = interrupts[0]
+                 if isinstance(item, dict): reason = item.get("value", reason)
+                 elif hasattr(item, "value"): reason = item.value
+                 else: reason = str(item)
+            
+            messages = snapshot.values.get("messages", [])
+            messages.append(reason)
+            
+            return {
+                "thread_id": thread_id,
+                "status": "interrupted",
+                "next": snapshot.next,
+                "messages": messages
+            }
+            
         return {
             "thread_id": thread_id,
             "status": "completed",
@@ -133,22 +220,65 @@ async def run_graph(req: GraphRunRequest):
 class ApprovalRequest(BaseModel):
     thread_id: str
     action: str # "approve", "modify"
-    recipe: Optional[dict] = None
+    recipe: Optional[Dict[str, Any]] = None
 
 @app.post("/api/graph/approve")
 async def approve_graph(req: ApprovalRequest):
     config = {"configurable": {"thread_id": req.thread_id}}
     
+    # Check if thread exists (MemorySaver specific check)
+    current_snapshot = agent_graph.get_state(config)
+    if not current_snapshot.values:
+        raise HTTPException(status_code=404, detail="会话已过期或丢失（后端重启导致内存状态清空），请重新点击 'Run Graph'。")
+
     # Update state based on action
     update = {"approval_status": "approved" if req.action == "approve" else "modified"}
     if req.action == "modify" and req.recipe:
-        update["recipe"] = req.recipe
+        # Merge with existing recipe to preserve other ingredients
+        current_recipe = current_snapshot.values.get("recipe", {}) or {}
+        if isinstance(current_recipe, dict):
+            new_recipe = current_recipe.copy()
+            
+            # Special handling for "scale_weight" (Append mode from UI)
+            if "scale_weight" in req.recipe:
+                current_val = new_recipe.get("scale_weight", 0.0)
+                new_recipe["scale_weight"] = current_val + req.recipe["scale_weight"]
+                # Update other fields normally
+                req_recipe_clean = {k:v for k,v in req.recipe.items() if k != "scale_weight"}
+                new_recipe.update(req_recipe_clean)
+            else:
+                new_recipe.update(req.recipe)
+                
+            update["recipe"] = new_recipe
+        else:
+            update["recipe"] = req.recipe
         
-    await agent_graph.update_state(config, update)
+    agent_graph.update_state(config, update)
     
     try:
         # Resume execution
         result = await agent_graph.ainvoke(None, config=config)
+        
+        if isinstance(result, dict) and result.get("__interrupt__"):
+            snapshot = agent_graph.get_state(config)
+            interrupts = result.get("__interrupt__")
+            reason = "Unknown Interrupt"
+            if isinstance(interrupts, (list, tuple)) and len(interrupts) > 0:
+                 item = interrupts[0]
+                 if isinstance(item, dict): reason = item.get("value", reason)
+                 elif hasattr(item, "value"): reason = item.value
+                 else: reason = str(item)
+            
+            messages = snapshot.values.get("messages", [])
+            messages.append(reason)
+            
+            return {
+                "thread_id": req.thread_id,
+                "status": "interrupted",
+                "next": snapshot.next,
+                "messages": messages
+            }
+
         return {
             "thread_id": req.thread_id,
             "status": "completed",
@@ -196,21 +326,29 @@ async def get_heats(
     session: AsyncSession = Depends(get_db)
 ) -> list[dict[str, Any]]:
     result = await session.execute(
-        select(Heat).order_by(Heat.timestamp.desc()).offset(skip).limit(limit)
+        select(Heat, AdviceLog)
+        .outerjoin(AdviceLog, AdviceLog.trace_id == Heat.trace_id)
+        .order_by(Heat.timestamp.desc())
+        .offset(skip)
+        .limit(limit)
     )
-    heats = result.scalars().all()
+    rows = result.all()
     return [
         {
-            "heat_id": h.heat_id,
-            "furnace_id": h.furnace_id,
-            "timestamp": h.timestamp.isoformat(),
-            "l2_final_temp": h.l2_final_temp,
-                "equilibrium_final_temp": h.equilibrium_final_temp,
-                "actual_final_temp": h.actual_final_temp,
-                "advice_adopted": h.advice_adopted,
-            "actual_analysis": h.actual_analysis,
+            "heat_id": heat.heat_id,
+            "furnace_id": heat.furnace_id,
+            "timestamp": heat.timestamp.isoformat(),
+            "l2_final_temp": heat.l2_final_temp,
+                "equilibrium_final_temp": heat.equilibrium_final_temp,
+                "actual_final_temp": heat.actual_final_temp,
+                "advice_adopted": heat.advice_adopted,
+            "trace_id": heat.trace_id,
+            "advice_message": advice.message if advice else None,
+            "advice_reply": advice.reply if advice else None,
+            "advice_time": advice.created_at.isoformat() if advice and advice.created_at else None,
+            "actual_analysis": heat.actual_analysis,
         }
-        for h in heats
+        for heat, advice in rows
     ]
 
 @app.post("/api/heat/confirm")
@@ -228,6 +366,7 @@ async def confirm_heat(
             actual_final_temp=data.actual_final_temp,
             actual_analysis=data.actual_analysis,
             advice_adopted=data.advice_adopted,
+            trace_id=data.trace_id,
             timestamp=data.timestamp
         )
         session.add(new_heat)

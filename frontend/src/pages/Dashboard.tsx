@@ -3,7 +3,6 @@ import StaticSetup from '../../components/StaticSetup';
 import DynamicMonitor from '../../components/DynamicMonitor';
 import LanceControl from '../../components/LanceControl';
 import AICopilot from '../../components/AICopilot';
-import WhatIfSandbox from '../../components/WhatIfSandbox';
 
 interface DashboardProps {
   processContext: any;
@@ -21,7 +20,6 @@ const Dashboard: React.FC<DashboardProps> = ({ processContext, setProcessContext
         {/* Center Column: Dynamic Monitor & Lance Recommendation */}
         <section className="lg:col-span-6 flex flex-col gap-4 lg:overflow-y-auto pr-1 custom-scrollbar">
           <DynamicMonitor />
-          <WhatIfSandbox />
           <LanceControl processContext={processContext} />
         </section>
 

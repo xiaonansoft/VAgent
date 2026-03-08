@@ -28,10 +28,200 @@ interface ChartDataPoint {
   };
 }
 
+interface ApprovalModalProps {
+  threadId: string;
+  message: string;
+  onApprove: () => void;
+  onModify: (recipe: any) => void;
+  loading?: boolean;
+}
+
+const ApprovalModal: React.FC<ApprovalModalProps> = ({ threadId, message, onApprove, onModify, loading }) => {
+  const [showModify, setShowModify] = useState(false);
+  const [scaleAdd, setScaleAdd] = useState(1.0);
+
+  return (
+    <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center">
+      <div className="bg-gray-900 border border-red-500/50 rounded-xl p-6 max-w-md w-full shadow-2xl animate-in fade-in zoom-in duration-200">
+        <div className="flex items-center gap-3 mb-4 text-red-400">
+          <span className="material-symbols-outlined text-3xl">warning</span>
+          <h2 className="text-xl font-bold">需要人工审批 (Human-in-the-loop)</h2>
+        </div>
+        
+        <p className="text-gray-300 mb-6 bg-red-500/10 p-3 rounded border border-red-500/20">
+          {message || "系统检测到关键工艺偏差（温度或收得率），请确认是否继续。"}
+        </p>
+
+        {loading ? (
+           <div className="flex flex-col items-center justify-center py-4 space-y-3">
+             <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+             <p className="text-blue-400 text-sm font-bold animate-pulse">正在重新计算仿真结果，请稍候...</p>
+           </div>
+        ) : !showModify ? (
+          <div className="flex gap-3 justify-end">
+            <button 
+              onClick={() => setShowModify(true)}
+              className="px-4 py-2 rounded bg-gray-800 hover:bg-gray-700 text-gray-300 border border-gray-600 transition-colors"
+            >
+              🛠️ 修改参数
+            </button>
+            <button 
+              onClick={onApprove}
+              className="px-4 py-2 rounded bg-red-600 hover:bg-red-500 text-white font-bold shadow-lg shadow-red-900/50 transition-all flex items-center gap-2"
+            >
+              <span>✅</span>
+              <span>批准继续</span>
+            </button>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            <div className="bg-gray-800 p-3 rounded">
+               <label className="text-sm text-gray-400 block mb-1">追加氧化铁皮 (吨)</label>
+               <input 
+                 type="number" 
+                 value={scaleAdd} 
+                 onChange={e => setScaleAdd(parseFloat(e.target.value))}
+                 className="w-full bg-gray-900 border border-gray-700 rounded p-2 text-white"
+                 step="0.1"
+               />
+            </div>
+            <div className="flex gap-3 justify-end">
+               <button 
+                 onClick={() => setShowModify(false)}
+                 className="text-gray-400 hover:text-white text-sm"
+               >
+                 取消
+               </button>
+               <button 
+                 onClick={() => onModify({ scale_weight: scaleAdd })}
+                 className="px-4 py-2 rounded bg-blue-600 hover:bg-blue-500 text-white font-bold"
+               >
+                 🚀 提交修正并重算
+               </button>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
 const DynamicMonitor: React.FC = () => {
   const { data, isConnected } = useProcessStream();
   const { t } = useLanguage();
   const [chartData, setChartData] = useState<ChartDataPoint[]>([]);
+  
+  // Graph State Polling
+  const [interruptState, setInterruptState] = useState<any>(null);
+  const [isGraphLoading, setIsGraphLoading] = useState(false);
+  
+  // Poll for graph interrupt state (Mocking real websocket/polling for demo)
+  // In real app, this would check /api/graph/status or similar
+  // Here we just simulate it occasionally or wait for a specific trigger if we had one.
+  // For now, let's assume we might receive a specific event in the stream data 
+  // or we could poll a new endpoint if we created one.
+  // Since we didn't create a status polling endpoint, we rely on the `run` response.
+  // But `run` is async.
+  // Let's assume the Dashboard might trigger a run.
+  
+  // For demonstration of the UI, let's add a hidden trigger or just check if data contains an interrupt flag.
+  // Let's modify the chart data update to check for a special flag if we added one.
+  // Or better, let's add a manual "Start New Heat" button that calls the graph API.
+
+  const handleGraphRun = async () => {
+      setIsGraphLoading(true);
+      try {
+          const res = await fetch('/api/graph/run', {
+              method: 'POST',
+              headers: {'Content-Type': 'application/json'},
+              body: JSON.stringify({
+                  si: 0.20,
+                  temp: 1350,
+                  is_one_can: true
+              })
+          });
+          const result = await res.json();
+          if (result.status === 'interrupted') {
+              setInterruptState(result);
+          }
+      } catch (e) {
+          console.error(e);
+      } finally {
+          setIsGraphLoading(false);
+      }
+  };
+  
+  const handleApprove = async () => {
+      if (!interruptState) return;
+      setIsGraphLoading(true);
+      try {
+          const res = await fetch('/api/graph/approve', {
+              method: 'POST',
+              headers: {'Content-Type': 'application/json'},
+              body: JSON.stringify({
+                  thread_id: interruptState.thread_id,
+                  action: 'approve'
+              })
+          });
+          
+          if (!res.ok) {
+              const err = await res.json();
+              alert(`错误: ${err.detail || '请求失败'}`);
+              setInterruptState(null); // Close modal on error to prevent stuck state
+              return;
+          }
+
+          const result = await res.json();
+          if (result.status === 'completed') {
+              setInterruptState(null);
+              // Maybe refresh data or show success
+          } else if (result.status === 'interrupted') {
+              setInterruptState(result); // Recursive interrupt?
+          }
+      } catch (e) { 
+          console.error(e); 
+          alert("网络请求失败，请检查后端连接。");
+          setInterruptState(null);
+      } finally {
+          setIsGraphLoading(false);
+      }
+  };
+
+  const handleModify = async (recipe: any) => {
+      if (!interruptState) return;
+      setIsGraphLoading(true);
+      try {
+          const res = await fetch('/api/graph/approve', {
+              method: 'POST',
+              headers: {'Content-Type': 'application/json'},
+              body: JSON.stringify({
+                  thread_id: interruptState.thread_id,
+                  action: 'modify',
+                  recipe: recipe
+              })
+          });
+
+          if (!res.ok) {
+              const err = await res.json();
+              alert(`错误: ${err.detail || '请求失败'}`);
+              setInterruptState(null);
+              return;
+          }
+
+          const result = await res.json();
+          if (result.status === 'completed') {
+              setInterruptState(null);
+          } else if (result.status === 'interrupted') {
+              setInterruptState(result);
+          }
+      } catch (e) { 
+          console.error(e);
+          alert("网络请求失败，请检查后端连接。");
+          setInterruptState(null);
+      } finally {
+          setIsGraphLoading(false);
+      }
+  };
 
   // Fetch history on mount
   useEffect(() => {
@@ -98,6 +288,17 @@ const DynamicMonitor: React.FC = () => {
 
   const tempStatus = data?.temperature?.status;
   const isSensorFault = tempStatus && !tempStatus.is_valid;
+  const processTime = data?.process_time;
+  const phaseKey = processTime === undefined ? null : processTime < 0.5 ? 'phase_ignition' : processTime < 5.5 ? 'phase_main_blow' : 'phase_end_pressing';
+  const phaseLabel = phaseKey ? t(phaseKey as any) : '--';
+  const tempValue = data?.temperature?.value;
+  const tempLevel = tempValue === undefined ? null : tempValue >= 1400 ? 'critical' : tempValue >= 1360 ? 'warning' : 'normal';
+  const tempStatusLabel = tempLevel ? t(`temp_status_${tempLevel}` as any) : '--';
+  const tempStatusClass = tempLevel === 'critical'
+    ? 'bg-status-alarm/20 border-status-alarm/40 text-status-alarm'
+    : tempLevel === 'warning'
+      ? 'bg-status-warning/20 border-status-warning/40 text-status-warning'
+      : 'bg-status-safe/20 border-status-safe/40 text-status-safe';
 
   return (
     <div className="flex flex-col gap-1 min-h-[320px] flex-1">
@@ -105,8 +306,25 @@ const DynamicMonitor: React.FC = () => {
         <div className="flex items-center gap-2">
           <span className="material-symbols-outlined text-status-warning text-xl">query_stats</span>
           <h1 className="text-white text-base font-bold tracking-wide">{t('dynamic_monitor_title')}</h1>
+          {/* Debug Button for Interrupt */}
+          <button 
+             onClick={handleGraphRun}
+             className="text-[10px] bg-blue-500/20 text-blue-300 border border-blue-500/40 px-2 py-0.5 rounded hover:bg-blue-500/40"
+             title="Start a test graph run to trigger potential interrupt"
+          >
+             Run Graph (Debug)
+          </button>
         </div>
         <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 px-2 py-1 rounded border bg-surface-dark/80 border-surface-border">
+            <span className="text-[10px] font-mono font-bold text-text-secondary uppercase tracking-wider">{t('phase_label')}</span>
+            <span className="text-[10px] font-bold text-white">{phaseLabel}</span>
+            <span className="text-[10px] text-text-secondary font-mono">{typeof processTime === 'number' ? `${processTime.toFixed(2)}${t('min_short')}` : '--'}</span>
+          </div>
+          <div className={`flex items-center gap-2 px-2 py-1 rounded border ${tempStatusClass}`}>
+            <span className="text-[10px] font-mono font-bold uppercase tracking-wider">{t('temp_status')}</span>
+            <span className="text-[10px] font-bold">{tempStatusLabel}</span>
+          </div>
           {isSensorFault && (
              <div className="flex items-center gap-1 bg-status-alarm/20 px-2 py-1 rounded border border-status-alarm/40 animate-pulse">
                <span className="material-symbols-outlined text-status-alarm text-xs">warning</span>
@@ -122,8 +340,8 @@ const DynamicMonitor: React.FC = () => {
         </div>
       </div>
       <div className="glass-panel rounded-xl p-1 flex-1 flex flex-col shadow-lg relative overflow-hidden group">
-        <div className="absolute top-4 left-4 right-4 flex justify-between z-10 pointer-events-none">
-          <div className={`backdrop-blur-md px-3 py-1.5 rounded border shadow-lg transition-colors duration-300 ${isSensorFault ? 'bg-status-warning/10 border-status-warning/50' : 'bg-surface-dark/90 border-surface-border'}`}>
+        <div className="flex items-center justify-between px-3 pt-3">
+          <div className={`backdrop-blur-md px-3 py-1.5 rounded shadow-lg transition-colors duration-300 ${isSensorFault ? 'bg-status-warning/10' : 'bg-surface-dark/90'}`}>
             <span className="text-[10px] text-text-secondary uppercase font-bold mr-2 tracking-wider">{t('temp_pool')}</span>
             <span className={`text-xl font-mono font-bold ${isSensorFault ? 'text-status-warning' : 'text-white'}`}>
               {data?.temperature?.value?.toFixed(0) ?? '--'}
@@ -131,7 +349,7 @@ const DynamicMonitor: React.FC = () => {
             </span>
             {isSensorFault && <div className="text-[9px] text-status-warning font-bold text-right mt-[-2px]">{t('confidence')}: {(tempStatus!.confidence * 100).toFixed(0)}%</div>}
           </div>
-          <div className="bg-surface-dark/90 backdrop-blur-md px-3 py-1.5 rounded border border-surface-border shadow-lg">
+          <div className="bg-surface-dark/90 backdrop-blur-md px-3 py-1.5 rounded shadow-lg">
             <span className="text-[10px] text-text-secondary uppercase font-bold mr-2 tracking-wider">{t('v_content')}</span>
             <span className="text-xl font-mono font-bold text-primary">
               {data?.chemistry?.v?.toFixed(3) ?? '--'}
@@ -141,7 +359,7 @@ const DynamicMonitor: React.FC = () => {
         </div>
         
         {/* Chart Area */}
-        <div className="w-full h-full relative bg-[#0b1116] rounded-lg border border-white/5 flex-1 min-h-[250px] p-2 pt-12">
+        <div className="w-full h-full relative bg-[#0b1116] rounded-lg border border-white/5 flex-1 min-h-[250px] p-2 pt-3">
           <ResponsiveContainer width="100%" height="100%">
             <ComposedChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
               <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#2A3848" strokeOpacity={0.4} />
@@ -261,6 +479,15 @@ const DynamicMonitor: React.FC = () => {
            )}
         </div>
       </div>
+      {interruptState && (
+        <ApprovalModal 
+           threadId={interruptState.thread_id}
+           message={interruptState.messages && interruptState.messages.length > 0 ? interruptState.messages[interruptState.messages.length-1] : "需要人工审批"}
+           onApprove={handleApprove}
+           onModify={handleModify}
+           loading={isGraphLoading}
+        />
+      )}
     </div>
   );
 };

@@ -62,13 +62,37 @@ API 默认运行在 `http://localhost:8000`。
   - `lance_height_mm` (float): Current lance height.
     当前枪位。
 
-### 5. Heat Confirmation (Data Loop) / 炉次确认 (数据闭环)
-- **Endpoint**: `POST /api/heat/confirm`
-- **Description**: Confirms heat results and feeds data back for model self-learning.
-  **描述**: 确认炉次结果并将数据反馈给模型进行自学习。
-- **Request Body**: `SaveHeatResultsInputs`
-- **Response**: Status and count of learned entries.
-  状态和已学习条目的数量。
+### 6. LangGraph Control (Agent Workflow) / 智能体工作流控制
+- **Endpoint**: `POST /api/graph/run`
+- **Description**: Starts a new multi-agent workflow (LangGraph) for smelting simulation and decision support. Supports state machine interrupts for human-in-the-loop approval.
+  **描述**: 启动一个新的多智能体工作流 (LangGraph) 进行冶炼仿真和决策支持。支持状态机中断以进行人工审批。
+- **Request Body**: `GraphRunRequest`
+  - `si`: Silicon content (float).
+  - `temp`: Iron temperature (float).
+  - `is_one_can`: Process type (bool).
+- **Response**:
+  - `thread_id`: Unique ID for the workflow thread.
+  - `status`: "completed" or "interrupted".
+  - `result` (if completed): Final agent output.
+  - `messages`: Execution log messages.
+
+- **Endpoint**: `POST /api/graph/approve`
+- **Description**: Resumes an interrupted workflow with human approval or parameter modification.
+  **描述**: 恢复已中断的工作流，支持人工批准或参数修改。
+- **Request Body**: `ApprovalRequest`
+  - `thread_id`: The ID of the interrupted thread.
+  - `action`: "approve" or "modify".
+  - `recipe` (optional): Modified recipe if action is "modify".
+- **Response**: Same as `/api/graph/run`.
+
+### 7. Simulation with Sandbox (What-If) / 沙盘仿真
+- **Endpoint**: `POST /api/simulation/run`
+- **Description**: Runs a standalone simulation for What-If analysis (Sandbox). Supports Kalman Filter correction.
+  **描述**: 运行独立的仿真以进行假设分析 (沙盘)。支持卡尔曼滤波修正。
+- **Request Body**: `SimulationInputs`
+  - Includes `furnace_life_stage` (Enum: early, middle, late) and `off_gas_correction` (bool).
+- **Response**: `SimulationResult`
+  - Includes `uncertainty_sigma` for confidence band visualization.
 
 ---
 

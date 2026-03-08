@@ -35,7 +35,28 @@ const StaticSetup: React.FC<Props> = ({ processContext, setProcessContext }) => 
           },
         });
         if (isMounted) {
-          setL1Data(res.content);
+          // MCP response format is { content: [...] } but fetchJsonRpc returns result directly.
+          // If result is list of Content objects (type='text'), we need to parse.
+          // However, our fetchJsonRpc implementation returns data.result directly.
+          // Let's check if 'content' exists or if it IS the content.
+          // Based on MCP spec and tools_server.py: 
+          // Tool returns [TextContent(type='text', text='...')]
+          // If fetchJsonRpc returns the list:
+          if (Array.isArray(res) && res.length > 0 && res[0].text) {
+             const jsonStr = res[0].text;
+             try {
+                setL1Data(JSON.parse(jsonStr));
+             } catch(e) {
+                // If not JSON, maybe just text?
+                console.error("Failed to parse L1 result", e);
+             }
+          } else if (res.content) {
+             // Legacy or different format
+             setL1Data(res.content);
+          } else {
+             // Maybe it's the object directly?
+             setL1Data(res);
+          }
         }
       } catch (e) {
         console.error("L1 Data fetch error:", e);

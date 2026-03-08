@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useLanguage } from '../contexts/LanguageContext';
+import WhatIfSandbox from '../../components/WhatIfSandbox';
 
 type SystemMode = 'SIMULATION' | 'VALIDATION' | 'PRODUCTION';
 
@@ -20,6 +21,7 @@ const Settings: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
   const [showModal, setShowModal] = useState(false);
+  const [activeTab, setActiveTab] = useState<'system' | 'tools'>('system');
 
   useEffect(() => {
     fetchMode();
@@ -112,7 +114,35 @@ const Settings: React.FC = () => {
           {t('settings_title') || 'System Settings'}
         </h1>
 
-        {/* Current Mode Banner */}
+        {/* Tab Navigation */}
+        <div className="flex gap-4 mb-8 border-b border-white/10">
+          <button
+            onClick={() => setActiveTab('system')}
+            className={`pb-3 px-2 font-bold text-sm uppercase tracking-wider transition-colors relative ${
+              activeTab === 'system' ? 'text-primary' : 'text-text-secondary hover:text-white'
+            }`}
+          >
+            System Configuration
+            {activeTab === 'system' && (
+              <span className="absolute bottom-0 left-0 w-full h-0.5 bg-primary rounded-t-full"></span>
+            )}
+          </button>
+          <button
+            onClick={() => setActiveTab('tools')}
+            className={`pb-3 px-2 font-bold text-sm uppercase tracking-wider transition-colors relative ${
+              activeTab === 'tools' ? 'text-primary' : 'text-text-secondary hover:text-white'
+            }`}
+          >
+            Process Tools
+            {activeTab === 'tools' && (
+              <span className="absolute bottom-0 left-0 w-full h-0.5 bg-primary rounded-t-full"></span>
+            )}
+          </button>
+        </div>
+
+        {activeTab === 'system' ? (
+          <>
+            {/* Current Mode Banner */}
         <div className="mb-10 bg-surface-dark border border-surface-border rounded-xl p-6 flex items-center justify-between shadow-lg relative overflow-hidden">
           <div className={`absolute top-0 left-0 w-2 h-full ${
             currentMode === 'SIMULATION' ? 'bg-status-safe' : 
@@ -180,6 +210,12 @@ const Settings: React.FC = () => {
              {message.text}
            </div>
         )}
+        </>
+      ) : (
+        <div className="h-[calc(100vh-200px)]">
+          <WhatIfSandbox />
+        </div>
+      )}
       </div>
 
       {/* Confirmation Modal */}

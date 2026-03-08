@@ -69,7 +69,7 @@ class KalmanFilter1D:
 
 
 def calculate_kinetics_derivatives(y, t, bath_weight_kg, mols_o2_per_s, heat_loss_w=200000.0, 
-                                   stirring_factor: float = 1.0):
+                                   stirring_factor: float = 1.0, lance_height_mm: float = 1400.0):
     """
     Core Differential Equation Function for Vanadium Extraction Kinetics.
     Can be used by ODE solver or Step-wise Simulator.
@@ -77,20 +77,29 @@ def calculate_kinetics_derivatives(y, t, bath_weight_kg, mols_o2_per_s, heat_los
     Args:
         stirring_factor: Degradation factor for mass transfer (0.0 - 1.0)
                          due to bottom plug clogging (Furnace Life).
+        lance_height_mm: Current lance height (affects mixing and PCR).
     """
     C, Si, V, Ti, T_c, FeO, V2O5, SiO2 = y
     T_k = T_c + 273.15
     
+    # --- Lance Height Effect (Mixing & PCR) ---
+    # Mixing Energy Density (W/t) ~ Flow / Height^n
+    # Normalized mixing factor relative to 1400mm
+    # Lower lance -> Better mixing -> Higher Kinetics
+    mixing_factor = (1400.0 / max(1000.0, lance_height_mm)) ** 1.5
+    
     # Base Mass Transfer Coefficients (1/s)
-    # Apply Bottom-Stirring Degradation Factor
+    # Apply Bottom-Stirring Degradation Factor & Lance Mixing
     # k_v and k_ti are most affected by stirring energy
-    k_si_base = 0.003 * stirring_factor
-    k_ti_base = 0.003 * stirring_factor
-    k_v_base = 0.002 * stirring_factor
+    k_si_base = 0.003 * stirring_factor * mixing_factor
+    k_ti_base = 0.003 * stirring_factor * mixing_factor
+    k_v_base = 0.002 * stirring_factor * mixing_factor
     k_c_base = 0.0005 # C oxidation is less dependent on stirring (gas-liquid interface), but still affected.
                       # Let's keep C relatively stable or apply sqrt(factor).
                       # For simplicity, apply full factor to V/Ti (slag-metal), and partial to C.
-    k_c_base = k_c_base * (0.5 + 0.5 * stirring_factor)
+    k_c_base = k_c_base * (0.5 + 0.5 * stirring_factor * mixing_factor)
+
+    # Rate constants (1/s)
 
     # Rate constants (1/s)
     r_si = k_si_base * max(0, Si)
@@ -140,10 +149,21 @@ def calculate_kinetics_derivatives(y, t, bath_weight_kg, mols_o2_per_s, heat_los
     m_dot_v  = abs(dVdt) / 100 * bath_weight_kg
     m_dot_c  = abs(dCdt) / 100 * bath_weight_kg
     
+    # Post Combustion Ratio (PCR) - CO -> CO2
+    # Depends on Lance Height: Higher Lance -> More secondary combustion
+    # Base 10%, +10% per 200mm above 1200mm
+    pcr = 0.10 + max(0, (lance_height_mm - 1200.0) / 2000.0) # 0.1 at 1200, 0.2 at 1400? No, 0.1 + 200/2000 = 0.2
+    # Let's say: 1200->10%, 1600->25%
+    pcr = 0.10 + (max(0, lance_height_mm - 1200) / 400) * 0.15
+    pcr = min(0.40, pcr) # Max 40%
+
+    h_c_eff = H_REACTION_C * (1 - pcr) + (21285.0 * 1000) * pcr # 21285 MJ/t is C->CO2
+    # H_REACTION_C (9000 MJ/t) is approx C->CO (Actually C->CO is ~9280 kJ/kg, code says 9000)
+
     heat_gen = (m_dot_si * H_REACTION_SI + 
                 m_dot_ti * H_REACTION_TI + 
                 m_dot_v * H_REACTION_V + 
-                m_dot_c * H_REACTION_C)
+                m_dot_c * h_c_eff)
                 
     # Cooling
     coolant_load = 0.0
@@ -193,14 +213,77 @@ def simulate_blow_path(inp: SimulationInputs) -> SimulationResult:
     if inp.recipe and "iron_weight" in inp.recipe:
         bath_weight_kg = inp.recipe["iron_weight"] * 1000
         
+    # --- Coolant Effect (Temperature Drop) ---
+    # Parse coolants from recipe (handle both English and Chinese keys)
+    # 1. Iron Scale (氧化铁皮/scale_weight)
+    scale_t = inp.recipe.get("scale_weight", 0.0) + inp.recipe.get("氧化铁皮", 0.0)
+    
+    # 2. Pellets (球返/球团/pellets)
+    pellets_t = inp.recipe.get("pellets", 0.0) + inp.recipe.get("球返/球团", 0.0)
+    
+    # 3. Scrap/Iron (生铁块/scrap)
+    scrap_t = inp.recipe.get("scrap", 0.0) + inp.recipe.get("生铁块", 0.0)
+    
+    # Calculate cooling effect
+    # Cooling Coefficients (deg C per kg/t)
+    # Derived from InitialCharge logic: 1.8 kg/t ~ 10 deg => ~5.5 deg per kg/t
+    COEFF_SCALE = 5.0
+    COEFF_PELLETS = 5.0
+    COEFF_SCRAP = 1.5 # Heating solid to liquid + melting
+    
+    bath_weight_t = bath_weight_kg / 1000.0
+    
+    temp_drop_scale = (scale_t * 1000.0 / bath_weight_t) * COEFF_SCALE
+    temp_drop_pellets = (pellets_t * 1000.0 / bath_weight_t) * COEFF_PELLETS
+    temp_drop_scrap = (scrap_t * 1000.0 / bath_weight_t) * COEFF_SCRAP
+    
+    total_temp_drop = temp_drop_scale + temp_drop_pellets + temp_drop_scrap
+    
+    # Apply to initial temperature
+    # Note: Coolants are usually added early (30s-2.5min). 
+    # Adjusting initial temp is a valid approximation for the trajectory.
+    effective_initial_temp = inp.initial_temp_c - total_temp_drop
+    
+    y0 = [
+        inp.initial_analysis.C,
+        initial_Si,
+        inp.initial_analysis.V,
+        initial_Ti,
+        effective_initial_temp, # Use effective temp
+        5.0,
+        0.0,
+        1.0
+    ]
+    
     oxygen_flow_m3_s = inp.oxygen_flow_rate_m3h / 3600.0
     mols_o2_per_s = oxygen_flow_m3_s / 0.0224
     
     t_eval = np.linspace(0, inp.duration_s, inp.duration_s // 10 + 1)
     
-    def wrapper(y, t):
-        # We need to pass the stirring_factor here if we use odeint
-        return calculate_kinetics_derivatives(y, t, bath_weight_kg, mols_o2_per_s, stirring_factor=stirring_factor)
+    # Define lance profile helper
+    def get_lance_height(t_min: float) -> float:
+        # Simple profile based on Si content (simplified from lance_profile.py)
+        # Si < 0.15: High (1500) -> Low (1400)
+        # Si > 0.15: High (1400) -> Low (1300)
+        si = inp.initial_analysis.Si
+        
+        process_h = 1400.0
+        end_h = 1300.0
+        
+        if si < 0.15:
+            process_h = 1500.0
+            end_h = 1400.0
+            
+        # 0-0.5 min: Ignition (1200)
+        if t_min < 0.5:
+            return 1200.0
+            
+        # 0.5-5.5 min: Process
+        if t_min < 5.5:
+            return process_h
+            
+        # > 5.5 min: End
+        return end_h
 
     # Determine Bottom-Stirring Degradation Factor
     stirring_factor = 1.0
@@ -212,13 +295,15 @@ def simulate_blow_path(inp: SimulationInputs) -> SimulationResult:
         stirring_factor = 0.70
 
     # --- Execution Mode ---
-    # If off_gas_correction is False, use standard fast ODE solver (odeint)
-    # If True, use manual stepping with Kalman Filter
-    
     if not inp.off_gas_correction:
+        def wrapper(y, t):
+             lh = get_lance_height(t / 60.0)
+             return calculate_kinetics_derivatives(y, t, bath_weight_kg, mols_o2_per_s, 
+                                                 stirring_factor=stirring_factor,
+                                                 lance_height_mm=lh)
+
         sol = odeint(wrapper, y0, t_eval)
         
-        # ... (standard processing same as before)
         points = []
         tc_crossover_s = None
         
@@ -270,7 +355,10 @@ def simulate_blow_path(inp: SimulationInputs) -> SimulationResult:
             
             # 1. Prediction (Model Step)
             # Use Euler or simple ODE step
-            derivs = calculate_kinetics_derivatives(current_y, t_curr, bath_weight_kg, mols_o2_per_s, stirring_factor=stirring_factor)
+            lh = get_lance_height(t_curr / 60.0)
+            derivs = calculate_kinetics_derivatives(current_y, t_curr, bath_weight_kg, mols_o2_per_s, 
+                                                  stirring_factor=stirring_factor,
+                                                  lance_height_mm=lh)
             # derivs is [dC/dt, dSi/dt, ...] in %/s or similar units? 
             # Check calculate_kinetics_derivatives return:
             # dCdt = ... * 100 (%/s)
