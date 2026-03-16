@@ -117,6 +117,38 @@ const LanceControl: React.FC<Props> = ({ processContext }) => {
 
   const recommendationPath = buildPath();
   const recommendationArea = buildArea();
+  const pickHeightForRange = (rangeStart: number, rangeEnd: number) => {
+    if (steps.length === 0) return null;
+    let best: LanceStep | null = null;
+    let bestOverlap = -1;
+    steps.forEach((step) => {
+      const overlap = Math.min(step.end_min, rangeEnd) - Math.max(step.start_min, rangeStart);
+      if (overlap > bestOverlap) {
+        best = step;
+        bestOverlap = overlap;
+      }
+    });
+    if (!best || bestOverlap <= 0) return null;
+    return best.lance_height_mm;
+  };
+  const phaseHeights = {
+    ignition: pickHeightForRange(0, 0.5),
+    main: pickHeightForRange(0.5, 5.5),
+    end: pickHeightForRange(5.5, totalDuration)
+  };
+  const trendBreakpoints = steps.slice(1).reduce<Array<{ x: number; fromY: number; toY: number; direction: 'up' | 'down' }>>((acc, step, index) => {
+    const prev = steps[index];
+    if (prev.lance_height_mm === step.lance_height_mm) {
+      return acc;
+    }
+    acc.push({
+      x: timeToX(step.start_min),
+      fromY: heightToY(prev.lance_height_mm),
+      toY: heightToY(step.lance_height_mm),
+      direction: step.lance_height_mm > prev.lance_height_mm ? 'up' : 'down'
+    });
+    return acc;
+  }, []);
   const currentHeightY = typeof currentHeight === "number" ? heightToY(currentHeight) : null;
   const targetHeight = steps.length > 0 ? steps[steps.length - 1].lance_height_mm : null;
   const targetHeightY = typeof targetHeight === "number" ? heightToY(targetHeight) : null;
@@ -127,17 +159,49 @@ const LanceControl: React.FC<Props> = ({ processContext }) => {
     if (!nextStep) return 0;
     return Math.max(0, Math.round((nextStep.end_min - processTimeMin) * 60));
   })();
+  const operationHint = typeof remainingSeconds === 'number' && remainingSeconds <= 30
+    ? t('operator_hint_prepare')
+    : t('operator_hint_stable');
+  const heightDeviation = typeof currentHeight === 'number' && typeof targetHeight === 'number'
+    ? currentHeight - targetHeight
+    : null;
+  const immediateAction = heightDeviation === null
+    ? t('adjust_hold_lance')
+    : heightDeviation > 40
+      ? t('adjust_lower_lance')
+      : heightDeviation < -40
+        ? t('adjust_raise_lance')
+        : t('adjust_hold_lance');
+  const adviceToneClass = heightDeviation === null
+    ? 'text-text-secondary border-surface-border/50 bg-surface-dark/50'
+    : Math.abs(heightDeviation) > 60
+      ? 'text-status-alarm border-status-alarm/40 bg-status-alarm/10'
+      : Math.abs(heightDeviation) > 30
+        ? 'text-status-warning border-status-warning/40 bg-status-warning/10'
+        : 'text-status-safe border-status-safe/40 bg-status-safe/10';
 
   return (
     <div className="min-h-[280px] bg-surface-dark/40 border border-surface-border rounded-xl flex flex-col shadow-lg relative overflow-hidden group hover:border-primary/30 transition-all duration-500">
-      <div className="px-4 py-3 border-b border-surface-border/50 flex items-center justify-between bg-surface-dark/60 backdrop-blur-md z-10">
+      <div className="px-4 py-3 border-b border-surface-border/50 flex items-center justify-between bg-surface-dark/60 backdrop-blur-md z-10 gap-2">
         <div className="flex items-center gap-2">
           <div className="size-6 bg-primary/20 rounded flex items-center justify-center border border-primary/30">
             <span className="material-symbols-outlined text-primary text-sm animate-pulse">settings_input_component</span>
           </div>
           <h3 className="text-xs font-bold text-white tracking-widest uppercase">{t('lance_recommendation_title')}</h3>
         </div>
-        <div className="flex gap-4 items-center">
+        <div className="flex gap-2 items-center flex-wrap justify-end">
+          <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-md border bg-primary/10 border-primary/30">
+            <span className="text-[9px] text-primary uppercase tracking-wider font-bold">{t('recommended_mode')}</span>
+            <span className="text-[10px] font-bold text-primary">{recommendation?.mode ?? '--'}</span>
+          </div>
+          <div className="flex items-center gap-1.5 px-2 py-1 rounded-md border bg-surface-dark/80 border-surface-border">
+            <span className="text-[9px] text-text-secondary font-bold">{t('phase_ignition')}</span>
+            <span className="text-[10px] font-mono text-white">{typeof phaseHeights.ignition === 'number' ? Math.round(phaseHeights.ignition) : '--'}mm</span>
+            <span className="text-[9px] text-text-secondary font-bold">{t('phase_main_blow')}</span>
+            <span className="text-[10px] font-mono text-white">{typeof phaseHeights.main === 'number' ? Math.round(phaseHeights.main) : '--'}mm</span>
+            <span className="text-[9px] text-text-secondary font-bold">{t('phase_end_pressing')}</span>
+            <span className="text-[10px] font-mono text-white">{typeof phaseHeights.end === 'number' ? Math.round(phaseHeights.end) : '--'}mm</span>
+          </div>
           <div className="flex items-center gap-1.5">
             <span className="size-2 rounded-full bg-primary shadow-neon-blue"></span>
             <span className="text-[9px] text-text-secondary uppercase tracking-wider font-bold">{t('optimal')}</span>
@@ -151,21 +215,7 @@ const LanceControl: React.FC<Props> = ({ processContext }) => {
       
       <div className="flex flex-1 min-h-0">
         <div className="flex-1 flex flex-col min-h-0">
-          <div className="flex items-start gap-3 px-4 pt-3">
-            <div className="bg-surface-dark/80 backdrop-blur p-2 rounded">
-              <div className="text-[10px] text-text-secondary uppercase">{t('current_height')}</div>
-              <div className="text-xl font-mono font-bold text-white">{currentHeight?.toFixed(0) ?? '--'} <span className="text-xs text-text-secondary">mm</span></div>
-            </div>
-            {recommendation && (
-              <div className="bg-primary/10 backdrop-blur border border-primary/20 p-2 rounded">
-                <div className="text-[10px] text-primary uppercase">{t('recommended_mode')}</div>
-                <div className="text-sm font-bold text-primary">{recommendation.mode}</div>
-                <div className="text-[10px] text-primary/80 mt-1">{recommendation.steps.length} {t('steps')}</div>
-              </div>
-            )}
-          </div>
-
-          <div className="flex-1 relative p-4 pt-2 pl-2">
+          <div className="flex-1 relative p-4 pt-3 pl-2">
           <svg className="w-full h-full overflow-visible" preserveAspectRatio="none" viewBox="0 0 300 150">
             <defs>
               <linearGradient id="optGradient" x1="0%" x2="0%" y1="0%" y2="100%">
@@ -203,7 +253,7 @@ const LanceControl: React.FC<Props> = ({ processContext }) => {
             </g>
             
             {/* Phase labels */}
-            <g className="text-[8px] font-bold fill-white/20 uppercase tracking-widest" transform="translate(0, 148)">
+            <g className="text-[8px] font-bold fill-white/20 uppercase tracking-widest" transform="translate(0, 143)">
               <text textAnchor="start" x="5">{t('phase_ignition')}</text>
               <text textAnchor="middle" x="140">{t('phase_main_blow')}</text>
               <text fill="#f59e0b" fillOpacity="0.6" textAnchor="end" x="295">{t('phase_end_pressing')}</text>
@@ -221,6 +271,32 @@ const LanceControl: React.FC<Props> = ({ processContext }) => {
             ></path>
             
             <path d={recommendationArea} fill="url(#optGradient)"></path>
+            {trendBreakpoints.map((point, index) => (
+              <g key={`trend-${index}`}>
+                <line
+                  x1={point.x}
+                  x2={point.x}
+                  y1={Math.min(point.fromY, point.toY) - 6}
+                  y2={Math.max(point.fromY, point.toY) + 6}
+                  stroke="#60a5fa"
+                  strokeWidth="1.2"
+                  strokeDasharray="2,2"
+                  opacity="0.9"
+                ></line>
+                <circle cx={point.x} cy={point.fromY} fill="#dbeafe" r="2.2"></circle>
+                <circle cx={point.x} cy={point.toY} fill="#137fec" r="3"></circle>
+                <text
+                  x={point.x + 4}
+                  y={(point.fromY + point.toY) / 2 + 2}
+                  fill={point.direction === 'up' ? '#22c55e' : '#f59e0b'}
+                  fontFamily="monospace"
+                  fontSize="9"
+                  fontWeight="700"
+                >
+                  {point.direction === 'up' ? '↑' : '↓'}
+                </text>
+              </g>
+            ))}
             
             {/* Actual Path */}
             {currentHeightY !== null && (
@@ -264,6 +340,18 @@ const LanceControl: React.FC<Props> = ({ processContext }) => {
               <div className="flex items-baseline gap-1.5">
                 <span className="text-2xl font-bold font-mono text-status-warning tracking-tight">{typeof targetHeight === "number" ? Math.round(targetHeight) : "--"}</span>
                 <span className="text-[10px] text-text-secondary font-sans">mm</span>
+              </div>
+            </div>
+            <div className="pt-4 border-t border-surface-border/50">
+              <div className="text-[9px] text-text-secondary uppercase tracking-widest font-bold mb-2">{t('operation_advice')}</div>
+              <div className={`rounded border px-2 py-1 text-[10px] font-bold uppercase tracking-wide ${adviceToneClass}`}>
+                {t('immediate_action')}: {immediateAction}
+              </div>
+              <div className="text-[10px] text-text-secondary mt-2">
+                {t('height_deviation')}: <span className="text-white font-mono">{heightDeviation === null ? '--' : `${heightDeviation > 0 ? '+' : ''}${Math.round(heightDeviation)}mm`}</span>
+              </div>
+              <div className="text-[10px] text-text-secondary mt-1">
+                {t('follow_up_action')}: <span className="text-white">{recommendation?.endgame_action || operationHint}</span>
               </div>
             </div>
           </div>
