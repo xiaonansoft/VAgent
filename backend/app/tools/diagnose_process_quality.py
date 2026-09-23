@@ -44,7 +44,7 @@ def diagnose_process_quality(
                 DiagnoseFinding(
                     title="严重碳氧化导致钒收得率下降",
                     severity="high",
-                    root_cause="熔池温度超过碳钒转化温度 (Tc ~ 1360-1380℃)。\n根据 ΔG-T 图，高温下 C 与 O 亲和力超过 V，导致 C 抢夺 V2O3 中的 O，发生还原反应: 2/3 V2O3 + 2C -> 4/3 V + 2CO。",
+                    root_cause="熔池温度超过碳钒转化温度 (Tc ≈ 1361℃)。\n根据 ΔG-T 图，高温下 C 与 O 亲和力超过 V，导致 C 抢夺 V2O3 中的 O，发生还原反应: 2/3 V2O3 + 2C -> 4/3 V + 2CO。",
                     evidence=[
                         f"终点温度 = {process.final_temp_c}℃ > 1400℃",
                         f"渣中 TFe = {slag.TFe}% (偏低，表明 C 还原了 FeO)"
@@ -124,13 +124,15 @@ def diagnose_process_quality(
     if iron_analysis:
         si_ti_sum = iron_analysis.Si + iron_analysis.Ti
         ratio = iron_analysis.V / si_ti_sum if si_ti_sum > 0 else 99.0
-        if ratio < 1.01:
+        # V/(Si+Ti) 阈值统一为 1.0 (行业基线 quality.v_si_ti_ratio_min, 见 CF-008):
+        # 钒少于脉石(Si+Ti) 即难富集; 建龙生产数据 1.01 已属偏低, 1.2 以上良好。
+        if ratio < 1.0:
             findings.append(
                 DiagnoseFinding(
                     title="原料结构比值失衡 (Raw Material Deficit)",
                     severity="high",
                     root_cause="铁水 V/(Si+Ti) 比值决定了最终渣中 V2O5 的理论极限。Si/Ti 氧化物是主要脉石成分。",
-                    evidence=[f"铁水 V/(Si+Ti) = {ratio:.2f} < 1.01"],
+                    evidence=[f"铁水 V/(Si+Ti) = {ratio:.2f} < 1.0"],
                     recommendation=[
                         "该原料结构属于“极难富集”范畴。建议强制使用氧化铁皮或高钒块矿作为补钒手段。",
                         "严禁在此类工况下使用 SiO2 含量较高的弃渣球作为冷却剂。",

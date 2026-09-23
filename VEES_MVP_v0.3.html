@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VEES 提钒智能体 · 分角色驾驶舱 v0.3</title>
+<style>
+:root{--ink:#141d2b;--ink2:#3d4a5f;--paper:#f5f2ec;--card:#fff;--line:#ddd8ce;
+--molten:#e8590c;--steel:#2b4a6f;--ok:#2b8a3e;--warn:#b54708;--blue:#1971c2;--teal:#0f766e;--danger:#c92a2a}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:"PingFang SC","Hiragino Sans GB","Microsoft YaHei",system-ui,sans-serif;
+  background:var(--paper);color:var(--ink);line-height:1.65;font-size:15px}
+/* 顶栏 */
+.header{background:linear-gradient(120deg,#141d2b,#2b4a6f 55%,#7a431d);color:#fff;padding:20px 28px 14px}
+.header h1{font-size:19px;font-weight:700}
+.header .sub{color:#ffd9b8;font-size:13px;margin-top:3px}
+.header .tags{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.header .b{background:rgba(255,255,255,.13);border:1px solid rgba(255,255,255,.28);padding:2px 11px;border-radius:999px;font-size:12px}
+/* 角色标签页 */
+.tabs{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+.tab{border:1px solid rgba(255,255,255,.3);background:rgba(255,255,255,.08);color:#cfe0ef;
+  padding:7px 16px;border-radius:10px;font-size:13.5px;font-weight:700;cursor:pointer;transition:.15s}
+.tab.on{background:#fff;color:#141d2b;border-color:#fff}
+.tab small{display:block;font-weight:400;font-size:11px;opacity:.7}
+/* 布局 */
+.wrap{max-width:1320px;margin:0 auto;padding:22px 18px 60px;display:grid;gap:16px}
+.view{display:none}
+.view.on{display:block}
+.grid-top{display:grid;grid-template-columns:330px minmax(0,1fr) 400px;gap:16px;align-items:start}
+.grid-bot{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start}
+@media(max-width:1140px){.grid-top{grid-template-columns:1fr}.grid2,.grid-bot{grid-template-columns:1fr}}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px 20px;box-shadow:0 2px 8px rgba(20,29,43,.05)}
+.panel h2{font-size:14.5px;font-weight:700;margin-bottom:12px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.panel h2 .hint{font-weight:400;font-size:11.5px;color:#8a94a6;margin-left:auto;text-align:right}
+label{display:block;font-size:12.5px;color:#3d4a5f;margin:12px 0 3px}
+label b{color:#141d2b}
+input[type=range]{width:100%;accent-color:var(--molten);height:22px}
+.val{float:right;font-variant-numeric:tabular-nums;color:var(--molten);font-weight:700;font-size:16px}
+.radios{display:flex;gap:8px;margin-top:5px}
+.radios label{margin:0;cursor:pointer;border:1px solid var(--line);border-radius:10px;padding:8px 6px;font-size:12.5px;flex:1;text-align:center;background:#faf8f4;color:#3d4a5f}
+.radios input{accent-color:var(--molten);margin-right:4px}
+.radios .on{border-color:var(--molten);background:#fff4e6;color:#d9480f;font-weight:700}
+/* KPI */
+.kpis{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.kpi{background:#fbfaf7;border:1px solid var(--line);border-radius:12px;padding:12px 14px}
+.kpi.hl{background:linear-gradient(135deg,#fff8ef,#fff1e0);border-color:#f3c89e}
+.kpi .l{font-size:12px;color:#8a94a6}
+.kpi .l .tip{font-weight:400;color:#b0b7c3}
+.kpi .v{font-size:22px;font-weight:800;font-variant-numeric:tabular-nums;color:#141d2b;line-height:1.25}
+.kpi.hl .v{font-size:34px;color:#d9480f}
+.kpi .v small{font-size:12px;font-weight:500;color:#8a94a6;margin-left:3px}
+.kpi .u{font-size:11.5px;color:#8a94a6;margin-top:1px}
+.badge{display:inline-block;font-size:11px;font-weight:700;padding:2px 10px;border-radius:999px;white-space:nowrap}
+.b-g{background:#d3f9d8;color:#2b8a3e}.b-y{background:#fff3bf;color:#b54708}.b-r{background:#ffe3e3;color:#c92a2a}
+.say{background:#fff4e6;border:1px solid #f3c89e;border-radius:10px;padding:11px 13px;font-size:14px;color:#7c2d12;font-weight:600}
+.explain{background:#fbfaf8;border:1px dashed var(--line);border-radius:12px;padding:11px 13px;font-size:13.5px;color:#3d4a5f}
+.explain div{margin:4px 0}
+.explain .hl-k{color:#1971c2;font-weight:700}
+.note{font-size:12px;color:#8a94a6}
+table.tb{font-size:13px;border-collapse:collapse;width:100%}
+.tb th,.tb td{border:1px solid var(--line);padding:5px 8px;text-align:center;font-variant-numeric:tabular-nums}
+.tb th{background:#f1ede4;font-weight:600}
+details{margin-top:10px}details summary{cursor:pointer;font-size:13px;color:var(--blue,#1971c2);font-weight:600}
+table.gold{font-size:12px;border-collapse:collapse;width:100%}
+.gold td,.gold th{border:1px solid #ece8df;padding:3px 8px;font-variant-numeric:tabular-nums}
+.gold th{background:#f4f1ea}
+.legend{display:flex;gap:16px;font-size:12px;color:#5f6773;margin-top:4px;flex-wrap:wrap}
+/* 治理台静态卡 */
+.gov{border:1px dashed var(--line);border-radius:12px;padding:14px 16px;background:#f7f6f2}
+.gov h3{font-size:13.5px;font-weight:700;margin-bottom:6px;color:#5f5e5a}
+.gov .mono{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px;color:#444}
+footer{margin-top:26px;padding:16px 28px;background:#141d2b;color:#93a2b8;font-size:12px;display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
+</style>
+</head>
+<body>
+
+<header class="header">
+  <h1>提钒冶炼智能体 · 分角色驾驶舱 <span style="font-weight:400;opacity:.65">v0.3</span></h1>
+  <div class="sub">攀钢「四大平衡」机理引擎 · 黄金回归对照 Excel 703 公式 · 同一引擎，三层角色视图</div>
+  <div class="tabs" id="tabs">
+    <button class="tab on" data-v="furnace">炉长驾驶舱<small>生产 · 10 秒读配吃</small></button>
+    <button class="tab" data-v="process">工艺工作台<small>工艺专家 · 复核仲裁</small></button>
+    <button class="tab" data-v="data">数据治理台<small>数据专家 · 引擎与接口</small></button>
+  </div>
+</header>
+
+<div class="wrap">
+
+<!-- ================= 炉长驾驶舱 ================= -->
+<div class="view on" id="view-furnace">
+  <div class="grid-top">
+    <!-- 01 输入 -->
+    <div class="panel">
+      <h2><span style="background:var(--steel);color:#fff;font-size:11px;border-radius:6px;padding:1px 8px">01</span>开吹条件 <span class="hint">按化验单填写</span></h2>
+      <label><b>铁水装入量</b><span class="val" id="vW"></span></label>
+      <input type="range" id="inW" min="60000" max="120000" step="1000" value="80000">
+      <label><b>铁水 Si 含量</b><span class="val" id="vSi"></span></label>
+      <input type="range" id="inSi" min="0.10" max="0.30" step="0.005" value="0.215">
+      <label><b>铁水 V 含量</b><span class="val" id="vV"></span></label>
+      <input type="range" id="inV" min="0.20" max="0.36" step="0.005" value="0.284">
+      <label><b>铁水温度</b><span class="val" id="vT"></span></label>
+      <input type="range" id="inT" min="1250" max="1350" step="5" value="1300">
+      <fieldset style="border:none;margin-top:16px">
+        <legend style="font-size:12.5px"><b>口径选择</b><span style="font-weight:400;color:#8a94a6">（V 氧化反应热 · 专家审定中）</span></legend>
+        <div class="radios">
+          <label class="on" id="lb2777"><input type="radio" name="dh" value="2777" checked>经验口径 · 攀钢<br><b>2777 kJ/kg</b></label>
+          <label id="lb15000"><input type="radio" name="dh" value="15000">文献口径 · 热力学<br><b>15000 kJ/kg</b></label>
+        </div>
+      </fieldset>
+    </div>
+
+    <!-- 02 配吃 KPI -->
+    <div style="display:grid;gap:16px;align-content:start">
+      <div class="panel">
+        <h2><span style="background:var(--molten);color:#fff;font-size:11px;border-radius:6px;padding:1px 8px">02</span>本炉配吃建议
+          <span class="hint">依据：pangang/base.yaml v1.0.0（试用）</span>
+          <span class="badge b-g" id="confBadge">绿灯</span></h2>
+        <div class="kpis">
+          <div class="kpi hl"><div class="l">冷却剂配吃量 · 球团（t）<span class="tip"> 现场称「球返」</span></div><div class="v" id="kPel">--</div><div class="u">配吃量 = 富余热量 ÷ 单位吸热</div></div>
+          <div class="kpi hl"><div class="l">预测精钒渣 V₂O₅ 品位（%）</div><div class="v" id="kGr">--</div><div class="u">预算目标 ≥ 14.0</div></div>
+          <div class="kpi"><div class="l">热量富余（MJ）</div><div class="v" id="kSur">--</div><div class="u">配吃前静态测算</div></div>
+          <div class="kpi"><div class="l">预计终态渣量（t）</div><div class="v" id="kSlg">--</div><div class="u">含配吃带入与铁水带渣</div></div>
+          <div class="kpi"><div class="l">预计半钢量（t）</div><div class="v" id="kSt">--</div><div class="u">按终点 1370 ℃ 计</div></div>
+          <div class="kpi"><div class="l">物料收支校验（%）</div><div class="v" id="kBal">--</div><div class="u" id="kBal2">守恒校验之一</div></div>
+        </div>
+        <div class="say" id="confOne" style="margin-top:12px"></div>
+      </div>
+
+      <!-- 07 精简判例 -->
+      <div class="panel">
+        <h2><span style="background:var(--steel);color:#fff;font-size:11px;border-radius:6px;padding:1px 8px">07</span>相似炉次判例 <span class="hint">数值越小越相似</span></h2>
+        <div id="simC"></div>
+      </div>
+    </div>
+
+    <!-- 引导 -->
+    <div style="display:grid;gap:16px;align-content:start">
+      <div class="panel" style="background:#fbfaf8">
+        <h2><span style="background:var(--steel);color:#fff;font-size:11px;border-radius:6px;padding:1px 8px">如何用</span>炉长驾驶舱</h2>
+        <div class="explain">
+          <div>1. 按化验单拨动左侧四个滑杆（也可由 PLC/化验室自动带入）。</div>
+          <div>2. 看右侧<b style="color:#d9480f">两个大数字</b>：配吃量 + 品位预测。</div>
+          <div>3. 看<b>红黄绿灯</b>：绿灯正常照做，黄灯按预案并记例外。</div>
+          <div class="note" style="margin-top:6px">双口径仲裁、敏感性曲线、黄金回归等专家级信息已移入「工艺工作台 / 数据治理台」，不再干扰读配吃。</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ================= 工艺工作台 ================= -->
+<div class="view" id="view-process">
+  <div class="grid2">
+    <div style="display:grid;gap:16px;align-content:start">
+      <div class="panel">
+        <h2><span style="background:var(--steel);color:#fff;font-size:11px;border-radius:6px;padding:1px 8px">03</span>敏感性分析 <span class="hint">铁水 Si 含量 → 精钒渣品位</span></h2>
+        <div id="sweep"></div>
+        <div class="legend"><span>— 当前口径下的机理预测</span><span style="color:#1971c2">┃ 当前铁水条件</span>
+          <span class="note">曲线下行段即「硅稀释」敏感区：Si 每升 0.01%，品位约降 0.2–0.3pp</span></div>
+      </div>
+      <div class="panel">
+        <h2><span style="background:var(--steel);color:#fff;font-size:11px;border-radius:6px;padding:1px 8px">04</span>解释卡（为何如此推荐）</h2>
+        <div class="explain" id="explain"></div>
+      </div>
+    </div>
+    <div style="display:grid;gap:16px;align-content:start">
+      <div class="panel">
+        <h2><span style="background:var(--steel);color:#fff;font-size:11px;border-radius:6px;padding:1px 8px">05</span>V 氧化反应热 · 双口径对照 <span class="hint">16 炉实绩为证 · 专家审定中</span></h2>
+        <table class="tb" id="arb"></table>
+        <div class="explain" id="arbnote" style="margin-top:8px"></div>
+      </div>
+      <div class="panel">
+        <h2><span style="background:var(--steel);color:#fff;font-size:11px;border-radius:6px;padding:1px 8px">06</span>生产实绩回放（最近 16 日）</h2>
+        <div id="replay"></div>
+      </div>
+      <div class="panel">
+        <h2><span style="background:var(--steel);color:#fff;font-size:11px;border-radius:6px;padding:1px 8px">07</span>判例库（相似炉次全量）</h2>
+        <div id="sim"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ================= 数据治理台 ================= -->
+<div class="view" id="view-data">
+  <div class="grid2">
+    <div style="display:grid;gap:16px;align-content:start">
+      <div class="panel">
+        <h2><span style="background:var(--steel);color:#fff;font-size:11px;border-radius:6px;padding:1px 8px">A</span>黄金回归自检 <span class="hint">JS 引擎 vs 攀钢 Excel 基准</span></h2>
+        <div id="goldbox"></div>
+      </div>
+      <div class="gov">
+        <h3>知识包溯源（pangang/base.yaml）</h3>
+        <div class="mono">v1.0.0（试用）· 31 类参数 → 攀钢 Excel 单元格<br>状态：draft 待专家批准 · 与 pangang_reference.py 一致性由 pangang_pack.py 校验</div>
+      </div>
+    </div>
+    <div style="display:grid;gap:16px;align-content:start">
+      <div class="panel">
+        <h2><span style="background:var(--steel);color:#fff;font-size:11px;border-radius:6px;padding:1px 8px">B</span>计算留痕 <span class="hint">本地无网络请求，可复制导出</span></h2>
+        <div class="explain" id="trace"></div>
+      </div>
+      <div class="gov">
+        <h3>P3 数据接口规范 <span class="badge b-y">待建 · HANDOVER D6</span></h3>
+        <div class="mono">TSC/TSO · 烟气 CO/CO₂/流量 · 氧枪/枪位 · 炉后台账<br>字段/频率/网络边界 → 见 docs/DATA_INTERFACE_SPEC.md</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</div>
+
+<footer style="display:flex;flex-wrap:wrap;gap:10px">
+  <span>VEES MVP v0.3 · 引擎移植自 pangang_reference.py（Python 侧 75/75 黄金回归全绿）· 分角色视图，v0.2 验收基线保留</span>
+  <span class="glossary">术语：配吃=冷料加入 · 球返=球团矿返矿 · 品位=V₂O₅ 质量分数 · 富余=热量富余 · 留痕=全量计算记录</span>
+</footer>
+
+<script>
+"use strict";
+/* ============ 攀钢四大平衡引擎（JS 同源移植自 pangang_reference.py，与 v0.2 完全一致） ============ */
+const K={cF:1.157,hmSlag:5e-4,co:.90,co2:.10,feo:.42,feOx2:.03,beads:.10,spit:.003,
+ dust:.002,dFeo:.70,dFeOx2:.20,liningR:17e-5,
+ Lin:{CaO:.02,SiO2:.02,MgO:.81,Al2O3:.01,C:.14},fO2:.005,pur:.998,
+ cpI:{cs:.745,L:218,cl:.837},cpS:{cs:.699,L:272,cl:.837},cpSl:{cl:1.247,L:209},
+ gasCp:1.141,dustCp:{cl:.996,L:209},
+ dSi:29177,dMn:6593,dTi:29177/1.89*1.38,dP:18980,dcCO:11637,dcCO2:34824,
+ dFeFeO:4249,dFeFe2O3:6459,dCr:7598,dSiO2:1620,
+ gasT:1450,spitT:1600,slagD:20,othL:.04,amb:25,
+ fFeO:56/72,fFe2O3:112/160,v2o5pV:182/102};
+const COOL={pellet:{fe2o3:.8797142857142858,sio2:.0326,v2o5:.00451},
+ metalFe:{fe2o3:.7714285714285715,sio2:.164,v2o5:.0045,metallic:true,absFixed:1111.2042634879963},
+ ore:{fe2o3:.9714285714285715,sio2:.0326,v2o5:1e-5},
+ waste:{fe2o3:.8797142857142858,sio2:.0326,v2o5:.0046,noDil:true}};
+const EP={C:3.485,Si:.006,Mn:.02,P:.12225,S:.0708828522920203,V:.025,Cr:.02,Ti:.00833024691358023};
+
+function ironFrz(C,Si,Mn,P,S){return 1535-(C*100+Si*8+Mn*5+P*30+S*25)-7;}
+function steelFrz(){return 1535-(EP.C*65+EP.Si*8+EP.Mn*5+EP.P*30+EP.S*25)-7;}
+
+function runModel(inp){
+  const W=inp.W,dHV=inp.dhV;
+  const fc=inp.C*K.cF;
+  const ox={C:fc-EP.C,Si:inp.Si-EP.Si,Mn:.18-EP.Mn,P:.132572156196944-EP.P,S:0,
+            V:inp.V-EP.V,Cr:.09-EP.Cr,Ti:(inp.Ti!=null?inp.Ti:.11)-EP.Ti};
+  const om={Si:ox.Si*W/100,Mn:ox.Mn*W/100,Ti:ox.Ti*W/100,Cr:ox.Cr*W/100,V:ox.V*W/100,P:ox.P*W/100,
+            cCO:.9*ox.C*W/100,cCO2:.1*ox.C*W/100};
+  const pr={SiO2:om.Si*60/28,MnO:om.Mn*71/55,TiO2:om.Ti*80/48,Cr2O3:om.Cr*150/102,
+            V2O5:om.V*182/102,P2O5:om.P*142/62,CO:om.cCO*28/12,CO2:om.cCO2*44/12};
+  let o2={Si:om.Si*32/28,Mn:om.Mn*16/55,Ti:om.Ti*32/48,Cr:om.Cr*48/102,V:om.V*80/102,P:om.P*80/62,
+          cCO:om.cCO*16/12,cCO2:om.cCO2*32/12};
+  const lin=K.liningR*W;
+  const lSiO2=lin*K.Lin.SiO2,lCaO=lin*K.Lin.CaO,lMgO=lin*K.Lin.MgO,lAl=lin*K.Lin.Al2O3;
+  const nonFe=pr.V2O5+pr.TiO2+pr.Cr2O3+pr.SiO2+lSiO2+pr.P2O5+pr.MnO+lCaO+lMgO+lAl;
+  const slg=nonFe/(1-K.feo-K.feOx2);
+  const oxFeO=slg*K.feo*K.fFeO, oxFe2=slg*K.feOx2*K.fFe2O3;
+  o2.Fe1=oxFeO*16/56; o2.Fe2=oxFe2*48/112;
+  const oxTot=om.Si+om.Mn+om.Ti+om.Cr+om.V+om.P+om.cCO+om.cCO2+oxFeO+oxFe2;
+  const o2Tot=o2.Si+o2.Mn+o2.Ti+o2.Cr+o2.V+o2.P+o2.cCO+o2.cCO2+o2.Fe1+o2.Fe2;
+  const dust=K.dust*W;
+  const dustO2=dust*K.dFeo*16/72+dust*K.dFeOx2*48/160;
+  const dustFe=dust*K.dFeo*K.fFeO+dust*K.dFeOx2*K.fFe2O3;
+  const lCO=lin*K.Lin.C*K.co*28/12, lCO2=lin*K.Lin.C*K.co2*44/12;
+  const lO2=lCO*16/28+lCO2*32/44;
+  const co=pr.CO+lCO, co2=pr.CO2+lCO2;
+  const vCO=co*22.4/28, vCO2=co2*22.4/44;
+  const rhs1=(vCO+vCO2)*K.fO2*100, rhs2=(o2Tot+dustO2+lO2)*22.4/32*(1-K.pur)*100;
+  const vO2=(rhs1*99.8-.5*rhs2)/(99.5*99.8-.5*.2), vN2=(99.5*rhs2-.2*rhs1)/(99.5*99.8-.5*.2);
+  const o2fM=vO2*32/22.4, n2M=vN2*28/22.4;
+  const o2kg=o2Tot+dustO2+o2fM+n2M+lO2;
+  const beads=slg*K.beads, spit=K.spit*W;
+  const steel=W-(oxTot+dustFe+beads+spit);
+  const gasMass=co+co2+o2fM+n2M;
+  const income=W+lin+o2kg, outlay=steel+slg+gasMass+dust+beads+spit;
+  const balPct=(income-outlay)/outlay;
+
+  const tI=ironFrz(fc,inp.Si,.18,.132572156196944,.0708828522920203), tS=steelFrz();
+  const hIron=W*(K.cpI.cs*(tI-K.amb)+K.cpI.L+K.cpI.cl*(inp.T-tI));
+  const hEl=om.Si*K.dSi+om.Mn*K.dMn+om.Ti*K.dTi+om.Cr*K.dCr+om.V*dHV+om.P*K.dP+
+            om.cCO*K.dcCO+om.cCO2*K.dcCO2+oxFeO*K.dFeFeO+oxFe2*K.dFeFe2O3+(pr.SiO2+lSiO2)*K.dSiO2;
+  const hDust=dust*K.dFeo*K.fFeO*K.dFeFeO+dust*K.dFeOx2*K.fFe2O3*K.dFeFe2O3;
+  const hLinC=lCO*(12/28)*K.dcCO+lCO2*(12/44)*K.dcCO2;
+  const income2=hIron+hEl+hDust+hLinC;
+  const hSteel=steel*(K.cpS.cs*(tS-K.amb)+K.cpS.L+K.cpS.cl*(1370-tS));
+  const hSlag=slg*(K.cpSl.cl*(1370-20-K.amb)+K.cpSl.L);
+  const hGas=gasMass*K.gasCp*(K.gasT-K.amb);
+  const hDustP=dust*(K.dustCp.cl*(K.gasT-K.amb)+K.dustCp.L);
+  const beadF=K.cpS.cs*(tS-K.amb)+K.cpS.L+K.cpS.cl*(1370-20-tS);
+  const hBeads=beads*beadF;
+  const hSpit=spit*(K.cpS.cs*(tS-K.amb)+K.cpS.L+K.cpS.cl*(1600-tS));
+  const hOther=income2*K.othL;
+  const surplus=income2-(hSteel+hSlag+hGas+hDustP+hBeads+hSpit+hOther);
+
+  const pc=COOL.pellet;
+  const sUp=(1-pc.fe2o3)/(1-K.feo-K.feOx2);
+  const bUp=sUp*K.beads;
+  const steelUp=pc.fe2o3*K.fFe2O3-bUp-sUp*(K.feo*K.fFeO+K.feOx2*K.fFe2O3);
+  const o2Down=(pc.fe2o3*48/160-sUp*(K.feo*16/72+K.feOx2*48/160))/K.pur;
+  const stkK=K.cpS.cs*(tS-K.amb)+K.cpS.L+K.cpS.cl*(1370-tS);
+  const slgK=K.cpSl.cl*(1370-20-K.amb)+K.cpSl.L;
+  const hIn=sUp*(K.dFeFeO*K.feo*K.fFeO+K.dFeFe2O3*K.feOx2*K.fFe2O3)+pc.sio2*K.dSiO2;
+  const hOut=steelUp*stkK+sUp*slgK+bUp*beadF+pc.fe2o3*K.fFe2O3*K.dFeFe2O3+hIn*K.othL;
+  const pl=surplus/(hOut-hIn);
+  const steel2=steel+steelUp*pl, slg2=slg+sUp*pl, beads2=beads+bUp*pl;
+  const den=W*K.hmSlag+slg2;
+  const grade=(pr.V2O5+pl*(pc.v2o5-EP.V*K.v2o5pV/100))/den*100;
+  return {W,fc,Si:inp.Si,V:inp.V,T:inp.T,dhV:inp.dhV,pr,slg,steel,steel2,slg2,beads2,spit,
+          o2kg,o2vol:0,income,outlay,balPct,tI,tS,surplus,pl,grade,beadF,gasMass,absU:hOut-hIn};
+}
+/* ============ 引擎结束 ============ */
+</script>
+
+<script>
+"use strict";
+/* ============ 应用层（分角色渲染，引擎与 v0.2 一致） ============ */
+const HEATS=[
+ {day:1,si:.19, v:.319,rough:14.47,fine:14.06},{day:2,si:.152,v:.325,rough:14.41,fine:13.25},
+ {day:3,si:.154,v:.323,rough:15.11,fine:13.59},{day:4,si:.14, v:.329,rough:14.05,fine:13.67},
+ {day:5,si:.172,v:.332,rough:14.17,fine:13.64},{day:6,si:.142,v:.33, rough:15.85,fine:13.91},
+ {day:7,si:.138,v:.333,rough:14.59,fine:14.24},{day:8,si:.135,v:.319,rough:null, fine:14.19},
+ {day:9,si:.128,v:.331,rough:14.68,fine:14.59},{day:10,si:.125,v:.298,rough:14.92,fine:13.90},
+ {day:11,si:.195,v:.294,rough:13.41,fine:13.28},{day:12,si:.192,v:.284,rough:14.03,fine:13.21},
+ {day:13,si:.144,v:.286,rough:13.06,fine:12.72},{day:14,si:.266,v:.299,rough:12.24,fine:13.59},
+ {day:15,si:.251,v:.287,rough:13.48,fine:14.70},{day:16,si:.13, v:.288,rough:14.27,fine:12.61}];
+const $=id=>document.getElementById(id);
+const fmt=(v,d=2)=>Number(v).toLocaleString("en-US",{minimumFractionDigits:d,maximumFractionDigits:d});
+function readInput(){
+  return {W:+$("inW").value, Si:+$("inSi").value, V:+$("inV").value, T:+$("inT").value,
+          C:4.3, dhV:+(document.querySelector("input[name=dh]:checked").value)};
+}
+function nearH(Si,V){
+  return HEATS.map(h=>({h,d:2*Math.abs(h.si-Si)+Math.abs(h.v-V)}))
+              .sort((a,b)=>a.d-b.d).slice(0,4);
+}
+function rmse(dh){
+  const inp=readInput(); inp.dhV=dh;
+  let se=0,n=0;
+  HEATS.forEach(h=>{const g=runModel(Object.assign({},inp,{W:80000,T:1300,Si:h.si,V:h.v})).grade;
+    se+=(g-h.fine)*(g-h.fine);n++;});
+  return Math.sqrt(se/n);
+}
+function update(){
+  const inp=readInput(); const r=runModel(inp);
+  $("vW").textContent=fmt(inp.W/1000,1)+" t";
+  $("vSi").textContent=inp.Si.toFixed(3)+" %";
+  $("vV").textContent=inp.V.toFixed(3)+" %";
+  $("vT").textContent=inp.T+" ℃";
+  $("kPel").innerHTML=fmt(r.pl/1000,2)+"";
+  $("kGr").innerHTML=fmt(r.grade,2)+"";
+  $("kSur").innerHTML=fmt(r.surplus/1e6,1)+"";
+  $("kSlg").innerHTML=fmt(r.slg2/1000,2)+"";
+  $("kSt").innerHTML=fmt(r.steel2/1000,1)+"";
+  $("kBal").innerHTML=(r.balPct*100).toFixed(4)+"";
+  const risky=inp.Si>0.25||inp.V<0.27;
+  const cb=$("confBadge");
+  cb.className="badge "+(risky?"b-y":"b-g");
+  cb.textContent=risky?"黄灯：参数逼近适用边界":"绿灯：参数处于常用区间";
+  $("confOne").innerHTML=(risky?
+    "建议配吃 <b>"+fmt(r.pl/1000,2)+" t</b> 球团，预测品位 <b>"+fmt(r.grade,2)+"%</b>。参数逼近适用边界，建议对照高硅预案并按例外流程记录本炉。":
+    "建议配吃 <b>"+fmt(r.pl/1000,2)+" t</b> 球团，预测品位 <b>"+fmt(r.grade,2)+"%</b>，落在常用区间，照单执行。");
+  $("explain").innerHTML=
+    "<div>🧭 知识口径：pangang/base.yaml v1.0.0（试用）· 31 类参数溯源至攀钢 Excel 单元格</div>"+
+    "<div>⚙️ 机理依据：四大平衡全链路，物料收支校验差 <b>"+(r.balPct*100).toFixed(4)+"%</b>（≤0.05% 为通过）</div>"+
+    "<div>📘 相似炉次判例："+nearH(inp.Si,inp.V).map(x=>"第"+x.h.day+"日（Si "+x.h.si.toFixed(2)+"/V "+x.h.v.toFixed(2)+"，实绩精渣 "+x.h.fine+"%）").join("；")+"</div>"+
+    (risky?"<div style='margin-top:6px'><span class='badge b-y'>建议对照高硅预案，并按例外流程记录本炉</span></div>":"");
+  drawSweep(inp,r.grade);
+  arb(inp,r);
+  drawReplay(inp);
+  simTB(inp);
+  simCompact(inp);
+  traceTB(inp);
+  goldTB();
+}
+function simCompact(inp){
+  const top=nearH(inp.Si,inp.V).slice(0,2);
+  let s="<table class='tb'><tr><th>炉次</th><th>Si %</th><th>V %</th><th>实测精渣品位 %</th><th>相似度</th></tr>";
+  top.forEach(x=>{s+="<tr><td><b>第 "+x.h.day+" 日</b></td><td>"+x.h.si.toFixed(2)+"</td><td>"+x.h.v.toFixed(2)+
+     "</td><td>"+x.h.fine+"</td><td>"+x.d.toFixed(3)+"</td></tr>"});
+  s+="</table><div class='note' style='margin-top:4px'>更多判例与留痕见「工艺工作台 / 数据治理台」。</div>";
+  $("simC").innerHTML=s;
+}
+function simTB(inp){
+  let s="<tr><th>炉次</th><th>Si %</th><th>V %</th><th>实测粗渣品位 %</th><th>实测精渣品位 %</th><th>相似度*</th></tr>";
+  nearH(inp.Si,inp.V).forEach(x=>{
+    s+="<tr><td><b>第 "+x.h.day+" 日</b></td><td>"+x.h.si.toFixed(2)+"</td><td>"+x.h.v.toFixed(2)+
+       "</td><td>"+(x.h.rough!=null?x.h.rough:"未取样")+"</td><td>"+(x.h.fine!=null?x.h.fine:"—")+"</td><td>"+x.d.toFixed(3)+"</td></tr>"});
+  s+="</table><div class='note' style='margin-top:4px'>* 相似度 = 2×|ΔSi|+|ΔV|，数值越小越相似；判例库 P3 接入全量炉次台账。</div>";
+  $("sim").innerHTML=s;
+}
+function arb(inp,r){
+  const other=inp.dhV===2777?15000:2777;
+  const alt=runModel(Object.assign({},inp,{dhV:other}));
+  let s="<tr><th></th><th>经验口径 · 攀钢<br>2777 kJ/kg</th><th>文献口径 · 热力学<br>15000 kJ/kg</th></tr>";
+  s+="<tr><td><b>冷却剂配吃量</b></td><td>"+fmt(inp.dhV===2777?r.pl/1000:alt.pl/1000,2)+" t</td><td>"+fmt(inp.dhV===15000?r.pl/1000:alt.pl/1000,2)+" t</td></tr>";
+  s+="<tr><td><b>预测品位</b></td><td>"+fmt(inp.dhV===2777?r.grade:alt.grade,2)+"%</td><td>"+fmt(inp.dhV===15000?r.grade:alt.grade,2)+"%</td></tr>";
+  s+="<tr><td><b>热量富余</b></td><td>"+fmt((inp.dhV===2777?r:alt).surplus/1e6,1)+" MJ</td><td>"+fmt((inp.dhV===15000?r:alt).surplus/1e6,1)+" MJ</td></tr>";
+  $("arb").innerHTML=s;
+  $("arbnote").innerHTML="📊 证据（16 日回放·精渣）：攀钢口径 2777 → "+fmt(rmse(2777),3)+"；文献 15000 → "+fmt(rmse(15000),3)+
+   "（均方根误差 RMSE，越小越贴近实绩）。系统只呈证据，不代裁决：[采用 A] [采用 B] [本炉例外] [挂起待议] 由专家决断，结果记入判例库。";
+}
+function drawSweep(inp,cur){
+  const pts=[];for(let v=.10;v<=.3001;v+=.01){const i2=Object.assign({},inp,{Si:v});pts.push([v,runModel(i2).grade]);}
+  const Wd=580,Ht=225,L=46,R=14,Tt=12,pb=30;
+  const x=v=>L+(v-.10)/.2*(Wd-L-R);
+  const yy=g=>pb-(Math.min(Math.max(g,11),18)-11)/7*(Ht-Tt-pb);
+  let s="<svg width='100%' viewBox='0 0 "+Wd+" "+Ht+"' style='display:block'>"+
+    "<line x1='"+L+"' y1='"+pb+"' x2='"+(Wd-R)+"' y2='"+pb+"' stroke='#ccc'/>"+
+    "<line x1='"+L+"' y1='"+Tt+"' x2='"+L+"' y2='"+pb+"' stroke='#ccc'/>";
+  for(let g=12;g<=18;g+=2){s+="<text x='"+(L-7)+"' y='"+(yy(g)+4)+"' text-anchor='end' font-size='10' fill='#999'>"+g+"</text>"+
+    "<line x1='"+L+"' y1='"+yy(g)+"' x2='"+(Wd-R)+"' y2='"+yy(g)+"' stroke='#ece9e1'/>";}
+  for(let v=.1;v<=.3001;v+=.05)s+="<text x='"+x(v)+"' y='"+(Ht-9)+"' font-size='10' fill='#999' text-anchor='middle'>"+v.toFixed(2)+"</text>";
+  s+="<path d='"+pts.map((p,i)=>(i?"L":"M")+x(p[0]).toFixed(1)+","+yy(p[1]).toFixed(1)).join("")+"' fill='none' stroke='#e8590c' stroke-width='2'/>";
+  const cx=x(inp.Si),cy=yy(cur);
+  s+="<line x1='"+cx+"' y1='"+Tt+"' x2='"+cx+"' y2='"+pb+"' stroke='#1971c2' stroke-dasharray='3 3'/>"+
+     "<circle cx='"+cx+"' cy='"+yy(cur)+"' r='5' fill='#1971c2'/>"+
+     "<text x='"+cx+"' y='"+(yy(cur)-10)+"' font-size='11' fill='#1971c2' text-anchor='middle'>当前 Si → "+fmt(cur,2)+"%</text>";
+  s+="</svg>";
+  $("sweep").innerHTML=s;
+}
+function drawReplay(inp){
+  const Wd=580,Ht=225,L=46,R=14,Tt=12,pb=30;
+  const x=i=>L+i*(Wd-L-R)/15;
+  const yy=g=>pb-(Math.min(g,18)-11)/7*(Ht-Tt-pb);
+  const preds=HEATS.map(h=>runModel(Object.assign({},inp,{W:80000,T:1300,Si:h.si,V:h.v})).grade);
+  let s="<svg width='100%' viewBox='0 0 "+Wd+" "+Ht+"' style='display:block'>";
+  s+="<line x1='"+L+"' y1='"+pb+"' x2='"+(Wd-R)+"' y2='"+pb+"' stroke='#ccc'/><line x1='"+L+"' y1='"+Tt+"' x2='"+L+"' y2='"+pb+"' stroke='#ccc'/>";
+  for(let g=12;g<=18;g+=2){s+="<text x='"+(L-7)+"' y='"+(yy(g)+4)+"' text-anchor='end' font-size='10' fill='#999'>"+g+"</text>"+
+    "<line x1='"+L+"' y1='"+yy(g)+"' x2='"+(Wd-R)+"' y2='"+yy(g)+"' stroke='#ece9e1'/>";}
+  s+="<path d='"+preds.map((g,i)=>(i?"L":"M")+x(i).toFixed(1)+","+yy(g).toFixed(1)).join("")+"' fill='none' stroke='#2b4a6f' stroke-width='2'/>";
+  HEATS.forEach((h,i)=>{
+    if(h.rough!=null)s+="<circle cx='"+x(i).toFixed(1)+"' cy='"+yy(h.rough).toFixed(1)+"' r='3.5' fill='#e8590c'><title>第"+h.day+"日 粗渣实测 "+h.rough+"% ｜ 预测 "+fmt(preds[i],2)+"%</title></circle>";});
+  HEATS.forEach((h,i)=>{s+="<circle cx='"+x(i).toFixed(1)+"' cy='"+yy(h.fine).toFixed(1)+"' r='3' fill='#2b8a3e'><title>第"+h.day+"日 精渣实测 "+h.fine+"% ｜ 预测 "+fmt(preds[i],2)+"%</title></circle>";});
+  for(let d=4;d<=16;d+=4)s+="<text x='"+x(d-1)+"' y='"+(Ht-9)+"' font-size='10' fill='#999' text-anchor='middle'>第"+d+"日</text>";
+  s+="</svg><div class='legend'><span><span style='color:#2b4a6f;font-weight:700'>—</span> 机理预测</span>"+
+     "<span><span style='color:#e8590c'>●</span> 粗渣实测（装车样）</span><span><span style='color:#2b8a3e'>●</span> 精渣实测</span></div>";
+  const rm=t=>{let se=0,n=0;HEATS.forEach((h,i)=>{if(h[t]!=null){const e=preds[i]-h[t];se+=e*e;n++;}});return Math.sqrt(se/n)};
+  s+="<div class='note' style='margin-top:6px'>均方根误差（RMSE，当前口径）：粗渣 <b>"+fmt(rm("rough"),3)+"</b>　精渣 <b>"+fmt(rm("fine"),3)+"</b>　<span class='note'>对照 Python 基准脚本结果一致</span></div>";
+  $("replay").innerHTML=s;
+}
+function goldTB(){
+  const r=runModel({W:80000,Si:.215,V:.284,T:1300,C:4.3,dhV:2777});
+  const cmp=[["铁水 C 修正值 %",r.fc,4.9751],["炉渣总量 kg",r.slg,2075.9151777],["钢水量 kg",r.steel,76881.0973],
+   ["实际氧耗 kg",r.o2kg,2500.4605],["铁水凝固点 ℃",r.tI,1022.1208],["钢水凝固点 ℃",r.tS,1295.8874],
+   ["热量富余 kJ",r.surplus,16495062.03],["球团配吃 kg",r.pl,3529.5978],["冷料后钢水 kg",r.steel2,78709.0574],
+   ["预测品位 %",r.grade,13.2989651],["物料差 %",r.balPct*100,-0.0194]];
+  let bad=0,html="<table class='gold'><tr><th>检查项</th><th>浏览器内引擎</th><th>Excel/Python 基准</th><th>相对误差</th></tr>";
+  cmp.forEach(c=>{const a=c[1],e=c[2];const err=Math.abs(a-e)/Math.abs(e);const p=err<1e-4;if(!p)bad++;
+    html+="<tr><td>"+c[0]+"</td><td>"+fmt(a,4)+"</td><td>"+fmt(e,4)+"</td><td style='color:"+(p?"#2b8a3e":"#c92a2a")+"'>"+(err*100).toFixed(4)+"%</td></tr>";});
+  html+="</table><div class='note' style='margin-top:5px'>门限 0.01%。基准值来自攀钢 Excel 公式缓存（Python 复现 75/75，最大误差 0.0002%）—— "+
+   (bad===0?"<b style='color:#2b8a3e'>全部通过</b>":"<b style='color:#c92a2a'>有 "+bad+" 项超差！</b>")+"</div>";
+  $("goldbox").innerHTML=html;
+}
+function traceTB(inp){
+  $("trace").innerHTML=
+   "<div>时间："+new Date().toLocaleString()+"</div>"+
+   "<div>输入：铁水 "+fmt(inp.W/1000,1)+" t／Si "+inp.Si.toFixed(3)+"%／V "+inp.V.toFixed(3)+"%／"+inp.T+" ℃；氧化热口径 "+inp.dhV+" kJ/kg</div>"+
+   "<div>链路：物料平衡 → 热量平衡 → 冷料配吃 → 钒平衡 → 品位预测（单次 <1ms）</div>"+
+   "<div>口径：pangang/base.yaml v1.0.0（试用）· 31 类工程参数（<b>全部计算在本页浏览器内完成，零网络请求</b>；导出：整页复制，P2 升级 JSONL）</div>";
+}
+/* 角色视图切换 */
+document.getElementById("tabs").addEventListener("click",e=>{
+  const btn=e.target.closest(".tab"); if(!btn)return;
+  document.querySelectorAll(".tab").forEach(t=>t.classList.toggle("on",t===btn));
+  document.querySelectorAll(".view").forEach(v=>v.classList.toggle("on",v.id==="view-"+btn.dataset.v));
+});
+document.addEventListener("input",e=>{if(e.target.tagName==="INPUT")update();});
+update();
+</script>
+</body>
+</html>

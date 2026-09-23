@@ -4,6 +4,7 @@ from ..schemas import CriticalTempResult
 
 
 def predict_critical_temp(*, v_content_pct: float | None = None, current_temp_c: float | None = None) -> CriticalTempResult:
+    # 碳钒转化温度 Tc = 1361℃ (1634K), 吉布斯 ΔG7=-250170+153.09T → T转=1634K (见 industry 包 CF-007)
     base = 1361.0
 
     if v_content_pct is None:

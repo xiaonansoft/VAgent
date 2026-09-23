@@ -20,6 +20,12 @@ from .pangang_reference import COOLANTS, CoolantSpec
 DEFAULT_PACK = os.path.join(
     os.path.dirname(__file__), "..", "..", "..", "knowledge", "packs", "pangang", "base.yaml")
 
+INDUSTRY_PACK = os.path.join(
+    os.path.dirname(__file__), "..", "..", "..", "knowledge", "packs", "industry", "base.yaml")
+
+# 部署厂 (默认建龙; 可用环境变量 VEES_PLANT 覆盖)。产品本身面向行业, 厂级仅作参数覆盖源。
+DEFAULT_PLANT = os.environ.get("VEES_PLANT", "jianlong")
+
 VALID_SCOPES = {"industry", "plant", "workshop", "furnace"}
 
 
@@ -114,6 +120,41 @@ def coolant_specs_from_pack(pack: Dict) -> Dict[str, CoolantSpec]:
         out[key] = CoolantSpec(
             key=key, label=key, fe2o3=ys["fe2o3"], sio2=ys["sio2"], v2o5=ys["v2o5"])
     return out
+
+
+def _deep_merge(base: dict, override: dict) -> dict:
+    """递归合并: 厂级包覆盖行业基线同键值, 非重叠键并存。"""
+    out = dict(base)
+    for k, v in override.items():
+        if k in out and isinstance(out[k], dict) and isinstance(v, dict):
+            out[k] = _deep_merge(out[k], v)
+        else:
+            out[k] = v
+    return out
+
+
+def resolve_parameters(plant: str | None = None) -> Dict:
+    """
+    按 scope 分层合并参数: 行业基线(industry, 行业通用规则) → 厂级包(plant, 覆盖/补充)。
+
+    - plant=None 时使用 DEFAULT_PLANT (默认 jianlong, 可用 VEES_PLANT 覆盖)。
+    - 返回合并后的 parameters dict, 供 initial_charge / lance_profile 等引擎统一取值。
+    单一事实来源: 行业基线定「行业通用逻辑」, 厂级包定「厂级参数值」。
+    """
+    with open(INDUSTRY_PACK, "r", encoding="utf-8") as f:
+        industry = yaml.safe_load(f)
+    assert industry.get("schema") == "vees.knowledge-pack/v1", "未知知识包 schema"
+    assert industry["pack"]["scope"] == "industry", "期望行业基线 scope=industry"
+
+    merged = industry["parameters"]
+    target = plant or DEFAULT_PLANT
+    packs_dir = os.path.dirname(os.path.dirname(INDUSTRY_PACK))  # knowledge/packs
+    ppath = os.path.join(packs_dir, target, "base.yaml")
+    with open(ppath, "r", encoding="utf-8") as f:
+        plant_pack = yaml.safe_load(f)
+    assert plant_pack.get("schema") == "vees.knowledge-pack/v1", "未知知识包 schema"
+    merged = _deep_merge(merged, plant_pack["parameters"])
+    return merged
 
 
 if __name__ == "__main__":

@@ -29,7 +29,7 @@ class Settings(BaseModel):
     k_c_base: float = 0.05
     
     # --- Simulation Control Parameters ---
-    temp_critical_v_c_switch: float = 1360.0  # Temp where C oxidation overtakes V
+    temp_critical_v_c_switch: float = 1361.0  # 碳钒转化温度 Tc (1634K, 吉布斯推导; 见 industry 知识包 CF-007)
     heat_efficiency_default: float = 0.92
     reaction_rate_mod_default: float = 1.05
     oxygen_flow_nm3_h_default: float = 22000.0  # Nm3/h

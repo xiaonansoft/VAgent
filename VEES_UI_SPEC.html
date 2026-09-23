@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VEES 产品界面规格 v1.0 · 三层角色视图</title>
+<style>
+:root{--paper:#f5f2ec;--card:#fff;--line:#ddd8ce;--ink:#141d2b;--ink2:#3d4a5f;
+--mut:#8a94a6;--molten:#e8590c;--steel:#2b4a6f;--ok:#2b8a3e;--warn:#b54708;--blue:#1971c2;--teal:#0f766e}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:"PingFang SC","Hiragino Sans GB","Microsoft YaHei",system-ui,sans-serif;
+background:var(--paper);color:var(--ink);line-height:1.7;font-size:15px}
+.header{background:linear-gradient(120deg,#141d2b,#2b4a6f 55%,#7a431d);color:#fff;padding:26px 32px}
+.header h1{font-size:22px;font-weight:700}
+.header .sub{color:#ffd9b8;font-size:13.5px;margin-top:4px}
+.header .tags{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.header .b{background:rgba(255,255,255,.13);border:1px solid rgba(255,255,255,.28);padding:2px 11px;border-radius:999px;font-size:12px}
+.wrap{max-width:1240px;margin:0 auto;padding:26px 20px 60px;display:grid;gap:20px}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:20px 24px;box-shadow:0 2px 8px rgba(20,29,43,.05)}
+.panel h2{font-size:16px;font-weight:700;margin-bottom:6px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.panel h2 .n{font-size:11px;border-radius:6px;padding:1px 8px;color:#fff;font-weight:700}
+.panel .hint{font-weight:400;font-size:12.5px;color:var(--mut);margin-left:auto;text-align:right}
+.panel .lead{font-size:13.5px;color:var(--ink2);margin-bottom:14px}
+.num{display:inline-block;min-width:26px;height:26px;line-height:26px;text-align:center;border-radius:8px;
+background:var(--steel);color:#fff;font-size:12.5px;font-weight:700;margin-right:6px}
+h3{font-size:14.5px;font-weight:700;margin:18px 0 8px}
+table.tb{width:100%;border-collapse:collapse;font-size:13px}
+.tb th,.tb td{border:1px solid var(--line);padding:7px 10px;text-align:left;vertical-align:top;font-variant-numeric:tabular-nums}
+.tb th{background:#f1ede4;font-weight:600}
+.tb td.c{text-align:center}
+.tag{display:inline-block;font-size:11px;font-weight:700;padding:2px 10px;border-radius:999px;white-space:nowrap}
+.b-g{background:#d3f9d8;color:#2b8a3e}.b-y{background:#fff3bf;color:#b54708}.b-r{background:#ffe3e3;color:#c92a2a}
+.b-b{background:#dbeafe;color:#1971c2}.b-t{background:#c6f6d5;color:#0f766e}
+.small{font-size:12px;color:var(--mut)}
+.cards{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+@media(max-width:900px){.cards{grid-template-columns:1fr}}
+.card{background:#fbfaf7;border:1px solid var(--line);border-radius:12px;padding:16px 18px}
+.card .t{font-size:12px;color:var(--mut);margin-bottom:6px}
+.card .v{font-size:15px;font-weight:700;line-height:1.5}
+.verdict{border-left:4px solid var(--molten);background:#fff8ef;border-radius:8px;padding:12px 16px;font-size:14px;margin:8px 0}
+.verdict b{color:#d9480f}
+/* ---- 线框 mockup ---- */
+.mocks{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;align-items:start}
+@media(max-width:1000px){.mocks{grid-template-columns:1fr}}
+.screen{border:1px solid var(--line);border-radius:14px;overflow:hidden;background:#fff}
+.screen .bar{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:10px 14px;color:#fff;font-size:12.5px;font-weight:700}
+.screen .body{padding:14px;display:grid;gap:10px;font-size:12.5px}
+.screen .kpi{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.screen .k{background:#fbfaf7;border:1px solid var(--line);border-radius:10px;padding:8px 10px}
+.screen .k .l{font-size:11px;color:var(--mut)}
+.screen .k .v{font-size:18px;font-weight:800;font-variant-numeric:tabular-nums;color:var(--ink)}
+.screen .k.big .v{font-size:26px;color:#d9480f}
+.screen .say{background:#fff4e6;border:1px solid #f3c89e;border-radius:10px;padding:9px 11px;font-size:12.5px;color:#7c2d12}
+.screen .mini{border:1px solid var(--line);border-radius:10px;padding:8px 10px}
+.screen .mini .h{font-weight:700;font-size:12px;margin-bottom:4px}
+.screen .btnrow{display:flex;gap:6px;flex-wrap:wrap}
+.screen .btn{font-size:11px;font-weight:700;border:1px solid var(--line);border-radius:8px;padding:4px 9px;background:#faf8f4;cursor:pointer}
+.screen .btn.sel{background:var(--steel);color:#fff;border-color:var(--steel)}
+.dashed{border-style:dashed!important;background:#f7f6f2!important;color:var(--mut)}
+.mini table{width:100%;border-collapse:collapse;font-size:11.5px}
+.mini td,.mini th{border:1px solid #ece8df;padding:2px 6px;text-align:center;font-variant-numeric:tabular-nums}
+.mini th{background:#f4f1ea;font-weight:600}
+.spark{display:block;width:100%;height:52px}
+legend{font-size:12px;color:var(--mut)}
+.gap{height:2px}
+footer{margin-top:26px;padding:16px 28px;background:#141d2b;color:#93a2b8;font-size:12px;display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
+</style>
+</head>
+<body>
+
+<header class="header">
+  <h1>VEES 产品界面规格 · 三层角色视图 <span style="font-weight:400;opacity:.65">v1.0</span></h1>
+  <div class="sub">提钒配吃助手（开吹前）· 界面信息架构与风格规范 —— 改 UI 的单一事实来源</div>
+  <div class="tags">
+    <span class="b">一产品 · 一引擎 · 三层视图</span>
+    <span class="b">离线可用，数据不出厂</span>
+    <span class="b">对齐 PRODUCT_DEFINITION.md v1.0</span>
+  </div>
+</header>
+
+<div class="wrap">
+
+  <!-- ============ 1 结论摘要 ============ -->
+  <div class="panel">
+    <h2><span class="n" style="background:var(--molten)">结论</span>三条裁决（结论先行）</h2>
+    <div class="cards" style="margin-top:12px">
+      <div class="card"><div class="t">路线收敛</div><div class="v">仓库三套界面收敛为一，以 <code>VEES_MVP.html</code> 的暖色机理风为准，废弃 <code>frontend/</code> 暗色霓虹。</div></div>
+      <div class="card"><div class="t">信息架构</div><div class="v">按「炉长 / 工艺 / 数据」三层角色视图分层，把专家级证据从炉长驾驶舱剥离。</div></div>
+      <div class="card"><div class="t">风格方向</div><div class="v">从「消费级 SaaS 科技感」转向「工业 HMI 可读性 + 证据报告严谨感」，只保留 红/黄/绿 三态语义。</div></div>
+    </div>
+  </div>
+
+  <!-- ============ 2 现状诊断 ============ -->
+  <div class="panel">
+    <h2><span class="n" style="background:var(--steel)">01</span>现状诊断：三套界面，两条路线</h2>
+    <p class="lead">问题根因不是"风格旧"，而是仓库里残留着**两条互相冲突的产品路线**。先裁决路线，风格自然落定。</p>
+    <table class="tb">
+      <tr><th style="width:16%">界面</th><th style="width:30%">定位</th><th style="width:20%">视觉</th><th>与产品定义 v1.0 的关系</th></tr>
+      <tr><td><code>web/</code></td><td>最早 vanilla 原型</td><td>浅色朴素</td><td><span class="tag b-r">已淘汰</span></td></tr>
+      <tr><td><code>frontend/</code>（React）</td><td>「VAgent v7.0」全程版：L1 配料 + L2 动态 + 枪位 + AI Copilot 聊天</td><td>暗色霓虹 + 多智能体卡片</td><td><span class="tag b-r">冲突</span> 产品定义已定"无聊天框、不碰事中、只开吹前"</td></tr>
+      <tr><td><code>VEES_MVP.html</code></td><td>当前交付 MVP v0.2「配吃助手（开吹前）」</td><td>暖色纸张 + 熔融橙 + 钢蓝，编号面板 + 证据卡</td><td><span class="tag b-g">完全对齐</span></td></tr>
+    </table>
+    <div class="verdict"><b>两处硬伤（frontend/ 必须处理）：</b>① 外链 Google 头像 <code>lh3.googleusercontent.com</code> 违反 A6「离线、数据不出厂」；② 「AI Copilot / 协调中枢 / 安全护栏」多智能体暗示「AI 炉长」，踩品牌禁用词红线。</div>
+  </div>
+
+  <!-- ============ 3 三层角色线框 ============ -->
+  <div class="panel">
+    <h2><span class="n" style="background:var(--molten)">02</span>分角色三层视图（线框示意）</h2>
+    <p class="lead">同一引擎、三张视图。炉长看"读得快的驾驶舱"，工艺看"能拍板的工作台"，数据看"守得住的治理台"。</p>
+
+    <div class="mocks">
+
+      <!-- A 炉长驾驶舱 -->
+      <div class="screen">
+        <div class="bar" style="background:linear-gradient(120deg,#c2410c,#e8590c)">炉长驾驶舱 · 生产 <span class="tag b-g">绿灯</span></div>
+        <div class="body">
+          <div class="mini"><span class="small">炉次 #1234 · 3 号炉 · A 班 · 开吹前 45s</span></div>
+          <div class="kpi">
+            <div class="k big"><div class="l">球团配吃量</div><div class="v">3.53 t</div></div>
+            <div class="k big"><div class="l">预测品位</div><div class="v">13.30 %</div></div>
+            <div class="k"><div class="l">热量富余</div><div class="v">16.5 MJ</div></div>
+            <div class="k"><div class="l">物料收支</div><div class="v">-0.02 %</div></div>
+          </div>
+          <div class="say">本炉高 Si + 一罐到底，冷却剂加量上调；建议配吃 3.53 t 球团，终点品位预估 13.3%，落在常用区间。</div>
+          <div class="mini"><div class="h">相似炉次判例</div>
+            <table><tr><th>炉次</th><th>Si%</th><th>V%</th><th>精渣%</th></tr>
+            <tr><td>第 7 日</td><td>0.14</td><td>0.33</td><td>14.24</td></tr>
+            <tr><td>第 3 日</td><td>0.15</td><td>0.32</td><td>13.59</td></tr></table></div>
+          <div class="small">▸ 展开详细解释与留痕（默认折叠，避免干扰）</div>
+        </div>
+      </div>
+
+      <!-- B 工艺工作台 -->
+      <div class="screen">
+        <div class="bar" style="background:linear-gradient(120deg,#1e3a5f,#2b4a6f)">工艺工作台 · 工艺专家</div>
+        <div class="body">
+          <div class="mini"><div class="h">V 氧化热 · 双口径对照</div>
+            <table><tr><th></th><th>攀钢 2777</th><th>文献 15000</th></tr>
+            <tr><td>配吃量</td><td>3.53 t</td><td>4.12 t</td></tr>
+            <tr><td>预测品位</td><td>13.30%</td><td>13.02%</td></tr>
+            <tr><td>RMSE(16炉)</td><td>1.466</td><td style="color:#0f766e"><b>0.999</b></td></tr></table>
+          </div>
+          <div class="mini"><div class="h">敏感性：Si → 品位</div>
+            <svg class="spark" viewBox="0 0 180 52"><path d="M4 10 L60 16 L110 28 L176 46" fill="none" stroke="#e8590c" stroke-width="2"/><line x1="88" y1="4" x2="88" y2="48" stroke="#1971c2" stroke-dasharray="3 3"/><circle cx="88" cy="24" r="4" fill="#1971c2"/></svg>
+          </div>
+          <div class="mini"><div class="h">16 炉回放 · 预测 vs 实测</div>
+            <svg class="spark" viewBox="0 0 180 52"><path d="M4 30 L24 26 L44 32 L64 22 L84 28 L104 20 L124 26 L144 18 L176 22" fill="none" stroke="#2b4a6f" stroke-width="2"/><circle cx="64" cy="34" r="3" fill="#e8590c"/><circle cx="64" cy="22" r="3" fill="#2b8a3e"/><circle cx="144" cy="30" r="3" fill="#e8590c"/><circle cx="144" cy="18" r="3" fill="#2b8a3e"/></svg>
+          </div>
+          <div class="btnrow"><span class="btn sel">采用 A</span><span class="btn">采用 B</span><span class="btn">本炉例外</span><span class="btn">挂起待议</span></div>
+          <div class="small">系统只呈证据，不代裁决；拍板结果记入判例库。</div>
+        </div>
+      </div>
+
+      <!-- C 数据治理台 -->
+      <div class="screen">
+        <div class="bar" style="background:linear-gradient(120deg,#0b4f44,#0f766e)">数据治理台 · 数据专家</div>
+        <div class="body">
+          <div class="mini"><div class="h">黄金回归自检（vs Excel 703 公式）</div>
+            <table><tr><th>检查项</th><th>相对误差</th></tr>
+            <tr><td>品位预测</td><td style="color:#2b8a3e">0.0002%</td></tr>
+            <tr><td>球团配吃</td><td style="color:#2b8a3e">0.0001%</td></tr>
+            <tr><td>物料收支</td><td style="color:#2b8a3e">通过</td></tr></table>
+            <div class="small" style="margin-top:4px"><span class="tag b-g">11/11 全绿</span></div>
+          </div>
+          <div class="mini"><div class="h">知识包溯源</div>
+            <div class="small">pangang/base.yaml v1.0.0 · 31 类参数 → 攀钢 Excel 单元格 · 状态：draft 待专家批准</div>
+          </div>
+          <div class="mini"><div class="h">留痕 / 导出</div>
+            <div class="small">本地零网络请求 · 全量计算留痕 · P2 升级 JSONL 导出</div>
+          </div>
+          <div class="mini dashed"><div class="h">P3 数据接口规范 <span class="tag b-y">待建</span></div>
+            <div class="small">TSC/TSO/烟气/氧枪 字段 · 频率 · 网络边界（HANDOVER D6，最紧急）</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ============ 4 逐面板归位表 ============ -->
+  <div class="panel">
+    <h2><span class="n" style="background:var(--steel)">03</span>逐面板归位表（MVP 01–07 → 角色）</h2>
+    <table class="tb">
+      <tr><th>面板</th><th>内容</th><th style="width:13%">炉长</th><th style="width:13%">工艺</th><th style="width:13%">数据</th><th>说明</th></tr>
+      <tr><td class="c">01</td><td>开吹条件输入 + 口径选择 + 黄金回归自检(details)</td><td class="c"><b>✓</b></td><td class="c">—</td><td class="c">自检</td><td>自检部分下沉到治理台，不再占炉长视线</td></tr>
+      <tr><td class="c">02</td><td>配吃建议 KPI + 红黄绿灯</td><td class="c"><b>✓</b></td><td class="c">✓</td><td class="c">—</td><td>炉长的核心；工艺作为复核参考</td></tr>
+      <tr><td class="c">03</td><td>敏感性曲线（Si→品位）</td><td class="c">—</td><td class="c"><b>✓</b></td><td class="c">—</td><td>专家级，砍出炉长视图</td></tr>
+      <tr><td class="c">04</td><td>解释卡（为何如此推荐）</td><td class="c">精简</td><td class="c"><b>✓</b>全量</td><td class="c">—</td><td>炉长只看一句话，全量证据给工艺</td></tr>
+      <tr><td class="c">05</td><td>V 氧化热双口径仲裁</td><td class="c">—</td><td class="c"><b>✓</b></td><td class="c">—</td><td>「只呈证据不代决策」样板</td></tr>
+      <tr><td class="c">06</td><td>16 炉实绩回放 RMSE</td><td class="c">—</td><td class="c"><b>✓</b></td><td class="c">✓</td><td>工艺看精度，数据看漂移</td></tr>
+      <tr><td class="c">07</td><td>相似炉次判例 + 计算留痕</td><td class="c">判例</td><td class="c"><b>✓</b>全量</td><td class="c">留痕</td><td>判例给炉长/工艺，留痕给数据</td></tr>
+    </table>
+  </div>
+
+  <!-- ============ 5 风格 token ============ -->
+  <div class="panel">
+    <h2><span class="n" style="background:var(--molten)">04</span>风格 token：保留 / 废弃 / 新增</h2>
+    <table class="tb">
+      <tr><th style="width:12%">动作</th><th>token / 元素</th><th>说明</th></tr>
+      <tr><td><span class="tag b-g">保留</span></td><td>暖米底 <code>#f5f2ec</code> · 熔融橙 <code>#e8590c</code> · 钢蓝 <code>#2b4a6f</code></td><td>MVP 已成立的"工业纸质报告 + 熔融金属"语系</td></tr>
+      <tr><td><span class="tag b-g">保留</span></td><td>编号面板 + 证据卡 + 现场术语页脚</td><td>「配吃/球返/品位/留痕」术语是产品辨识度</td></tr>
+      <tr><td><span class="tag b-r">废弃</span></td><td>暗色霓虹 + neon 光晕 + 紫色渐变</td><td>消费级 SaaS 审美，炼钢中控室高亮/粉尘环境可读性差</td></tr>
+      <tr><td><span class="tag b-r">废弃</span></td><td>悬浮 AI Copilot 聊天框 + 多智能体卡片</td><td>违反「对话对象是机理，不是聊天机器人」</td></tr>
+      <tr><td><span class="tag b-r">废弃</span></td><td>外链头像/字体/图标</td><td>违反 A6 离线条款，全部本地化或内联</td></tr>
+      <tr><td><span class="tag b-b">新增</span></td><td>角色视图切换（驾驶舱 / 工作台 / 治理台）</td><td>权限标签页或视图切换，替代一屏堆所有人</td></tr>
+      <tr><td><span class="tag b-b">新增</span></td><td>炉长视图「大数字 + 红黄绿灯 + 一句话」</td><td>工业 HMI 核心：扫一眼懂状态，10 秒读配吃</td></tr>
+      <tr><td><span class="tag b-b">新增</span></td><td>颜色语义收敛为 红=危险 / 黄=偏离 / 绿=正常</td><td>与报警体系一致，剔除无工艺语义色</td></tr>
+    </table>
+  </div>
+
+  <!-- ============ 6 落地路线图 ============ -->
+  <div class="panel">
+    <h2><span class="n" style="background:var(--steel)">05</span>落地路线图（三步）</h2>
+    <table class="tb">
+      <tr><th style="width:10%">步骤</th><th>动作</th><th>产出</th></tr>
+      <tr><td class="c">1</td><td>风格统一收口：把 <code>VEES_MVP.html</code> 的 token 提取为 CSS 变量规范，废弃 <code>frontend/</code> 霓虹主题</td><td><code>docs/STYLE_TOKENS.md</code></td></tr>
+      <tr><td class="c">2</td><td>按三层视图重构：炉长视图砍 03/05/06，新增角色视图切换</td><td>MVP v0.3（分角色）</td></tr>
+      <tr><td class="c">3</td><td>补数据治理台 + 起草 P3 数据接口规范（TSC/TSO/烟气/氧枪 字段·频率·边界）</td><td><code>docs/DATA_INTERFACE_SPEC.md</code></td></tr>
+    </table>
+    <div class="small" style="margin-top:8px">优先级建议：先做第 1 步（零风险、即时收益），第 3 步的数据接口是 HANDOVER 里「最紧急」的 D6，解锁 P3 全部学习类任务。</div>
+  </div>
+
+</div>
+
+<footer>
+  <span>VEES 产品界面规格 v1.0 · 对齐 PRODUCT_DEFINITION.md / MVP_SPEC.md · 2026-09-23</span>
+  <span>术语：配吃=冷料加入 · 球返=球团矿返矿 · 品位=V₂O₅ 质量分数 · 富余=热量富余 · 留痕=全量计算记录</span>
+</footer>
+
+</body>
+</html>

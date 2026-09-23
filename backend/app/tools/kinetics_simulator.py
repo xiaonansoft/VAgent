@@ -106,8 +106,10 @@ def calculate_kinetics_derivatives(y, t, bath_weight_kg, mols_o2_per_s, heat_los
     r_ti = k_ti_base * max(0, Ti)
     
     # Crossover Temp Check
-    tc_transition = 1380.0
-    temp_factor = (T_c - tc_transition) / 50.0
+    # 注意: 热力学碳钒转化温度 Tc = 1361℃ (1634K, 见 industry 包 CF-007);
+    # 此处的 sigmoid 中心 1380 是动力学「软切换」调参, 与 Tc 分离命名, 非 Tc 本身。
+    tc_sigmoid_center = 1380.0
+    temp_factor = (T_c - tc_sigmoid_center) / 50.0
     sigmoid = 1 / (1 + np.exp(-temp_factor))
     
     # V oxidation preference at low T
@@ -214,33 +216,40 @@ def simulate_blow_path(inp: SimulationInputs) -> SimulationResult:
         bath_weight_kg = inp.recipe["iron_weight"] * 1000
         
     # --- Coolant Effect (Temperature Drop) ---
-    # Parse coolants from recipe (handle both English and Chinese keys)
-    # 1. Iron Scale (氧化铁皮/scale_weight)
-    scale_t = inp.recipe.get("scale_weight", 0.0) + inp.recipe.get("氧化铁皮", 0.0)
-    
-    # 2. Pellets (球返/球团/pellets)
-    pellets_t = inp.recipe.get("pellets", 0.0) + inp.recipe.get("球返/球团", 0.0)
-    
-    # 3. Scrap/Iron (生铁块/scrap)
-    scrap_t = inp.recipe.get("scrap", 0.0) + inp.recipe.get("生铁块", 0.0)
-    
-    # Calculate cooling effect
-    # Cooling Coefficients (deg C per kg/t)
-    # Derived from InitialCharge logic: 1.8 kg/t ~ 10 deg => ~5.5 deg per kg/t
-    COEFF_SCALE = 5.0
-    COEFF_PELLETS = 5.0
-    COEFF_SCRAP = 1.5 # Heating solid to liquid + melting
-    
+    # 冷却剂冷却系数 (℃/(kg/t)) = 冷料单位吸热 kJ/kg ÷ 760
+    #   (CP_STEEL=760 J/(kg·K), 即 1kg 冷料/1t 熔池 → 吸热 / (1000·0.76))
+    # 单一事实来源(吸热 kJ/kg):
+    #   config.py: 氧化铁皮 h_oxide_scale_absorption=2000, 生铁块 h_pig_iron_absorption=1200
+    #   pangang 包 coolant_marginal.specs: 球团 4673.4 / 块矿 5171.2 / 弃渣球 4676.1
+    COOLANT_ABSORPTION_KJ_KG = {
+        "scale":      2000.0,   # 氧化铁皮
+        "pellets":    4673.4,   # 球团矿 / 球返
+        "ore":        5171.2,   # 块矿
+        "waste_slag": 4676.1,   # 弃渣球
+        "metal_fe":   1200.0,   # 生铁块 / 钒渣铁
+    }
+
+    def _sum(*keys) -> float:
+        return sum(inp.recipe.get(k, 0.0) for k in keys)
+
+    # 解析冷却剂 (兼容英文/中文键, 覆盖全部冷料品种)
+    coolant_t = {
+        "scale":      _sum("scale_weight", "氧化铁皮", "铁皮"),
+        "pellets":    _sum("pellets", "球返/球团", "球返", "球团"),
+        "ore":        _sum("ore", "ore_block", "块矿"),
+        "waste_slag": _sum("waste_slag_ball", "弃渣球", "弃渣"),
+        "metal_fe":   _sum("scrap", "生铁块", "钒渣铁", "metal_fe"),
+    }
+
     bath_weight_t = bath_weight_kg / 1000.0
-    
-    temp_drop_scale = (scale_t * 1000.0 / bath_weight_t) * COEFF_SCALE
-    temp_drop_pellets = (pellets_t * 1000.0 / bath_weight_t) * COEFF_PELLETS
-    temp_drop_scrap = (scrap_t * 1000.0 / bath_weight_t) * COEFF_SCRAP
-    
-    total_temp_drop = temp_drop_scale + temp_drop_pellets + temp_drop_scrap
-    
+
+    total_temp_drop = 0.0
+    for kind, tons in coolant_t.items():
+        coeff = COOLANT_ABSORPTION_KJ_KG[kind] / 760.0  # ℃/(kg/t)
+        total_temp_drop += (tons * 1000.0 / bath_weight_t) * coeff
+
     # Apply to initial temperature
-    # Note: Coolants are usually added early (30s-2.5min). 
+    # Note: Coolants are usually added early (30s-2.5min).
     # Adjusting initial temp is a valid approximation for the trajectory.
     effective_initial_temp = inp.initial_temp_c - total_temp_drop
     
@@ -309,7 +318,7 @@ def simulate_blow_path(inp: SimulationInputs) -> SimulationResult:
         
         for i, ts in enumerate(t_eval):
             curr_t = sol[i, 4]
-            if tc_crossover_s is None and curr_t >= 1360.0:
+            if tc_crossover_s is None and curr_t >= 1361.0:
                  tc_crossover_s = int(ts)
                  
             point = SimulationPoint(
@@ -396,7 +405,7 @@ def simulate_blow_path(inp: SimulationInputs) -> SimulationResult:
             
             # Record Data
             if step % record_interval == 0:
-                if tc_crossover_s is None and current_y[4] >= 1360.0:
+                if tc_crossover_s is None and current_y[4] >= 1361.0:
                      tc_crossover_s = int(t_curr)
                 
                 point = SimulationPoint(

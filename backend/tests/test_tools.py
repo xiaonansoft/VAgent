@@ -63,7 +63,7 @@ def test_diagnose_process_quality_no_findings() -> None:
     process = ProcessData(tap_time_min=None)
     iron = IronInitialAnalysis(C=4.2, Si=0.20, V=0.30, Ti=0.05, P=0.08, S=0.03)
     out = diagnose_process_quality(slag=slag, process=process, iron_analysis=iron)
-    # With V=0.30 and Si=0.20, ratio = 0.30 / 0.25 = 1.2 > 1.01, so no "Raw Material Deficit"
+    # With V=0.30 and Si=0.20, ratio = 0.30 / 0.25 = 1.2 > 1.0, so no "Raw Material Deficit"
     # tap_time_min is None, so no "Tap Time Short"
     # slag.V2O5 is None, so no "Low V2O5"
     # slag.CaO is None, so no "Slag Contamination"

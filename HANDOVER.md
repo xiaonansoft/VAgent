@@ -25,9 +25,13 @@
 │   ├─ ⑥ ARBITRATION_DEMO.md           双引擎冲突仲裁演示报告（CF-001~006）
 │   └─ ⑦ docs/MVP_SPEC.md              MVP 规格（验收硬条款 A1–A8）★ 已达成
 │
-├─ knowledge/packs/pangang/base.yaml  ★ 专家知识包 YAML
+├─ knowledge/packs/industry/base.yaml   行业基线知识包（行业通用规则：枪位模式/去钒保碳/终点目标/判据）
+├─ knowledge/packs/pangang/base.yaml  ★ 专家知识包 YAML（厂级：攀钢四大平衡）
 │     31 类参数全部溯源到 Excel 单元格 · status: draft · 待专家批准
 │     ⚠️ 与 pangang_reference.py 的常数一致性由 pangang_pack.py 校验（必须保持同步）
+├─ knowledge/packs/jianlong/base.yaml  建龙 L1 配料知识包（厂级：查表法+枪位默认值）
+│     ★ scope 分层：行业基线(industry) < 厂(plant) < 车间 < 炉座；引擎经 resolve_parameters()
+│       以行业基线打底、厂级包覆盖合并取值（默认厂 jianlong，可用 VEES_PLANT 覆盖）
 │
 ├─ backend/                            Python 后端（⚠️ 需 Python 3.10+，系统只有 3.9）
 │   app/tools/pangang_reference.py    ★ 四大平衡参考实现（黄金 75/75，误差 0.0002%）
@@ -71,7 +75,7 @@
 
 ## 4. 排期状态（P1–P4 / D1–D10）
 
-- **P1 规则引擎/知识资产（~70%）**：✅ 解码/复现/YAML/校验器/仲裁演示；⬜ 知识包接入 initial_charge 替代硬编码
+- **P1 规则引擎/知识资产（✅ 收尾）**：✅ 解码/复现/YAML/校验器/仲裁演示；✅ 知识包接入 initial_charge 替代硬编码（建龙包 `knowledge/packs/jianlong/base.yaml`，108 组等价对照 + 回归通过，行为零漂移）
 - **P2 认知层（下一步主攻）**：⬜ D6 数据接口规范（最紧急）· 真 RAG+IP 分级 · 三要素回答模板 · 仲裁工作台
 - **P3 学习闭环**：炉次误差回流 RLS/PINN 残差 · TabPFN 试点 · 漂移检测
 - **P4 治理**：审批流/跨厂判例/例外率看板
