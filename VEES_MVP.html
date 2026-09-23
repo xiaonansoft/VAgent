@@ -30,7 +30,7 @@ body{font-family:"PingFang SC","Hiragino Sans GB","Microsoft YaHei",system-ui,sa
 label{display:block;font-size:12.5px;color:#3d4a5f;margin:12px 0 3px}
 label b{color:#141d2b}
 input[type=range]{width:100%;accent-color:var(--molten);height:22px}
-.val{float:right;font-variant-numeric:tabular-nums;color:var(--molten);font-weight:700}
+.val{float:right;font-variant-numeric:tabular-nums;color:var(--molten);font-weight:700;font-size:16px}
 .radios{display:flex;gap:8px;margin-top:5px}
 .radios label{margin:0;cursor:pointer;border:1px solid var(--line);border-radius:10px;
   padding:8px 6px;font-size:12.5px;flex:1;text-align:center;background:#faf8f4;color:#3d4a5f}
@@ -39,7 +39,7 @@ input[type=range]{width:100%;accent-color:var(--molten);height:22px}
 /* ---------- KPI ---------- */
 .kpis{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .kpi{background:#fbfaf7;border:1px solid var(--line);border-radius:12px;padding:12px 14px}
-.kpi.hl{grid-column:1/-1;background:linear-gradient(135deg,#fff8ef,#fff1e0);border-color:#f3c89e}
+.kpi.hl{background:linear-gradient(135deg,#fff8ef,#fff1e0);border-color:#f3c89e}
 .kpi .l{font-size:12px;color:#8a94a6}
 .kpi .l .tip{font-weight:400;color:#b0b7c3}
 .kpi .v{font-size:22px;font-weight:800;font-variant-numeric:tabular-nums;color:#141d2b;line-height:1.25}
@@ -85,7 +85,7 @@ footer{margin-top:26px;padding:16px 28px;background:#141d2b;color:#93a2b8;font-s
 
   <!-- ① 输入 -->
   <div class="panel">
-    <h2><span style="background:var(--steel);color:#fff;font-size:11px;border-radius:6px;padding:1px 8px">01</span>炉次录入 <span class="hint">开吹前填写</span></h2>
+    <h2><span style="background:var(--steel);color:#fff;font-size:11px;border-radius:6px;padding:1px 8px">01</span>开吹条件 <span class="hint">按化验单填写</span></h2>
     <label><b>铁水装入量</b><span class="val" id="vW"></span></label>
     <input type="range" id="inW" min="60000" max="120000" step="1000" value="80000">
     <label><b>铁水 Si 含量</b><span class="val" id="vSi"></span></label>
@@ -95,11 +95,10 @@ footer{margin-top:26px;padding:16px 28px;background:#141d2b;color:#93a2b8;font-s
     <label><b>铁水温度</b><span class="val" id="vT"></span></label>
     <input type="range" id="inT" min="1250" max="1350" step="5" value="1300">
     <fieldset style="border:none;margin-top:16px">
-      <legend style="font-size:12.5px"><b>V 氧化反应热口径</b>
-        <span style="font-weight:400;color:#8a94a6">（专家未终审，双口径对照）</span></legend>
+      <legend style="font-size:12.5px"><b>口径选择</b><span style="font-weight:400;color:#8a94a6">（V 氧化反应热 · 专家审定中）</span></legend>
       <div class="radios">
-        <label class="on" id="lb2777"><input type="radio" name="dh" value="2777" checked>攀钢经验<br>2777 kJ/kg</label>
-        <label id="lb15000"><input type="radio" name="dh" value="15000">热力学文献<br>15000 kJ/kg</label>
+        <label class="on" id="lb2777"><input type="radio" name="dh" value="2777" checked>经验口径 · 攀钢<br><b>2777 kJ/kg</b></label>
+        <label id="lb15000"><input type="radio" name="dh" value="15000">文献口径 · 热力学<br><b>15000 kJ/kg</b></label>
       </div>
     </fieldset>
     <details><summary>模型精度自检（对照攀钢 Excel 基准值）</summary><div id="goldbox"></div></details>
@@ -108,19 +107,20 @@ footer{margin-top:26px;padding:16px 28px;background:#141d2b;color:#93a2b8;font-s
   <!-- 中列 -->
   <div style="display:grid;gap:16px;align-content:start">
     <div class="panel">
-      <h2><span style="background:var(--molten);color:#fff;font-size:11px;border-radius:6px;padding:1px 8px">02</span>本炉建议
-        <span class="hint">依据：pangang/base.yaml v1.0.0（试用）</span></h2>
+      <h2><span style="background:var(--molten);color:#fff;font-size:11px;border-radius:6px;padding:1px 8px">02</span>本炉配吃建议
+        <span class="hint">依据：pangang/base.yaml v1.0.0（试用）</span>
+        <span class="badge b-g" id="confBadge">绿灯</span></h2>
       <div class="kpis">
         <div class="kpi hl">
-          <div class="l">冷却剂配吃量 · 球团（现场称「球返」）</div>
+          <div class="l">冷却剂配吃量 · 球团（t）<span class="tip"> 现场称「球返」</span></div>
           <div class="v" id="kPel">--</div>
-          <div class="u">开吹前一次性加入 · 按「热量盈余 ÷ 球团单位吸热」反算</div>
+          <div class="u">配吃量 = 富余热量 ÷ 单位吸热（球团 4673 kJ/kg）</div>
         </div>
-        <div class="kpi"><div class="l">预测精钒渣 V₂O₅ 品位</div><div class="v" id="kGr">--</div><div class="u">预算目标 ≥ 14.0%</div></div>
-        <div class="kpi"><div class="l">热量盈余</div><div class="v" id="kSur">--</div><div class="u">配吃前静态测算</div></div>
-        <div class="kpi"><div class="l">预计终态渣量</div><div class="v" id="kSlg">--</div><div class="u">含配吃带入与铁水带渣</div></div>
-        <div class="kpi"><div class="l">预计半钢量</div><div class="v" id="kSt">--</div><div class="u">按终点 1370 ℃ 计</div></div>
-        <div class="kpi"><div class="l">物料收支校验</div><div class="v" id="kBal">--</div><div class="u" id="kBal2">守恒校验之一</div></div>
+        <div class="kpi hl"><div class="l">预测精钒渣 V₂O₅ 品位（%）</div><div class="v" id="kGr">--</div><div class="u">预算目标 ≥ 14.0</div></div>
+        <div class="kpi"><div class="l">热量富余（MJ）</div><div class="v" id="kSur">--</div><div class="u">配吃前静态测算</div></div>
+        <div class="kpi"><div class="l">预计终态渣量（t）</div><div class="v" id="kSlg">--</div><div class="u">含配吃带入与铁水带渣</div></div>
+        <div class="kpi"><div class="l">预计半钢量（t）</div><div class="v" id="kSt">--</div><div class="u">按终点 1370 ℃ 计</div></div>
+        <div class="kpi"><div class="l">物料收支校验（%）</div><div class="v" id="kBal">--</div><div class="u" id="kBal2">守恒校验之一</div></div>
       </div>
       <div class="explain" id="conf" style="margin-top:12px"></div>
     </div>
@@ -143,7 +143,7 @@ footer{margin-top:26px;padding:16px 28px;background:#141d2b;color:#93a2b8;font-s
 
     <div class="panel">
       <h2><span style="background:var(--steel);color:#fff;font-size:11px;border-radius:6px;padding:1px 8px">05</span>V 氧化反应热 · 双口径对照
-        <span class="hint">待专家终审（16 炉回放为证）</span></h2>
+        <span class="hint">16 炉实绩为证 · 专家审定中</span></h2>
       <table class="tb" id="arb"></table>
       <div class="explain" id="arbnote" style="margin-top:8px"></div>
     </div>
@@ -156,23 +156,19 @@ footer{margin-top:26px;padding:16px 28px;background:#141d2b;color:#93a2b8;font-s
 </div>
 
 <!-- ============ 下部两栏 ============ -->
-<div class="grid-bot">
-  <div class="panel">
-    <h2><span style="background:var(--steel);color:#fff;font-size:11px;border-radius:6px;padding:1px 8px">07</span>相似炉次判例
-      <span class="hint">按 Si/V 邻近度排序，数值越小越相似</span></h2>
-    <table class="tb" id="sim"></table>
-  </div>
-  <div class="panel">
-    <h2><span style="background:var(--steel);color:#fff;font-size:11px;border-radius:6px;padding:1px 8px">08</span>本炉计算留痕
-      <span class="hint">全程本地，无网络请求 · 可整页复制导出</span></h2>
-    <div class="explain" id="trace"></div>
+<div class="panel">
+  <h2><span style="background:var(--steel);color:#fff;font-size:11px;border-radius:6px;padding:1px 8px">07</span>判例与留痕
+    <span class="hint">左：相似炉次（数值越小越相似）｜右：本炉计算留痕（本地无网络请求，可复制导出）</span></h2>
+  <div class="grid-bot">
+    <div><table class="tb" id="sim"></table></div>
+    <div><div class="explain" id="trace"></div></div>
   </div>
 </div>
 </div>
 
 <footer style="display:flex;flex-wrap:wrap;gap:10px">
   <span>VEES MVP v0.1.1 · 引擎移植自 pangang_reference.py（Python 侧 75/75 黄金回归全绿）</span>
-  <span class="glossary">术语：<b>配吃</b>=冷料/冷却剂加入 · <b>球返</b>=球团矿返矿 · <b>品位</b>=V₂O₅ 质量分数 · <b>盈余</b>=热量富余 · <b>留痕</b>=全量计算记录</span>
+  <span class="glossary">术语：<b>配吃</b>=冷料/冷却剂加入 · <b>球返</b>=球团矿返矿 · <b>品位</b>=V₂O₅ 质量分数 · <b>富余</b>=热量富余（开吹前静态测算） · <b>留痕</b>=全量计算记录</span>
 </footer>
 
 <script>
@@ -249,7 +245,7 @@ function runModel(inp){
   const hOther=income2*K.othL;
   const surplus=income2-(hSteel+hSlag+hGas+hDustP+hBeads+hSpit+hOther);
 
-  /* 冷料：球团，按「热量盈余 ÷ 单位吸热」自动求解 */
+  /* 冷料：球团，按「热量富余 ÷ 单位吸热」自动求解 */
   const pc=COOL.pellet;
   const sUp=(1-pc.fe2o3)/(1-K.feo-K.feOx2);
   const bUp=sUp*K.beads;
@@ -294,8 +290,8 @@ function nearH(Si,V){/*相似度 = 2×|ΔSi|+|ΔV|，越小越相似*/
 function update(){
   const inp=readInput(); const r=runModel(inp);
   $("vW").textContent=fmt(inp.W/1000,1)+" t";
-  $("vSi").textContent=(inp.Si*100).toFixed(1)+" %";
-  $("vV").textContent=(inp.V*100).toFixed(1)+" %";
+  $("vSi").textContent=inp.Si.toFixed(3)+" %";
+  $("vV").textContent=inp.V.toFixed(3)+" %";
   $("vT").textContent=inp.T+" ℃";
   $("kPel").innerHTML=fmt(r.pl/1000,2)+"";
   $("kGr").innerHTML=fmt(r.grade,2)+"";
@@ -304,12 +300,14 @@ function update(){
   $("kSt").innerHTML=fmt(r.steel2/1000,1)+"";
   $("kBal").innerHTML=(r.balPct*100).toFixed(4)+"";
   const risky=inp.Si>0.25||inp.V<0.27;
+  const cb=$("confBadge");
+  cb.className="badge "+(risky?"b-y":"b-g");
+  cb.textContent=risky?"黄灯：参数逼近适用边界":"绿灯：参数处于常用区间";
   $("conf").innerHTML=
     "<div>🧭 知识口径：pangang/base.yaml v1.0.0（试用）· 31 类参数溯源至攀钢 Excel 单元格</div>"+
     "<div>⚙️ 机理依据：四大平衡全链路，物料收支校验差 <b>"+(r.balPct*100).toFixed(4)+"%</b>（≤0.05% 为通过）</div>"+
     "<div>📘 相似炉次判例："+nearH(inp.Si,inp.V).map(x=>"第"+x.h.day+"日（Si "+x.h.si.toFixed(2)+"/V "+x.h.v.toFixed(2)+"，实绩精渣 "+x.h.fine+"%）").join("；")+"</div>"+
-    "<div style='margin-top:6px'>建议置信度 <span class='badge "+(risky?"b-y":"b-g")+"'>"+(risky?"黄灯：Si>0.25% 或 V<0.27%，逼近参数包适用边界":"绿灯：机理链完整，参数处于常用区间")+"</span>"+
-    (risky?"　<span class='badge b-y'>建议对照高硅预案并做本炉例外记录</span>":"")+"</div>";
+    (risky?"<div style='margin-top:6px'><span class='badge b-y'>建议对照高硅预案，并按例外流程记录本炉</span></div>":"");
   drawSweep(inp,r.grade);
   arb(inp,r);
   drawReplay(inp);
@@ -328,10 +326,10 @@ function simTB(inp){
 function arb(inp,r){
   const other=inp.dhV===2777?15000:2777;
   const alt=runModel(Object.assign({},inp,{dhV:other}));
-  let s="<tr><th></th><th>攀钢经验口径<br>2777 kJ/kg</th><th>热力学文献<br>15000 kJ/kg</th></tr>";
+  let s="<tr><th></th><th>经验口径 · 攀钢<br>2777 kJ/kg</th><th>文献口径 · 热力学<br>15000 kJ/kg</th></tr>";
   s+="<tr><td><b>冷却剂配吃量</b></td><td>"+fmt(inp.dhV===2777?r.pl/1000:alt.pl/1000,2)+" t</td><td>"+fmt(inp.dhV===15000?r.pl/1000:alt.pl/1000,2)+" t</td></tr>";
   s+="<tr><td><b>预测品位</b></td><td>"+fmt(inp.dhV===2777?r.grade:alt.grade,2)+"%</td><td>"+fmt(inp.dhV===15000?r.grade:alt.grade,2)+"%</td></tr>";
-  s+="<tr><td><b>热量盈余</b></td><td>"+fmt((inp.dhV===2777?r:alt).surplus/1e6,1)+" MJ</td><td>"+fmt((inp.dhV===15000?r:alt).surplus/1e6,1)+" MJ</td></tr>";
+  s+="<tr><td><b>热量富余</b></td><td>"+fmt((inp.dhV===2777?r:alt).surplus/1e6,1)+" MJ</td><td>"+fmt((inp.dhV===15000?r:alt).surplus/1e6,1)+" MJ</td></tr>";
   $("arb").innerHTML=s;
   $("arbnote").innerHTML="📊 证据（16 日回放·精渣）：攀钢口径 2777 → "+fmt(rmse(2777),3)+"；文献 15000 → "+fmt(rmse(15000),3)+
    "（均方根误差 RMSE，越小越贴近实绩）。系统只呈证据，不代裁决：[采用 A] [采用 B] [本炉例外] [挂起待议] 由专家决断，结果记入判例库。";
@@ -386,7 +384,7 @@ function goldTB(){
   const r=runModel({W:80000,Si:.215,V:.284,T:1300,C:4.3,dhV:2777});
   const cmp=[["铁水 C 修正值 %",r.fc,4.9751],["炉渣总量 kg",r.slg,2075.9151777],["钢水量 kg",r.steel,76881.0973],
    ["实际氧耗 kg",r.o2kg,2500.4605],["铁水凝固点 ℃",r.tI,1022.1208],["钢水凝固点 ℃",r.tS,1295.8874],
-   ["热量盈余 kJ",r.surplus,16495062.03],["球团配吃 kg",r.pl,3529.5978],["冷料后钢水 kg",r.steel2,78709.0574],
+   ["热量富余 kJ",r.surplus,16495062.03],["球团配吃 kg",r.pl,3529.5978],["冷料后钢水 kg",r.steel2,78709.0574],
    ["预测品位 %",r.grade,13.2989651],["物料差 %",r.balPct*100,-0.0194]];
   let bad=0,html="<table class='gold'><tr><th>检查项</th><th>浏览器内引擎</th><th>Excel/Python 基准</th><th>相对误差</th></tr>";
   cmp.forEach(c=>{const a=c[1],e=c[2];const err=Math.abs(a-e)/Math.abs(e);const p=err<1e-4;if(!p)bad++;
