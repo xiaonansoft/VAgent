@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>第三轮 · 工业智能体开发方法论与行动计划</title>
+<style>
+  :root{
+    --ink:#1a2332; --ink2:#3d4a5f; --paper:#f6f4ef; --card:#ffffff;
+    --molten:#e8590c; --molten2:#f76707; --steel:#2b4a6f; --line:#e3ded4; --soft:#fdf1e3;
+    --ok:#2b8a3e; --warn:#b54708; --done:#2b8a3e; --doing:#f76707; --todo:#8a94a6;
+  }
+  *{box-sizing:border-box; margin:0; padding:0}
+  body{font-family:"PingFang SC","Hiragino Sans GB","Microsoft YaHei",system-ui,sans-serif;
+       background:var(--paper); color:var(--ink); line-height:1.75; font-size:15px}
+  nav{position:sticky; top:0; z-index:9; background:rgba(26,35,50,.96); padding:10px 24px;
+      display:flex; gap:16px; flex-wrap:wrap; align-items:center}
+  nav a{color:#cfd8e6; text-decoration:none; font-size:13px; padding:3px 8px; border-radius:6px}
+  nav a:hover{background:#37455c; color:#fff}
+  nav .brand{color:var(--molten2); font-weight:700; margin-right:8px}
+  .wrap{max-width:1060px; margin:0 auto; padding:32px 24px 80px}
+  header.hero{background:linear-gradient(135deg,#1a2332 0%,#2b4a6f 55%,#7a431d 110%);
+     color:#fff; border-radius:18px; padding:44px 44px 36px; margin-bottom:36px;
+     box-shadow:0 14px 40px rgba(26,35,50,.35)}
+  header.hero h1{font-size:29px; line-height:1.35}
+  header.hero .sub{margin-top:12px; color:#ffd9b8; font-size:15px}
+  header.hero .meta{margin-top:20px; display:flex; gap:24px; flex-wrap:wrap; font-size:13px; color:#c9d4e4}
+  header.hero .meta b{color:#fff}
+  h2.sec{font-size:21px; margin:50px 0 8px; display:flex; align-items:center; gap:10px}
+  h2.sec .no{background:var(--steel); color:#fff; font-size:13px; border-radius:8px; padding:2px 10px}
+  .sec-desc{color:var(--ink2); font-size:14px; margin-bottom:18px}
+  .grid{display:grid; gap:14px}
+  .g2{grid-template-columns:1fr 1fr} .g3{grid-template-columns:repeat(3,1fr)}
+  @media(max-width:860px){.g2,.g3{grid-template-columns:1fr}}
+  .card{background:var(--card); border:1px solid var(--line); border-radius:14px; padding:20px 22px;
+        box-shadow:0 2px 8px rgba(26,35,50,.05)}
+  .card h3{font-size:16px; margin-bottom:8px}
+  .card p{color:var(--ink2); font-size:14px}
+  .kicker{font-size:12px; letter-spacing:2px; color:var(--molten); font-weight:700; margin-bottom:6px}
+  table{width:100%; border-collapse:collapse; font-size:13.5px; background:#fff;
+        border-radius:12px; overflow:hidden; border:1px solid var(--line)}
+  th{background:#22334a; color:#fff; text-align:left; padding:10px 14px; font-size:13px}
+  td{padding:10px 14px; border-top:1px solid var(--line); vertical-align:top; color:var(--ink2)}
+  td b{color:var(--ink)}
+  tr:nth-child(even) td{background:#fbfaf7}
+  .pill{display:inline-block; font-size:12px; font-weight:700; padding:3px 12px; border-radius:999px; margin:0 6px 4px 0}
+  .p-done{background:#d3f9d8; color:#2b8a3e} .p-run{background:#ffe8cc; color:#e8590c} .p-todo{background:#e9ecef; color:#5f6773}
+  .pill-b{background:#d0ebff; color:#1971c2}
+  code{background:#eef0f4; padding:1px 6px; border-radius:5px; font-size:12.5px; color:#414d63}
+  .flow{display:flex; flex-wrap:wrap; gap:8px; align-items:stretch; margin:14px 0}
+  .flow .stp{flex:1 1 130px; background:#182742; color:#dce4f0; border-radius:10px; padding:12px 14px; font-size:12.5px}
+  .flow .stp b{color:#ffc999; display:block; font-size:13px; margin-bottom:4px}
+  .flow .stp .st{color:#8fa4c4; font-size:11px; display:block; margin-top:6px}
+  .flow .stp.done{background:#1c3a24} .flow .stp.done b{color:#8ce99a}
+  .flow .ar{align-self:center; color:#8a94a6; font-size:16px; padding:0 2px}
+  .warn{background:#fff3bf; border:1px solid #ffe066; border-radius:12px; padding:14px 18px; margin-top:14px}
+  .warn p{color:#6b5706; font-size:14px}
+  .verdict{background:var(--soft); border:1px solid #f3c89e; border-radius:12px; padding:14px 18px; margin-top:14px}
+  .verdict b{color:var(--molten)}
+  .verdict p{font-size:14px; color:#6b3d10; margin-top:2px}
+  ol.dec{padding-left:22px} ol.dec li{margin:9px 0; font-size:14px; color:var(--ink2)}
+  ol.dec li b{color:var(--ink)}
+  .role{display:inline-block; background:#e7f0ff; color:#1971c2; font-weight:700; font-size:12px; padding:1px 8px; border-radius:6px}
+  .src{font-size:12.5px; color:#8a94a6; line-height:1.9}
+  footer{margin-top:60px; color:#8a94a6; font-size:12.5px; text-align:center}
+  h4.mini{font-size:14.5px; margin:16px 0 6px; color:var(--ink)}
+</style>
+</head>
+<body>
+
+<nav>
+  <span class="brand">VEES 研讨 · 第三轮</span>
+  <a href="#eco">Skills 生态侦察</a>
+  <a href="#proc">标准开发流程</a>
+  <a href="#proc2">LLM 应用质量流程</a>
+  <a href="#docs">待讨论 & 待形成文档清单</a>
+  <a href="#steps">开发步骤（两周排期）</a>
+  <a href="#.Organization">职责分工 RACI</a>
+</nav>
+
+<div class="wrap">
+
+<header class="hero">
+  <h1>工业智能体的成熟开发范式<br>—— Skills 生态侦察 · 流程对标 · 文档清单 · 开发步骤</h1>
+  <div class="sub">回答三个问题：①别人怎么做成熟的？②我们还需要讨论什么、形成什么文档？③具体怎么一步步开发？</div>
+  <div class="meta">
+    <span>检索：<b>skills.sh 生态（151 万安装）· awesome-agent-skills（1000+ 合集）· Spec-Driven Development · LLM 评测工程</b></span>
+  </div>
+</header>
+
+<!-- ================= 生态侦察 ================= -->
+<h2 class="sec" id="eco"><span class="no">01</span>侦察一：成熟 Skills 生态地图</h2>
+<p class="sec-desc">开源 Agent Skills 生态（skills.sh，兼容 OpenCode/Claude Code/Cursor）已经沉淀了<b>可复用的工作方法论技能</b>，不是代码库，而是"流程知识包"——和我们给冶金专家建知识包是同一个思想，讽刺而正确。</p>
+
+<div class="grid g3">
+  <div class="card">
+    <div class="kicker">梯队一 · 方法论仪表链（直接可用）</div>
+    <h3>obra/superpowers 全流程派</h3>
+    <p>37 万+ 安装的开发全流程技能组，与我们阶段高度对口：<b>brainstorming</b>（我们已做完两轮）→ <b>writing-plans</b> → <b>executing-plans</b> → <b>test-driven-development</b> → <b>systematic-debugging</b> → <b>verification-before-completion</b> → <b>requesting-code-review</b>。</p>
+    <code>obra/superpowers@brainstorming</code>
+  </div>
+  <div class="card">
+    <div class="kicker">梯队二 · 规格驱动（Spec-Driven）</div>
+    <h3>mattpocock/skills + Spec Kit</h3>
+    <p>同一派系的<b>文档产物链</b>：<code>to-spec</code>（545K 安装）→ <code>to-prd</code> → <code>to-tickets</code> → <code>to-issues</code> → <code>implement</code> → <code>qa</code>。规则只有一条：<b>先写规格再写代码</b>（claudedirectory 认证的 2026 活跃 skill）。微软 Spec Kit 是同思想的开源实现（GitHub spec-kit）。</p>
+    <code>mattpocock/skills@to-spec</code>
+  </div>
+  <div class="card">
+    <div class="kicker">梯队三 · 领域与资产</div>
+    <h3>官方与领域技能</h3>
+    <p><b>anthropics/skill-creator</b>（我们自己写冶金 skills 用）、<b>supabase / prisma / neon</b> 数据库最佳实践、<b>microsoft/azure-skills</b>（含 entra-agent-id：Agent 身份管理——正好对应我们的仲裁与审计需求）、<b>ui-ux-pro-max</b>（36万安装，驾驶舱界面可用）、Itential 的<b>网络自动化 Builder Skills</b>（最接近工业场景的 spec 驱动先例）。</p>
+    <code>anthropics/skills@skill-creator</code>
+  </div>
+</div>
+
+<div class="verdict"><b>侦察结论</b>
+  <p>①不需要发明开发流程——<b>brainstorming → plan → spec → TDD → verification</b> 是社区已验证的标准链路，且我们前两轮研讨恰好走完了 brainstorming 阶段；②工业场景特殊性不在流程，在<b>评测数据</b>（黄金数据集）与<b>治理门禁</b>（shadow/仲裁）——这两块生态里没有现成 skill，是我们的自建机会；③安装命令 <code>npx skills add obra/superpowers@writing-plans -g -y</code>（需 Node≥18，本机暂无 Node，装 Node 后一次性配置）。</p></div>
+
+<!-- ================= 标准流程 ================= -->
+<h2 class="sec" id="proc"><span class="no">02</span>侦察二：成熟工业智能体的标准开发流程</h2>
+<p class="sec-desc">综合 Itential Builder Skills（网络自动化）、微软 AI-led SDLC（Spec Kit）、学术综述（AI×数字孪生四阶段框架，PMC 2025）提炼。</p>
+
+<h4 class="mini">工业智能体开发的八步流程（社区共识版）</h4>
+<div class="flow">
+  <div class="stp done"><b>S0 决策立项</b>多角色研讨→裁决采用/试点/拒绝<span class="st">产出：两轮研讨纪要 ✅</span></div>
+  <div class="stp done"><b>S1 规格先行</b>Spec → PRD → 任务拆解（to-spec/to-prd）<span class="st">spec-kit / to-spec 技能</span></div>
+  <div class="stp done"><b>S2 知识资产</b>Excel/PDF → 知识包+校验器<span class="st">产出：pangang.yaml **已完成 ✅**</span></div>
+  <div class="stp done"><b>S3 引擎+黄金用例</b>机理复现+黄金回归<span class="st">产出：75/75 0.0002% ✅</span></div>
+  <div class="stp"><b>S4 编排+工具</b>单Agent+MCP工具集<span class="st">LangGraph 已有雏形</span></div>
+  <div class="stp"><b>S5 驾驶舱界面</b>三要素回答+置信度<span class="st">MVP 当前冲刺</span></div>
+  <div class="stp"><b>S6 评测门</b>黄金数据集+红线测试<span class="st">本页 §03 流程详述</span></div>
+  <div class="stp"><b>S7 Shadow→上线</b>并行对照→人拍板→监控<span class="st">仲裁+审计</span></div>
+</div>
+<p style="font-size:13px;color:var(--ink2)">学术参照：2025 年 PMC《AI-Driven Digital Twins for Manufacturing》综述把行业应用归纳为预测性维护/过程优化/质量控制/动态调度四类——四类里我们的"配料-仿真-诊断"属于最成熟的第一梯队；arXiv:2601.01321 给出 AI×DT 生命周期的<b>四阶段统一框架</b>（感知→认知→决策→进化），与我们五层架构L0-L4一一对应——说明我们的架构不是自创野路子，而是行业正在收敛的同一张图。</p>
+
+<!-- ================= LLM质量流程 ================= -->
+<h2 class="sec" id="proc2"><span class="no">03</span>侦察三：LLM 应用特有的质量工程流程（工业场景加强版）</h2>
+<div class="grid g2">
+  <div class="card">
+    <h3>黄金数据集（Golden Dataset）——行业的"标准样"</h3>
+    <p style="margin-bottom:10px">企业级共识流程（Langfuse/Statsig/Arthur AI 2025-2026 文档）：<b>①从真实失败案例取样 → ②标注期望输出 → ③版本化 → ④每次变更跑回归 → ⑤持续补充边界案例</b>。</p>
+    <p>映射到我们：<b>已有绝佳起点</b>——Excel 75 条黄金值就是机理引擎的 golden dataset（本仓库已建成并 75/75 通过）。要补的是<b>对话侧</b>黄金集：30 条"操作工真实问法→期望回答要点+引用规则"样例，作为归因 Agent 的验收基准。</p>
+    <p style="margin-top:10px"><b> eléctr护栏：</b>黄金集分三级 L1 机理数字（全自动断言）/ L2 规则引用（半自动）/ L3 解释话术（专家抽评）。</p>
+  </div>
+  <div class="card">
+    <h3>评测门 + Shadow 发布（生产前必经）</h3>
+    <p style="margin-bottom:10px">LayerLens 五阶段生产框架：<b>预发布门禁 → Shadow 部署 → 持续评测 → 漂移检测 → 回归门禁</b>。与我们的设计完全同构，可直接引用其门禁语义：</p>
+    <p>· 红线门（何稳）：LLM 输出不含数字设定的静态检查，进 CI；<br>
+    · 守恒门（高工）：物料/热/钒三关，任何引擎改动必跑；<br>
+    · 炉次回放门（赵数）：≥300 炉回放，RMSE 劣化&gt;5% 即禁发布；<br>
+    · shadow 门（沈工）：新规则/新模型按"50 炉并行对照"协议。</p>
+  </div>
+</div>
+
+<!-- ================= 文档清单 ================= -->
+<h2 class="sec" id="docs"><span class="no">04</span>还需要讨论什么？——待形成文档清单（14 份）</h2>
+<p class="sec-desc">按"已形成 / 需讨论后形成 / 必须新增"三档列出。每份标注责任角色（RACI 详表见 §05）。</p>
+<table>
+  <tr><th style="width:22%">文档</th><th>核心内容</th><th style="width:13%">状态</th><th style="width:11%">Owner</th></tr>
+  <tr><td><b>1. MVP 产品需求书</b></td><td>驾驶舱三视图线框、三要素回答模板、操作工/专家/管理员三角色故事</td><td><span class="pill pill-run">本期产出</span></td><td class="role">产品</td></tr>
+  <tr><td><b>2. 架构裁决书</b></td><td>单/多智能体结论+迁移条件（本文档 §05 已定稿）</td><td><span class="pill pill-run">本期产出</span></td><td class="role">技术</td></tr>
+  <tr><td><b>3. 数据接口规范</b></td><td>铁水化验/TSC·TSO/烟气/氧枪 的字段、频率、网络边界——<b>最紧急</b>，P3 全部学习类任务的地基</td><td><span class="pill pill-run">本期产出(草案)</span></td><td class="role">工艺</td></tr>
+  <tr><td><b>4. 黄金数据集章程</b></td><td>三级黄金集定义（机理数字/规则引用/话术）、更新与冻结规则</td><td><span class="pill pill-run">本期产出(草案)</span></td><td class="role">数据</td></tr>
+  <tr><td><b>5. 知识包治理流程</b></td><td>版本命名→提出→回放→shadow→审批→生效；审批签字权和仲裁判例procedure</td><td><span class="pill pill-todo">待讨论</span></td><td class="role">产品+专家</td></tr>
+  <tr><td><b>6. 安全案例（红线书）</b></td><td>三条红线的测试化表达、拒绝服务逻辑、事故树（LLM幻觉如何被三层拦截）</td><td><span class="pill pill-todo">待讨论</span></td><td class="role">安全</td></tr>
+  <tr><td><b>7. 参数仲裁 SOP</b></td><td>CF-001~006 的处理流程模板：证据格式/双盲口径/判例入库字段</td><td><span class="pill pill-todo">待讨论</span></td><td class="role">冶炼+产品</td></tr>
+  <tr><td><b>8. IP 分级与部署边界</b></td><td>配方级机密的加密/审计/离线部署形态；"哪些话永远不出厂"</td><td><span class="pill pill-todo">待讨论</span></td><td class="role">技术+安全</td></tr>
+  <tr><td><b>9. KPI 定义书</b></td><td> assassin指标：品位达标率/残钒命中率/例外率/采纳率/吹炼时间——<b>没指标就没法证明价值</b></td><td><span class="pill pill-todo">待讨论</span></td><td class="role">产品+工艺</td></tr>
+  <tr><td><b>10. 供应商对照表</b></td><td>自研 vs 宝信类全厂平台 vs 按需采购的边界（我们做提钒专精，不重造全厂平台）</td><td><span class="pill pill-todo">待讨论</span></td><td class="role">产品+技术</td></tr>
+  <tr><td><b>11. 发布与回滚手册</b></td><td>知识包/引擎/Agent提示词 三类变更的独立版本管理与回滚程序</td><td><span class="pill pill-todo">P2 前</span></td><td class="role">技术</td></tr>
+  <tr><td><b>12. 多厂扩展协议书</b></td><td>迁移学习冷启动 SOP（T7 已裁决：结构迁移+50炉shadow）</td><td><span class="pill pill-todo">P3 前</span></td><td class="role">技术+数据</td></tr>
+  <tr><td><b>13. 复现与审计报告</b></td><td>已有工件汇编成正式版，供攀钢专家签字背书用</td><td><span class="pill pill-run">材料已备</span></td><td class="role">产品</td></tr>
+  <tr><td><b>14. 合规清单</b></td><td>备案要求/数据出境/模型许可（TabPFN v2.5 token 教训已记录）</td><td><span class="pill pill-todo">P3 前完成</span></td><td class="role">安全</td></tr>
+</table>
+
+<div class="warn">
+  <p><b>核心待讨论三问（建议下次专家会议议程）：</b>①验收指标定多少算成功（品位+0.5pp？残钒命中率 97%？还是操作工例外率&lt;5%？）②数据能不能出化验室/出厂（决定云端模型能不能用）；③规则签收人是谁——没有签字权机制，知识包永远停在 draft。</p>
+</div>
+
+<!-- ================= 步骤 ================= -->
+<h2 class="sec" id="steps"><span class="no">05</span>开发步骤：两周 MVP 冲刺排期</h2>
+<p class="sec-desc">原则：<b>每一步都踩在已完成的实证工件上</b>，不新增未验证组件。MVP 形态 = 本地单文件 HTML 驾驶舱（浏览器即跑、离线可用、IP 不出厂）。</p>
+
+<table>
+  <tr><th style="width:6%">天</th><th style="width:24%">任务</th><th>具体内容</th><th style="width:10%">Owner</th><th style="width:19%">验收</th></tr>
+  <tr><td>D1</td><td><b>规格先行</b></td><td>用 spec 流程写死 MVP 验收单：①输入7 个参数 ②输出 5 张卡 ③三要素解释模板 ④ΔH 仲裁动画⑤16 炉回放图⑥JS 引擎与 Python 黄金值误差&lt;0.01%</td><td>产品</td><td>PRD 草案签认</td></tr>
+  <tr><td>D2-3</td><td><b>JS 引擎移植</b></td><td>四大平衡→ TypeScript/JS 单文件实现，从 knowledge/pack/pangang YAML 自动生成常数（单一事实来源），内置黄金值自检面板</td><td>技术</td><td>自检 75 点全绿</td></tr>
+  <tr><td>D4-5</td><td><b>驾驶舱 UI</b></td><td>左输入滑杆/中结果大数字卡+富余热量/Si-V 扫描曲线/右三要素解释卡；ui-ux-pro-max 技能辅助视觉</td><td>产品+技术</td><td>操作工 5 分钟 understand</td></tr>
+  <tr><td>D6-7</td><td><b>16炉回放集成</b></td><td>实绩 vs 预测 SVG 曲线 + RMSE 面板 + 相似炉次检索（换算 T2 仲裁展示）</td><td>数据</td><td>RMSE 与 Python 一致</td></tr>
+  <tr><td>D8</td><td><b>安全护栏预演</b></td><td>红黄绿三色置信度输出 + "未经核实"标注逻辑 + 全程 trace_id 日志（本地导出 JSON）</td><td>安全</td><td>红线用例通过</td></tr>
+  <tr><td>D9-10</td><td><b> внутренних评审</b></td><td>四位角色过机；高工问三问（参数边界/修正系数适用性/极限工况）；修补后锁版 v0.1</td><td>全员</td><td>厂长/炉长演示会</td></tr>
+</table>
+
+<div class="verdict"><b>MVP 成功标准（先于开发写死，防 scope creep）</b>
+  <p>①引擎精度：JS 移植与 Python 黄金值误差 &lt;0.01%；②解释卡三要素（规则版本/机理/相似炉次）100% 覆盖；③ΔH_V 仲裁双方案可见且切换即时；④离线可用、单文件、无数据外发（安全总监签字项）；⑤演示流程 &lt;10 分钟讲完"输入→推荐→解释→仲裁→回放"闭环。</p></div>
+
+<!-- ================= RACI ================= -->
+<h2 class="sec" id="Organization"><span class="no">06</span>职责分工（RACI 精简版）</h2>
+<div class="grid g2">
+  <div class="card">
+    <h3>四席拍板</h3>
+    <table style="margin-top:6px">
+      <tr><th>角色</th><th>拍板事项</th></tr>
+      <tr><td><b>产品总监</b></td><td>MVP 范围冻结、PRD 签认、演示脚本、验收标准</td></tr>
+      <tr><td><b>技术总监</b></td><td>架构形态（单 Agent+工具）、技术栈、回滚手册</td></tr>
+      <tr><td><b>冶炼专家</b></td><td>参数仲裁终审、守恒关定义、领域验收</td></tr>
+      <tr><td><b>AI 专家</b></td><td>评测门禁标准、模型选型策略、Agent 形态</td></tr>
+    </table>
+  </div>
+  <div class="card">
+    <h3>架构裁决书（本页定稿 · 正文三句）</h3>
+    <p style="font-size:14.5px">① <b>MVP 与第一阶段采用"单智能体 + 工具集"</b>：一条编排线，四种工具（引擎/知识库/判例/回放）。理由：审计链清晰（安全红线②）、延迟可控、错误域单一；多智能体的 Actor/Validator/Reprompter 三角<b>作为对话形态在同一个编排线内演进</b>（P2 起 Validator 独立成服务），而不是一开始就分布式。</p>
+    <p style="margin-top:8px">② <b>界面走"三视图"路线</b>：驾驶舱（操作工）/ 仲裁台（专家）/ 治理台（管理员），MVP 只做驾驶舱+仲裁卡。答案三要素与红黄绿置信度为验收硬条款（沈工否决权生效中）。</p>
+    <p style="margin-top:8px">③ <b>触达形态</b>：MVP=本地 HTML + P2=内网 Web + P3=车间大屏/移动端加报。模型先走云端强模型（若数据出海被否，直接启用厂内小模型兜底路线）。</p>
+  </div>
+</div>
+
+<h2 class="sec"><span class="no">附</span>本轮引用来源</h2>
+<div class="card src">
+  <code>[skills.sh]</code> 开源 Agent Skills 生态（151 万安装）· <code>[VoltAgent/awesome-agent-skills]</code> 1000+ 合集 · <code>[obra/superpowers]</code> brainstorming→plan→TDD→verification 方法论技能组 · <code>[mattpocock/skills]</code> to-spec/to-prd/to-tickets 规格链 · <code>[anthropics/skills]</code> skill-creator 官方 · <code>[microsoft/azure-skills]</code> entra-agent-id（Agent 身份）<br>
+  <code>[PMC 2025 · Cited 49]</code> AI-Driven Digital Twins for Manufacturing: A Review · <code>[arXiv 2601.01321]</code> AI×DT 生命周期四阶段统一框架 · <code>[J. Intell. Manuf. 2025]</code> 软件代理×数字孪生系统比较（Reinpold）<br>
+  <code>[Itential Builder Skills]</code> 工业自动化域的 spec-driven builder skills 先例 · <code>[Microsoft Spec Kit]</code> 规格驱动的 agentic SDLC · <code>[Red Hat 2026-03]</code> vibes/specs/skills/agents 四支柱<br>
+  <code>[langfuse / getmaxim / statsig / arthur.ai]</code> 黄金数据集构建与维护实践 · <code>[layerlens]</code> LLM 生产评测五阶段（发布门禁/Shadow/持续评测/漂移/回归门禁）
+</div>
+
+<footer>
+  VEES 提钒冶炼智能体 · 第三轮：开发方法论与行动计划 · 2026-09-22<br>
+  前序材料：第一轮 VEES_AGENT_BRAINSTORM.html · 第二轮 VEES_TECH_DEEPDIVE.html · 证据工件 PANGANG_EXCEL_DECODED.md / ARBITRATION_DEMO.md
+</footer>
+
+</div>
+</body>
+</html>

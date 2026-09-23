@@ -1,0 +1,1 @@
+Moved Permanently. Redirecting to https://raw.githubusercontent.com/mattpocock/skills/v1.2.3/write-a-prd/SKILL.md

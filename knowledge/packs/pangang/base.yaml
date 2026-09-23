@@ -1,0 +1,192 @@
+# =====================================================================
+# 攀钢提钒专家知识包 (VEES Knowledge Pack)
+# =====================================================================
+# 来源: 攀钢专家 Excel《提钒预算测算钒品位低原因说明(1).xlsx》
+# 解码: PANGANG_EXCEL_DECODED.md · 复现: backend/app/tools/pangang_reference.py
+# 作用域: plant=pangang (可被 车间/炉座 级包继承覆盖)
+#
+# 每个参数必备字段: value(值) / unit(单位) / source(Excel单元格溯源)
+# 审批字段: approved_by 为空表示待攀钢专家确认, 生效前仅限 shadow 模式
+# =====================================================================
+
+schema: vees.knowledge-pack/v1
+pack:
+  plant: pangang
+  scope: plant                      # 行业基线 < 厂 < 车间 < 炉座 < 炉次
+  name: 攀钢提钒四大平衡专家知识包
+  version: 1.0.0
+  source_excel: "提钒预算测算钒品位低原因说明(1).xlsx (8表703公式)"
+  model_closure:                    # 模型自洽度 (复现验证)
+    mass_balance_diff_pct: -0.019
+    heat_balance_diff_rel: 1.2e-16
+    vanadium_balance_diff_kg: 0.0
+  approved_by: []                   # 待攀钢专家审批
+  status: draft                     # draft → reviewed → active
+
+# ---------------------------------------------------------------------
+# 2.1 成分修正类
+# ---------------------------------------------------------------------
+parameters:
+
+  composition_corrections:
+    iron_c_lab_factor:
+      value: 1.157
+      unit: dimensionless
+      source: "物料平衡推算!C8 (=基表!C15*1.157)"
+      desc: "入炉实际C = 化验室C × 1.157 (4.3%→4.975%)。化验vs炉前系统性偏差修正。"
+      open_question: "是否随铁水来源(承钢/西昌)变化?"
+    hot_metal_slag_ratio:
+      value: 0.0005
+      unit: "t渣/t铁水"
+      source: "3、冷料配吃后物料平衡!D106"
+      desc: "铁水带渣(高炉渣混入) 0.5‰ 铁水量。对应建龙'一罐到底'惩罚的攀钢口径。"
+
+  # -------------------------------------------------------------------
+  # 2.2 氧化产物分配类
+  # -------------------------------------------------------------------
+  oxidation_allocation:
+    co_share:      {value: 0.90, unit: fraction, source: "物料平衡!D25", desc: "碳氧化生成CO比例"}
+    co2_share:     {value: 0.10, unit: fraction, source: "物料平衡!D26", desc: "碳氧化生成CO2比例"}
+    slag_feo:      {value: 0.42, unit: fraction, source: "物料平衡!F47", desc: "渣中FeO比例(渣量反算基准)"}
+    slag_fe2o3:    {value: 0.03, unit: fraction, source: "物料平衡!G47", desc: "渣中Fe2O3比例"}
+    slag_iron_beads: {value: 0.10, unit: "t珠/t渣", source: "物料平衡!D88", desc: "渣带金属铁珠=渣量×10%"}
+    spitting_ratio:  {value: 0.003, unit: "t/t金属料", source: "物料平衡!D92", desc: "喷溅铁损(1600°C)"}
+    dust_ratio:      {value: 0.002, unit: "t/t金属料", source: "物料平衡!C66", desc: "烟尘=金属料×0.2% (技术处 周胜刚 提供)"}
+    dust_feo:        {value: 0.70, unit: fraction, source: "物料平衡!C66"}
+    dust_fe2o3:      {value: 0.20, unit: fraction, source: "物料平衡!C66"}
+    lining_ratio:    {value: 0.00017, unit: "t/t金属料", source: "物料平衡!L38", desc: "炉衬侵蚀量"}
+    lining_composition:
+      CaO:   {value: 0.02, source: "物料平衡!C38"}
+      SiO2:  {value: 0.02, source: "物料平衡!D38"}
+      MgO:   {value: 0.81, source: "物料平衡!E38"}
+      Al2O3: {value: 0.01, source: "物料平衡!F38"}
+      C:     {value: 0.14, source: "物料平衡!K38"}
+    free_o2_pct:   {value: 0.005, unit: "体积分数", source: "物料平衡!F79", desc: "炉气自由氧0.5%,配O2纯度99.8%解二元方程组(附表)"}
+    o2_purity:     {value: 0.998, unit: fraction, source: "物料平衡!F79"}
+
+  # -------------------------------------------------------------------
+  # 2.3 热力学参数类 (热量平衡 表2.1/2.2)
+  # -------------------------------------------------------------------
+  thermo:
+    cp:                               # 平均质量热容 kJ/(kg·°C) 与熔化潜热 kJ/kg
+      iron:  {cp_s: 0.745, L: 218.0, cp_l: 0.837, source: "热量!C5:E5", ref: "《转炉炼钢问答》"}
+      steel: {cp_s: 0.699, L: 272.0, cp_l: 0.837, source: "热量!C6:E6"}
+      slag:  {cp_l: 1.247, L: 209.0, source: "热量!D7:E7"}
+      gas:   {cp_l: 1.141, source: "热量!E8"}
+      dust:  {cp_l: 0.996, L: 209.0, source: "热量!D9:E9"}
+    dh:                               # 1kg元素氧化反应热 kJ/kg
+      Si:  {value: 29177.0, source: "热量!E15"}
+      Mn:  {value: 6593.0,  source: "热量!E16"}
+      Ti:  {formula: "DH_Si / 1.89 * 1.38", value: 21303.8, source: "热量!E17",
+            desc: "秘诀: Ti冷却效应按Si的1.38/1.89折算,无需单独测定"}
+      V:
+        value: 2777.0
+        source: "热量!E18"
+        desc: "备注'根据公式计算得到',原文未存"
+        conflict:
+          against: "仓库 MODEL_ALGORITHM.md (15000 MJ/t ≈ 热力学V2O5生成焓)"
+          gap_factor: 5.4
+          hypothesis: "可能对应V2O3/FeV2O4尖晶石产物形态的经验净放热"
+          arbitration: "待历史炉次热平衡反演 (见 v_heat_calibration.py)"
+      P:   {value: 18980.0, source: "热量!E19"}
+      C_CO:  {value: 11637.0, source: "热量!E20"}
+      C_CO2: {value: 34824.0, source: "热量!E21"}
+      Fe_FeO:   {value: 4249.0, source: "热量!E22"}
+      Fe_Fe2O3: {value: 6459.0, source: "热量!E23"}
+      Cr:   {value: 7598.0, source: "热量!E24"}
+      SiO2_slag: {value: 1620.0, source: "热量!E25", desc: "SiO2+2CaO成渣热"}
+
+  # -------------------------------------------------------------------
+  # 2.4 经验公式类
+  # -------------------------------------------------------------------
+  empirical_formulas:
+    iron_freezing_point:
+      expression: "1535 - (C*100 + Si*8 + Mn*5 + P*30 + S*25) - 7"
+      unit: "°C"
+      source: "热量!C29"
+    steel_freezing_point:
+      expression: "1535 - (C*65 + Si*8 + Mn*5 + P*30 + S*25) - 7"
+      unit: "°C"
+      source: "热量!C30"
+      note: "钢水C系数65 ≠ 铁水C系数100, 同元素双系数是专家经验"
+    slag_temp_delta_c:   {value: 20,   source: "热量!D66", desc: "渣温=钢水终点温度-20"}
+    gas_temp_c:          {value: 1450, source: "热量!D67"}
+    spit_temp_c:         {value: 1600, source: "热量!D70"}
+    other_heat_loss_pct: {value: 4.0, unit: "%热收入", source: "热量!C71"}
+
+  # -------------------------------------------------------------------
+  # 2.5 冷料边际响应 (表3.1/4.1 —— 核心资产)
+  # -------------------------------------------------------------------
+  coolant_marginal:
+    # 单位吸热量由机理逐项推导(钢水/渣/铁珠物理热+分解吸热-氧化放热), 非查表拍定
+    method: "1kg边际响应 + 线性叠加 + 富余热量反算配吃量 + 迭代修正"
+    specs:
+      pellet:                        # 球团矿(球返) ← 基表行21 / 物料平衡行34
+        fe2o3: 0.8797142857142858
+        sio2:  0.0326
+        v2o5:  0.00451
+        mgo: 0.01266
+        tio2: 0.0407
+        source: "基表!B21行, 物料平衡!H34"
+        reference_absorption_kj_kg: 4673.4
+      metal_fe:                      # 金属铁 ← 映射至弃渣球行(Excel原样)
+        fe2o3: 0.7714285714285715
+        sio2:  0.164
+        v2o5:  0.0045
+        source: "物料平衡!H35/D35 (映射自弃渣球行)"
+        reference_absorption_kj_kg: 1111.2
+        quirks: ["Q1铁珠口径", "Q3双重除纯度", "Q6吸热引用外部工作簿[15]"]
+      ore_block:                     # 块矿 ← 铁皮球行(Fe2O3) + 球团行(SiO2, Q4)
+        fe2o3: 0.9714285714285715
+        sio2:  0.0326
+        v2o5:  0.00001               # 0.001% (Excel J36)
+        source: "物料平衡!H36(铁皮球Fe2O3), SiO2引用D34(球团,Q4)"
+        reference_absorption_kj_kg: 5171.2
+        quirks: ["Q4 SiO2借用球团值"]
+      waste_slag_ball:               # 弃渣/铬渣球 ← 外购球行
+        fe2o3: 0.8797142857142858
+        sio2:  0.0326
+        v2o5:  0.0046
+        source: "物料平衡!H37/D37/J37 (外购球行)"
+        reference_absorption_kj_kg: 4676.1
+        quirks: ["Q2渣量未除(1-FeO%-Fe2O3%)"]
+
+  # -------------------------------------------------------------------
+  # 2.6 产品换算类
+  # -------------------------------------------------------------------
+  product_conversion:
+    v_recovery_slag_factor: {value: 0.935, source: "标准!E15", desc: "钒渣量→标准折算"}
+    v_in_slag_factor:       {value: 0.965, source: "标准!N23", desc: "渣中V折算"}
+    tfe_factor:             {value: 0.97,  source: "标准!F29"}
+    sludge: {a: 0.85, b: 0.62, water: 0.30, add: 0.0014, source: "标准!E16", desc: "除尘灰→污泥(含水30%)"}
+    fesilicon_kg_per_heat:  {value: 34.5, source: "基表!F11", desc: "硅铁0.438kg/t半钢,'增加半钢液中Si'"}
+    semi_steel_v_target_pct: {value: 0.025, source: "基表!H17", desc: "半钢残钒预算值; Source106约束为≤0.03, 语义不同并存"}
+
+# ---------------------------------------------------------------------
+# 与仓库建龙引擎(MODEL_ALGORITHM.md / initial_charge.py)的已知冲突
+# 仲裁原则: 双方案展示 + 历史证据 + 人工决策, 判例入库
+# ---------------------------------------------------------------------
+known_conflicts:
+  - id: CF-001
+    topic: "V氧化热"
+    pangang: "2777 kJ/kg (热量!E18)"
+    jianlong_repo: "15000 MJ/t (MODEL_ALGORITHM.md)"
+    evidence: "v_heat_calibration.py 16炉次反演"
+  - id: CF-002
+    topic: "冷却剂等效/品种"
+    pangang: "机理边际推导: 金属铁:球团:块矿:弃渣球 = 1:4.2:4.65:4.21 (吸热比)"
+    jianlong_repo: "1t生铁≈5.5t铁皮≈2.5t钒渣 (Source 95); 建龙无块矿, 攀钢无氧化铁皮冷料"
+    evidence: "品种差异本身即为厂级参数, 验证scope设计"
+  - id: CF-003
+    topic: "渣量算法"
+    pangang: "渣成分假设反推: 非铁氧化物/(1-FeO%-Fe2O3%)"
+    jianlong_repo: "W_slag = 2.14ΔSi + 1.79ΔV (PRD)"
+  - id: CF-004
+    topic: "冷却剂基准"
+    pangang: "纯机理: 热量富余/单位吸热"
+    jianlong_repo: "查表 22.5-45 kg/t + 温度修正0.18kg/t/°C + 上限25kg/t(与基准45矛盾)"
+  - id: CF-005
+    topic: "半钢残钒"
+    pangang: "0.0375% (年度预算)"
+    jianlong_repo: "≤0.03% (Source 106 硬约束)"
+    note: "预算值vs硬约束, 语义不同, 建议并存"

@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>第二轮 · 深水区研讨：最新 AI 技术能否解决提钒业务问题</title>
+<style>
+  :root{
+    --ink:#1a2332; --ink2:#3d4a5f; --paper:#f6f4ef; --card:#ffffff;
+    --molten:#e8590c; --molten2:#f76707; --steel:#2b4a6f; --line:#e3ded4; --soft:#fdf1e3;
+    --adopt:#2b8a3e; --pilot:#1971c2; --park:#b54708;
+  }
+  *{box-sizing:border-box; margin:0; padding:0}
+  body{font-family:"PingFang SC","Hiragino Sans GB","Microsoft YaHei",system-ui,sans-serif;
+       background:var(--paper); color:var(--ink); line-height:1.75; font-size:15px}
+  nav{position:sticky; top:0; z-index:9; background:rgba(26,35,50,.96); padding:10px 24px;
+      display:flex; gap:18px; flex-wrap:wrap; align-items:center}
+  nav a{color:#cfd8e6; text-decoration:none; font-size:13px; padding:3px 8px; border-radius:6px}
+  nav a:hover{background:#37455c; color:#fff}
+  nav .brand{color:var(--molten2); font-weight:700; font-size:14px; margin-right:8px}
+  .wrap{max-width:1060px; margin:0 auto; padding:32px 24px 80px}
+
+  header.hero{background:linear-gradient(135deg,#131c2a 0%,#4a2c14 55%,#e8590c 130%);
+     color:#fff; border-radius:18px; padding:44px 44px 36px; margin-bottom:36px;
+     box-shadow:0 14px 40px rgba(26,35,50,.35)}
+  header.hero h1{font-size:29px; line-height:1.35}
+  header.hero .sub{margin-top:12px; color:#ffd9b8; font-size:15px}
+  header.hero .meta{margin-top:22px; display:flex; gap:26px; flex-wrap:wrap; font-size:13px; color:#e6cdb8}
+  header.hero .meta b{color:#fff}
+  .round-tag{display:inline-block; margin-top:18px; background:rgba(255,255,255,.12);
+     border:1px solid rgba(255,255,255,.35); color:#fff; padding:7px 16px; border-radius:999px; font-size:13px; margin-right:8px}
+
+  h2.sec{font-size:21px; margin:52px 0 8px; display:flex; align-items:center; gap:10px}
+  h2.sec .no{background:var(--steel); color:#fff; font-size:13px; border-radius:8px; padding:2px 10px; letter-spacing:1px}
+  .sec-desc{color:var(--ink2); font-size:14px; margin-bottom:18px}
+  .grid{display:grid; gap:16px} .g2{grid-template-columns:1fr 1fr} .g3{grid-template-columns:repeat(3,1fr)}
+  @media(max-width:860px){.g2,.g3{grid-template-columns:1fr}}
+  .card{background:var(--card); border:1px solid var(--line); border-radius:14px; padding:20px 22px;
+        box-shadow:0 2px 8px rgba(26,35,50,.05)}
+  .card h3{font-size:16px; margin-bottom:8px}
+  .card p{color:var(--ink2); font-size:14px}
+  .kicker{font-size:12px; letter-spacing:2px; color:var(--molten); font-weight:700; margin-bottom:6px}
+
+  .badge{display:inline-block; font-size:12px; font-weight:700; padding:3px 12px; border-radius:999px; margin-right:8px; vertical-align:2px}
+  .b-adopt{background:#d3f9d8; color:#2b8a3e} .b-pilot{background:#d0ebff; color:#1971c2}
+  .b-defer{background:#fff3bf; color:#b54708} .b-reject{background:#ffe3e3; color:#c92a2a}
+  .b-ev{background:#e5dbff; color:#7048e8}
+
+  .tech{background:var(--card); border:1px solid var(--line); border-radius:16px;
+        padding:26px 28px; margin-bottom:26px; box-shadow:0 2px 10px rgba(26,35,50,.06)}
+  .tech>h3{font-size:18px}
+  .tech .what{color:var(--ink2); font-size:14px; margin:8px 0 14px}
+  .tech .cite{font-size:12.5px; color:#8a94a6; margin:10px 0 2px}
+  .tech .cite b{color:var(--steel)}
+  .rd{border-left:3px solid var(--line); padding:10px 16px; margin:12px 0; background:#fbfaf7; border-radius:0 10px 10px 0}
+  .rd .who{font-weight:700; font-size:13.5px}
+  .rd .who .tag{font-weight:400; color:#8a94a6; font-size:12px; margin-left:6px}
+  .rd p{font-size:14px; color:var(--ink2); margin-top:2px}
+  .r1{border-color:#7048e8} .r1 .who{color:#7048e8}
+  .r2{border-color:#e8590c} .r2 .who{color:#e8590c}
+  .r3{border-color:#1971c2} .r3 .who{color:#1971c2}
+  .r4{border-color:#2b8a3e} .r4 .who{color:#2b8a3e}
+  .r5{border-color:#c2255c} .r5 .who{color:#c2255c}
+  .r6{border-color:#b54708} .r6 .who{color:#b54708}
+  .rr{border-color:#868e96; background:#f4f3f6} .rr .who{color:#5f6773}
+  .verdict{background:var(--soft); border:1px solid #f3c89e; border-radius:12px; padding:14px 18px; margin-top:14px}
+  .verdict b{color:var(--molten)}
+  .verdict p{font-size:14px; color:#6b3d10; margin-top:2px}
+  .roundlbl{font-size:11.5px; font-weight:800; letter-spacing:1.5px; color:#a78bfa; margin:14px 0 4px;
+     border-bottom:1px dashed var(--line); padding-bottom:4px}
+  .roundlbl.g{color:#66a80f; border-color:#d8f5a2}
+  .roundlbl.f{color:#e8590c; border-color:#ffd8a8}
+
+  table{width:100%; border-collapse:collapse; font-size:13.5px; background:#fff;
+        border-radius:12px; overflow:hidden; border:1px solid var(--line)}
+  th{background:#22334a; color:#fff; text-align:left; padding:10px 14px; font-size:13px}
+  td{padding:10px 14px; border-top:1px solid var(--line); vertical-align:top; color:var(--ink2)}
+  td b{color:var(--ink)}
+  tr:nth-child(even) td{background:#fbfaf7}
+  .a{color:#2b8a3e; font-weight:800} .p{color:#1971c2; font-weight:800} .d{color:#b54708; font-weight:800} .x{color:#c92a2a; font-weight:800}
+
+  .src{font-size:12.5px; color:#8a94a6; line-height:1.9}
+  .src code{background:#eef0f4; padding:1px 6px; border-radius:5px; font-size:12px; color:#414d63}
+  footer{margin-top:60px; color:#8a94a6; font-size:12.5px; text-align:center}
+</style>
+</head>
+<body>
+
+<nav>
+  <span class="brand">VEES 研讨 · 第二轮</span>
+  <a href="#intel">技术侦察</a>
+  <a href="#t1">T1 世界模型</a>
+  <a href="#t2">T2 物理约束ML</a>
+  <a href="#t3">T3 Agentic+孪生</a>
+  <a href="#t4">T4 TSFM</a>
+  <a href="#t5">T5 TabPFN</a>
+  <a href="#t6">T6 GraphRAG</a>
+  <a href="#t7">T7 迁移学习</a>
+  <a href="#verdict">总裁决表</a>
+  <a href="#map">业务问题映射</a>
+</nav>
+
+<div class="wrap">
+
+<header class="hero">
+  <h1>第二轮 · 深水区研讨<br>最新的 AI 模型（V-JEPA 2、PINN、Agentic DT、TSFM、TabPFN、GraphRAG）<br>到底能不能解决提钒业务问题？</h1>
+  <div class="sub">规则：每个技术经过三轮辩论（立论 → 反驳 → 收敛）+ 一票裁决（采用 / 试点 / 搁置 / 拒绝），全部观点标注学术来源</div>
+  <div class="meta">
+    <span>检索范围：<b>arXiv · Nature · Metallurgical Trans. · IFAC · AIChE · GitHub · 工业界动态</b></span>
+    <span>时间窗：<b>2024Q4 – 2026.09</b></span>
+    <span>主席台：<b>上一轮六位专家 + 学术情报员 邱新</b></span>
+  </div>
+  <div style="margin-top:20px">
+    <span class="round-tag">第一轮_round：技术态势侦察</span>
+    <span class="round-tag">第二轮_round：逐技术正面交锋</span>
+    <span class="round-tag">第三轮_round：裁决与业务映射</span>
+  </div>
+</header>
+
+<!-- ============ 技术侦察 ============ -->
+<h2 class="sec" id="intel"><span class="no">R1</span>第一轮 · 学术情报员报告：七个候选技术</h2>
+<p class="sec-desc">邱新（新增角色：技术情报员）按"论文可信度 × 业务相关度"筛出七项 2024Q4 以来值得辩论的技术。</p>
+
+<div class="grid g2">
+  <div class="card">
+    <div class="kicker">T1 · 世界模型</div>
+    <h3>V-JEPA 2（Meta FAIR）</h3>
+    <p>10 亿小时视频自监督预训练的<b>潜在空间世界模型</b>；62 小时机器人数据后训练即可零样本规划。关键启示：与逐像素生成未来（如 Cosmos，4 分钟规划）相比，<b>潜空间规划快 30 倍（16 秒级）</b>——"先在模型里推演，再在现实里行动"有了工程可行的延迟预算。</p>
+    <div class="cite"><b>来源：</b>arXiv:2506.09985（2025-06）；Meta AI 官方博客与 HuggingFace 开源权重（含 ViT-L/H/G 三个尺寸）</div>
+  </div>
+  <div class="card">
+    <div class="kicker">T2 · 物理约束机器学习</div>
+    <h3>PINN / Physics-Informed ML 在钢铁业已落地</h3>
+    <p>不止是学术：连铸<b>中间包超热预测</b>（前馈-逆 PINN，处理时变热物性，2025-08）、热轧板坯温度场、钢铁 CCT 相变图（4100 张图数据，把<b>相变顺序约束与热力学一致性写进模型架构</b>，MAE&lt;20°C）。方法论：物理进损失项 + 架构约束，显著改善小样本泛化。</p>
+    <div class="cite"><b>来源：</b>Steel Res. Int. (2025-08)；arXiv:2512.03050 → Metall. Mater. Trans. A（2026-03）；arXiv:2508.17303</div>
+  </div>
+  <div class="card">
+    <div class="kicker">T3 · Agentic LLM × 数字孪生</div>
+    <h3>Actor–Validator–Reprompter 验证环</h3>
+    <p>过程工业已出现完整范本：Action Agent 提议 → <b>在数字孪生里仿真</b> → Validator 按 安全/工艺标准否决 → Reprompter 修正，循环到合格或触发安全旁路交给人工。另一篇（MDPI Processes 2025）走得更远：<b>孪生残差做异常检测，LLM 只在监督层，永远不直接指挥执行器</b>——与我们的红线完全同构。</p>
+    <div class="cite"><b>来源：</b>arXiv:2411.05904 / AIChE 2025；arXiv:2505.02076（ETFA 2025，故障处理）；arXiv:2507.07115（离散+连续统一框架）；MDPI Proc. 14(14):2298</div>
+  </div>
+  <div class="card">
+    <div class="kicker">T4 · 时序基础模型</div>
+    <h3>Chronos-2 / Moirai 2.0 / TimesFM 2.5</h3>
+    <p>TSFM 已进入"零训练出预测"时代：Chronos-2（2025-10）从单变量走向<b>通用多变量</b>；Moirai 2.0（2025-11）主打"少即是多"。</p>
+    <p>风险面同样明确：基准综述指出 TSFM 存在<b>训练/评测集泄漏</b>问题，且在长周期、低信噪比序列上可能不敌简单线性 AR——<b>用前必须自建干净 benchmark</b>（arXiv:2510.13654）。</p>
+    <div class="cite"><b>来源：</b>arXiv:2510.15821（Chronos-2）；arXiv:2511.11698（Moirai 2.0）；arXiv:2510.13654（基准问题）</div>
+  </div>
+  <div class="card">
+    <div class="kicker">T5 · 小样本表格基础模型</div>
+    <h3>TabPFN v2（Nature 2025）</h3>
+    <p>在 ≤10,000 样本、500 特征的表格任务上<b>大幅超越调参 4 小时的 XGBoost/CatBoost 集成</b>——在 2.8 秒内。对炼钢这种"每炉一行、几千行"的场景是精确命中的数据形态；v2.5 支持到 5 万样本，支持 SHAP 解释、异常检测、嵌入式特征提取。学界追评（arXiv:2502.17361）指出其局限：高维/多类别/大规模退化，预训练合成数据分布可能与我们工况失配。</p>
+    <div class="cite"><b>来源：</b>Nature 637:319-326（2025-01）；arXiv:2502.17361；arXiv:2505.20003（统计学解读：近似贝叶斯推断）</div>
+  </div>
+  <div class="card">
+    <div class="kicker">T6 · 知识检索演化</div>
+    <h3>GraphRAG / Agentic RAG，以及"什么时候不该用"</h3>
+    <p>微软 GraphRAG 生态已到 LazyGraphRAG / DRIFT Search；Zep/Graphiti 提出<b>时序知识图谱记忆</b>（判例有时间性：生效/被修订/被推翻）。反面文献同样关键：ACL 2026 GEM《Is GraphRAG Needed?》给出 9 场景对比框架，发现<b>"检索质量提升 ≠ 生成质量提升"</b>的鸿沟，且上下文工程可省 19–53% token。</p>
+    <div class="cite"><b>来源：</b>microsoft/graphrag；arXiv:2606.25656（ACL 2026）；arXiv:2501.13956（Zep）；graphrag.com Pattern Catalog</div>
+  </div>
+  <div class="card" style="grid-column:1/-1">
+    <div class="kicker">T7 · 多厂扩展的被忽视答案</div>
+    <h3>过程工业软测量的迁移学习（2026 系统综述） + 宝信"钢铁大模型"参照系</h3>
+    <p><b>跨域迁移学习软测量</b>在化工/流程业已有系统方法论（2026 IEC&amp;R 综述）——这正是"攀钢模型 → 新车间"的科学依据，比我们上一轮拍脑袋的"分聚类参数库"更进了一步。工业界参照：宝武/宝信"钢铁大模型"（WAIC 2025 SAIL 奖 TOP30，语言/视觉/预测/决策四类模型 + AI 炉长/主操员智能体），验证了"通专融合"的分层路线，也提示了<b>我们不必重造全厂平台，只需做提钒专精</b>。BOF 学术侧：Transformer 终点温度预测（1 万+ 炉次工业数据，TTB-BOFNet，Metall Trans B 2025-06）证明大数据路线可用但依赖十年级数据积累。</p>
+    <div class="cite"><b>来源：</b>Ind. Eng. Chem. Res. 65 (2026) 迁移学习软测量综述；Metall. Mater. Trans. B (2025-06) TTB-BOFNet；宝信软件 WAIC 2025 公开材料</div>
+  </div>
+</div>
+
+<!-- ============ 逐技术交锋 ============ -->
+<h2 class="sec" id="t1"><span class="no">R2</span>第二轮 · 逐技术正面交锋（每项三轮）</h2>
+<p class="sec-desc">标注：🟣林深(AI) 🟠高韧(冶炼) 🔵沈炉(工艺) 🟢赵数(数据) ♹何稳(安全) 🟤苏呈(知识工程) —— 论点均标注论文依据。</p>
+
+<!-- T1 -->
+<div class="tech">
+  <h3><span class="badge b-pilot">试点</span>T1 · 世界模型（V-JEPA 2）：能不能当提钒的"预演引擎"？</h3>
+  <div class="roundlbl">ROUND 1 · 立论</div>
+  <div class="rd r1"><div class="who">🟣 林深<span class="tag">AI 架构 · 引 arXiv:2506.09985</span></div>
+    <p>V-JEPA 2 证明了<b>"潜空间预测 + 规划"比显式生成快 30 倍</b>，且动作条件化后 62 小时数据就能零样本执行。映射到我们：L2 的"未来 6 分钟推演"天然是动作条件预测问题——氧枪动作 × 加料动作 → 熔池演变。它的架构哲学（潜空间状态 + 编码器-预测器）可以借，不需要视频本体。</p></div>
+  <div class="roundlbl f">ROUND 2 · 反驳</div>
+  <div class="rd r2"><div class="who">🟠 高韧<span class="tag">冶炼专家</span></div>
+    <p>三个数据域失配，我的否决理由：①JEPA 学的是<b>百万小时视觉流</b>，我们是<b>稀疏多模态示剂数据</b>（成分/温度/流量，10 秒粒度，且关键量常用软测量重构）——视频预训练的先验对熔池几乎为零；②它输出的是<b>潜空间预测</b>，操作工要的是"终点 Si 含量 ±0.005%"这种<b>物理量</b>，潜→显映射误差不可控；③守恒律进不了 JEPA 的训练目标，V-JEPA 2 对"物理合理性"的保证是统计性的，而我们的内核已经做到<b>机器精度守恒</b>。用一个不守恒的模型替换守恒的模型，是倒退。</p></div>
+  <div class="rd r4"><div class="who">🟢 赵数<span class="tag">数据科学</span></div>
+    <p>高工否决的是"替代"，但 JEPA 思想里有两块可拆走：<b>①自监督轨迹表征</b>——在历史炉次时序上做 JEPA 式预训练（预测炉次下半段的隐表示），得到每炉的"指纹"，用于聚类参数库匹配和漂移检测（比 K-Means 手工特征强）；<b>②潜空间规划快</b>这一点支持我们在 ODE 基础上再加一个<b>轻量代理模型</b>做 what-if 的预演——注意是代理 ODE，不是替代 ODE。</p></div>
+  <div class="rd r3"><div class="who">🔵 沈炉<span class="tag">工艺专家</span></div>
+    <p>业务现实检查：我 90 秒异常窗口要的是"因果解释 + 处置判例"，潜空间 向量给不了这两样。V-JEPA 论文自己的基准全是 pick-and-place——离转炉炉口差着十万八千里。谁跟我说用视频学炼钢，先拿出千炉级带标注的炉口火焰+烟气+副枪联动数据再说。</p></div>
+  <div class="roundlbl g">ROUND 3 · 收敛</div>
+  <div class="rd rr"><div class="who">🟣 林深 · 总结</span></div>
+    <p>接受：不迁移模型本体，采架构思想。三条遗产进路线图：<b>①轨迹自监督表征用于炉次指纹（P3 试点）②"先在孪生里推演再执行"上升为系统总原则（T3 的论文恰好是工程化版本）③潜空间加速思路保留给远期（若日级副枪视频数据齐备再议）</b>。</p></div>
+  <div class="verdict"><b>裁决：🧪 试点（窄口径）</b>
+    <p>①采纳"世界模型"作为 L2 shadow 推演的总范式（用发达的 ODE + 轻量代理加速，不用视频）；②炉次指纹 embedding 试点放入 P3 学习闭环；V-JEPA 本体不引入——数据域不匹配且不守恒。</p></div>
+</div>
+
+<!-- T2 -->
+<div class="tech">
+  <h3><span class="badge b-adopt">采用</span>T2 · 物理约束机器学习（PINN）：给灰箱模型上"物理护栏"</h3>
+  <div class="roundlbl">ROUND 1 · 立论</div>
+  <div class="rd r6"><div class="who">🟤 苏呈<span class="tag">知识工程 · 引 Steel Res. Int. 2025 / arXiv:2512.03050</span></div>
+    <p>钢铁行业已经给了我们三个可抄的作业：<b>连铸超热 fi-PINN</b>（前馈-逆结构处理时变热物性）、热轧温度场 PINN、CCT 图的物理约束架构（4100 样本、相变序列约束写进 softmax 结构）。我们的处境一模一样：样本中等、物理强先验、需要泛化到工况变化。</p></div>
+  <div class="roundlbl f">ROUND 2 · 反驳</div>
+  <div class="rd r2"><div class="who">🟠 高韧<span class="tag">冶炼专家</span></div>
+    <p>提醒一个冶金学的坑：PINN 的守恒残差是<b>"软约束"</b>——放进损失函数跟其他项加权，权重没调好物理就形同虚设。我们的立场不变：<b>守恒必须是硬校验</b>（外置三道关），PINN 的物理项只能算"第四道关"，不能替代守恒关。另外论文里的物理约束是相变序列这种离散规则，我们的约束（1.157 系数、渣成分反推）是查表型经验——两类先验的嵌入方式完全不同，不能直接照搬。</p></div>
+  <div class="rd r4"><div class="who">🟢 赵数<span class="tag">数据科学</span></div>
+    <p>同意硬校验外置。技术路线我提个混合法：<b>残差修正从 RLS 升级为物理约束残差网络</b>——输入（本炉工况库类匹配 + 过程轨迹特征）输出 Δθ 修正量，损失函数加守恒残差项。这比纯 RLS 能吃进更多工况特征，又不会像端到端那样放飞。16 炉次反演已经暴露"光调一个参数解释不了偏差"，这种多参数修正正是 PINN 残差法的用武之地。</p></div>
+  <div class="rd r3"><div class="who">🔵 沈炉<span class="tag">工艺专家</span></div>
+    <p>现场角度：PINN 论文都在连续铸造（可在线测温验证）和实验室里做的。转炉熔池里 1600°C 金属液面，我们<b>连被约束的"真值"都没有</b>——温度靠副枪点测加软测量。PINN 学的是"服从方程的插值"，如果方程本身在那个工况就偏（比如 V 氧化热还没定），PINN 会把错误物理学得又快又自信。所以顺序必须是：先把 CF-001 这种参数仲裁完，再上 PINN。</p></div>
+  <div class="roundlbl g">ROUND 3 · 收敛</div>
+  <div class="rd rr"><div class="who">🟢 赵数 · 回应沈炉</span></div>
+    <p>沈工说到点子上了。<b>采纳但有前置条件链</b>：CF-001 参数仲裁 → 炼Chemistry级数据（TSC/TSO/烟气）接入 → 残差网络试点（输出层只修正 θ 修正量，不直接输出终点值）→ 与 RLS 平行运行对照一个季度。</p></div>
+  <div class="verdict"><b>裁决：采用（带前置）</b>
+    <p>PINN-残差法列为 L3 学习闭环的正式技术路线（与 RLS 并行试点）；硬约束：守恒校验外置、参数仲裁（CF-001）先行、修正量而非终点值作为输出。</p></div>
+</div>
+
+<!-- T3 -->
+<div class="tech">
+  <h3><span class="badge b-adopt">采用</span>T3 · Agentic LLM × 数字孪生验证环：直接抄作业</h3>
+  <div class="roundlbl">ROUND 1 · 立论</div>
+  <div class="rd r1"><div class="who">🟣 林深<span class="tag">AI 架构 · 引 arXiv:2411.05904 / 2505.02076 / 2507.07115</span></div>
+    <p>这篇 arXiv:2507.07115（2025-07）就是我们想要的架构<B>已经发表</b>：Action Agent 提议 → 数字孪生离线仿真每条候选动作 → Validator 按 安全/工艺标准否决 → Reprompter 修正 → 达到迭代上限才交给安全旁路。而且它<b>同时做了离散故障恢复和连续控制</b>两个案例。我们的 L4 层不用发明，照着改：Actor=建议生成，Validator=我们的三道守恒关+规则引擎，Reprompter=仲裁工作台的"再算一次"。</p></div>
+  <div class="roundlbl f">ROUND 2 · 反驳</div>
+  <div class="rd r5"><div class="who">🔴 何稳<span class="tag">功能安全 · 引 MDPI Proc. 2025 认知监督控制</span></div>
+    <p>论文里的框架在 TCLab（桌面加热器）上验证——转炉是另一个世界。但 MDPI 那篇给了<b>更狠的约束</b>我全盘同意：LLM 放在<b>监督层</b>，靠孪生残差模型做异常检测和分级干预，<b>LLM 永远无权直接命令执行器</b>；干预记录自动生成而非查询触发。</p>
+    <p>我要加两条工程红线：①<b>执行护栏</b>（超时/重试/并发上限，防止"runaway token consumption"——引用原文的担忧）废掉建议就立即静默；②验证环里所有决策留痕到 trace_id，出事可回放。</p></div>
+  <div class="rd r3"><div class="who">🔵 沈炉<span class="tag">工艺专家</span></div>
+    <p>这套验证环其实就是把我们的"仲裁 + shadow mode"工程化了，我认。但提醒一句：<b>孪生的保真度决定验证环的价值</b>。我们 ODE 攀钢复现黄金用例过了，但那是月度测算口径——L2 的 10 秒步长动力学还没和实绩对过。在孪生里验证过的动作，到了真炉子上可能错。所以验证环结论必须带"孪生置信度"标签。</p></div>
+  <div class="roundlbl g">ROUND 3 · 收敛</div>
+  <div class="rd rr"><div class="who">🟣 林深 · 总结</span></div>
+    <p>采纳沈工的"孪生置信度"概念，并落到架构里：Validator 输出三档——<b>绿</b>（守恒+规则+孪生一致高置信，可直接呈报操作工）、<b>黄</b>（仅参考，弹仲裁）、<b>红</b>（行为受限或数据低置信，明示拒绝）。</p></div>
+  <div class="verdict"><b>裁决：采用（P2 交互架构蓝本）</b>
+    <p>Actor–Validator–Reprompter 环落进现有 LangGraph；孪生 = 攀钢机理引擎（黄金用例背书）；LLM 卡在监督层；红/黄/绿三色置信度输出；执行护栏（超时/重试上限/安全旁路）照论文实现。</p></div>
+</div>
+
+<!-- T4 -->
+<div class="tech">
+  <h3><span class="badge b-defer">搁置观察</span>T4 · 时序基础模型（TSFM）：别在错误的环节用它</h3>
+  <div class="roundlbl">ROUND 1 · 立论</div>
+  <div class="rd r4"><div class="who">🟢 赵数<span class="tag">数据科学 · 引 Chronos-2 / Moirai 2.0</span></div>
+    <p> temptation 很大：烟气 CO/CO₂ 曲线、炉口火焰亮度序列、汽化冷却蒸汽量——都是时序，TSFM 零训练给预测。Chronos-2 已支持多变量。工业试点 zero-shot 即可用，<b>不用配 GPU</b>。</p></div>
+  <div class="roundlbl f">ROUND 2 · 反驳</div>
+  <div class="rd r5"><div class="who">🔴 何稳 + 🔵 沈炉</span></div>
+    <p>何稳：三次警报①<b>基准泄漏</b>（arXiv:2510.13654 指出主流 TSFM 的训练/评测集重叠，数字不可尽信）；②<b>物性无关性</b>——烟气序列由脱碳动力学决定，规律我们<b>已经有方程了</b>（软测量烟气反算 dC/dt），用统计模型替代已知机理，在高危环节是倒退；③长周期低信噪比下 TSFM 输给线性 AR 模型（同一篇实测），炉口火焰这种高噪声信号恰在此列。</p>
+    <p>沈炉：炉子一个吹程 8 分钟，异常前兆窗口几十秒。任何"预训练大模型"的毫秒级延迟优势在这里毫无意义，因为<b>瓶颈是传感器置信度，不是预测器速度</b>。</p></div>
+  <div class="roundlbl g">ROUND 3 · 收敛后仍分歧</div>
+  <div class="rd rr"><div class="who">🟢 赵数 · 保留意见</span></div>
+    <p>我降级诉求：不用在<b>控制相关</b>序列，但<b>漂移监测的参考基线</b>可以用——对上百个外围仪表序列做零-shot 预测，预测残差异常就是"仪表/工艺悄悄变了"的早期信号。这个环节错了顶多报警不准，不伤人。成本几乎为零，值得放在观察名单。</p></div>
+  <div class="verdict"><b>裁决：搁置观察（限定一个无害场景）</b>
+    <p>P3 的外围仪表健康监测里做一次 Chronos-2 零训练试点（预测器坏点/漂移的参考基线）；<b>禁止</b>进入终点预测、配料、枪位等任何控制相关环节。季度复盘后决定去留。</p></div>
+</div>
+
+<!-- T5 -->
+<div class="tech">
+  <h3><span class="badge b-pilot">试点</span>T5 · TabPFN v2：小样本表格的"外挂大脑"</h3>
+  <div class="roundlbl">ROUND 1 · 立论</div>
+  <div class="rd r4"><div class="who">🟢 赵数<span class="tag">数据科学 · 引 Nature 637:319-326</span></div>
+    <p>和我们业务最贴合的一篇：<b>数据 ≤10k 行、几十个特征</b>——每炉一行，几千炉正好在 TabPFN v2 的甜区；粒子 v2.5 支持到 5 万行。Nature 实测<b>零调参超过调参 4 小时的 XGBoost 集成</b>，20 多个标准任务排名碾压树模型。对"每厂独立建模 + 厂间不共享原始数据"的约束也友好：预训练模型厂内可用，现场只做 in-context 推断。</p></div>
+  <div class="roundlbl f">ROUND 2 · 反驳</div>
+  <div class="rd r2"><div class="who">🟠 高韧<span class="tag">冶炼专家</span></div>
+    <p>两个疑问：①它的先验是<b>合成因果模型</b>生成的——炼钢数据里的强非线性和查表型分段（我们那 22.5/33/39/45 的 Si 分档）它见过吗？②预训练分布和提钒工况的失配没有文献证据，到我们数据上可能反而不如 GBM。<b>别信 Nature 主榜，信我们自己的炉次回放</b>——用回放来验收，跟 V 氧化热反演同一套打法。</p></div>
+  <div class="rd r6"><div class="who">🟤 苏呈<span class="tag">知识工程</span></div>
+    <p>补一个排期风险：TabPFN v2.5 需要 license token（Prior Labs 管理），厂内离线部署要过法务。试点选 v2（Apache 许可、≤10k 样本够用）绕开依赖。</p></div>
+  <div class="roundlbl g">ROUND 3 · 收敛</div>
+  <div class="rd rr"><div class="who">🟢 赵数 · 定试点方案</span></div>
+    <p>验收标准提前写死，防止"模型好看但没用"：<b>任务</b>=炉后诊断分类（喷溅/返干/低收得率归因）+ 相似炉次检索的残差修正两条；<b>基线</b>=现有 RLS + XGBoost；<b>数据</b>=知识包同款 16 炉不可用（太少），等 P3 炉次级数据到位后用 ≥300 炉做回放；<b>判据</b>=RMSE 相对 RLS 提升 ≥15% 才转正式。</p></div>
+  <div class="verdict"><b>裁决：试点（P3 前置，回放验收制）</b>
+    <p>在 L3 学习闭环里与 RLS 竞争"残差修正"与"炉后归因分类"两个岗位，≥300 炉历史回放胜出才转正。v2.5 的许可证问题不影响试点。</p></div>
+</div>
+
+<!-- T6 -->
+<div class="tech">
+  <h3><span class="badge b-pilot">试点（限定域）</span>T6 · GraphRAG / 时序知识图谱：用在"制度性知识"和判例库</h3>
+  <div class="roundlbl">ROUND 1 · 立论</div>
+  <div class="rd r1" style="border-color:#7048e8"><div class="who">🟣 林深<span class="tag">AI 架构 · 引 microsoft/graphrag · Zep arXiv:2501.13956</span></div>
+    <p>我们的知识天然有两种形态：<b>结构化规则包</b>（已 YAML 化）和<b>叙述性文档</b>（3 份 PDF 技术材料 + 规程 + 判例）。后者里藏的是"为什么"——Source 编号之间的引用关系、规程条款和参数的推导链，这正是图的强项。Zep 的<b>时序知识图谱</b>还有一个妙用：判例库天然需要时间性（规则 v1 在 2026-03 生效、2026-05 被 v2 修订取代），普通向量库丢时间维度，检索会把作废判例捞回来。</p></div>
+  <div class="roundlbl f">ROUND 2 · 反驳</div>
+  <div class="rd r5"><div class="who">🔴 何稳 + 引 ACL 2026《Is GraphRAG Needed?》</span></div>
+    <p>反面证据必须摆上桌：<b>检索指标提升 ≠ 回答质量提升</b>（retrieval-generation gap），引入图管线 = 多一个组件、多一类故障。我们的裁决交互里，答案的三要素（规则版本/相似炉次/机理）来自<b>确定性查询</b>，70% 的日常问答根本用不上多跳推理。GraphRAG 的构建成本（实体抽取质量决定一切）在中文冶金语料上没有现成方案。</p></div>
+  <div class="rd r3"><div class="who">🔵 沈炉<span class="tag">工艺专家</span></div>
+    <p>我唯一真正需要"多跳"的场景：<b>归因分析时顺着证据链走</b>——"品位低 → 检查 Si 稀释 → Si 高是哪种铁水 → 该铁水上次的处理结果"这最多两跳。用规则包里的<b>显式引用字段</b>（cause→rule→parameter→source）就能查图，不需要让 LLM 生成图。你们搞个轻量的规则引用图就够了，别上 Neo4j 全家桶。</p></div>
+  <div class="roundlbl g">ROUND 3 · 收敛</div>
+  <div class="rd rr"><div class="who">🟣 林深 · 让步后修正方案</span></div>
+    <p>接受"轻量图"：<b>结构化引用图 = YAML 知识包规则节点 + 显式依赖边 + 判例时间戳边</b>（Zep 思想），用 PostgreSQL 即刻能实现，不用图数据库；全文检索走 BM25+向量。微软 GraphRAG 的社区摘要那套<b>不引入</b>（为一个查询模式引入一个平台不划算）。</p></div>
+  <div class="verdict"><b>裁决：轻量版试点</b>
+    <p>①主检索 = BM25 + 向量 + 结构化路由（P2）；②"治理图"= 知识包显式引用 + 判例时序边，支撑归因链与作废规避；③Full GraphRAG 不采用（ACL 2026 证据支持我们克制）。</p></div>
+</div>
+
+<!-- T7 -->
+<div class="tech">
+  <h3><span class="badge b-adopt">采用（P3 主力）</span>T7 · 迁移学习软测量：多厂扩展的正解</h3>
+  <div class="roundlbl">ROUND 1 · 立论</div>
+  <div class="rd r6"><div class="who">🟤 苏呈<span class="tag">知识工程 · 引 Ind. Eng. Chem. Res. 2026 软测量迁移学习综述</span></div>
+    <p>去年我们拍脑袋定的"知识包级联 + 分厂参数库"，今年有了系统方法论背书：<b>跨域迁移软测量</b>综述给出的分类（源域选择/特征对齐/参数微调/实例迁移）正好是我们"攀钢 → 新厂"迁移的选项清单。这也回应了议题四的悬而未决：新厂冷启动不要求每厂都有攀钢级的数据历史。</p></div>
+  <div class="roundlbl f">ROUND 2 · 反驳</div>
+  <div class="rd r3"><div class="who">🔵 沈炉<span class="tag">工艺专家</span></div>
+    <p>现场警告：厂与厂之间不是"分布漂移"，是<b>工艺路线本质差异</b>（攀钢冷料结构里根本没有氧化铁皮冷料）。迁移能搬"结构"，不能搬"数值"。迁移什么要有纪律：<b>迁移模型结构与学习算法，不迁移参数数值</b>——参数永远从该厂自己的回放里长出来，攀钢的 1.157 到建龙一钱不值。MARvel域的方法综述里应该有 negative transfer 案例，选源时要看工艺 相似度指标而不是数据量。</p></div>
+  <div class="roundlbl g">ROUND 3 · 收敛</div>
+  <div class="rd rr"><div class="who">🟢 赵数 · 增补验收协议</span></div>
+    <p>迁移协议三条：<b>①结构迁移优先</b>（引擎架构/约束参数跨厂共享，走"行业基线"层）；<b>②数值迁移仅限通过工艺相似度门控的软测量初始值</b>；<b>③每厂前 50 炉强制 shadow 对照</b>，迁移模型与冷启动模型同时跑，不达标即回退冷启动。这正好套进已有的五级级联——"行业基线层"就是为迁移留的位置。</p></div>
+  <div class="verdict"><b>裁决：采用，写入路线图 P3</b></p>
+    <p>迁移学习作为"新厂冷启动"标准协议：行业基线层共享结构 → 特征对齐 → 50 炉 shadow 对照 → 参数入库。知识包 scope 字段自动承载来源标注。</p></div>
+</div>
+
+<!-- ============ 裁决 ============ -->
+<h2 class="sec" id="verdict"><span class="no">R3</span>第三轮 · 总裁决表（七项技术的最终去向）</h2>
+<table>
+  <tr><th>技术</th><th style="width:10%">裁决</th><th>去向与条件</th><th style="width:13%">责任人 / 时点</th></tr>
+  <tr><td><b>T1</b> V-JEPA 2 世界模型</td><td class="p">试点(窄)</td><td>不引入模型本体（数据域不匹配+不守恒）；采纳其<b>"潜空间规划 30× 快于像素生成"</b>的范式：L2 的 6 分钟推演用<b>机理代理模型加速</b>（ODE 上叠轻量代理），支撑 shadow mode 与 90 秒异常预演</td><td>赵数 / P3初</td></tr>
+  <tr><td><b>T2</b> PINN 物理约束 ML</td><td class="a">采用</td><td>L3 残差学习升级路径：物理约束残差网络与 RLS 并行对照；<b>前置：CF-001 仲裁完成 + 炉次级数据接入</b>；守恒关保持外置硬校验</td><td>赵数+高 / P3</td></tr>
+  <tr><td><b>T3</b> Agentic LLM + 孪生验证环</td><td class="a">采用</td><td>P2 交互架构蓝本：Actor(建议)→Validator(守恒关+规则)→Reprompter(重算)；孪生=攀钢引擎；红黄绿三色置信；LLM 永不出局监督层</td><td>林深+何稳 / P2</td></tr>
+  <tr><td><b>T4</b> TSFM (Chronos-2等)</td><td class="p">搁置观察</td><td>仅限"仪表健康参考基线"零训练试点；基准泄漏风险已记录；控制相关环节禁入</td><td>赵数 / P3 观察项</td></tr>
+  <tr><td><b>T5</b> TabPFN v2</td><td class="p">试点</td><td>炉后归因分类 + 相似炉次残差修正；≥300 炉回放验收；基线=RLS/XGBoost；用 v2 绕开 v2.5 许可证</td><td>赵数+苏呈 / P2末</td></tr>
+  <tr><td><b>T6</b> GraphRAG / 时序 KG</td><td class="p">轻量试点</td><td>拒绝 Full-graphRAG（ACL 2026 证据：检索收益≠生成收益）；采用<b>知识包显式引用图 + 判例时序边</b>（Zep 思想），防作废判例回捞</td><td>林深 / P2</td></tr>
+  <tr><td><b>T7</b> 迁移学习软测量</td><td class="a">采用</td><td>新厂冷启动标准协议：结构迁移 → 工艺相似度选源 → 50 炉 shadow 对照；不迁移参数数值</td><td>赵数+苏呈 / P3</td></tr>
+</table>
+
+<!-- ============ 业务映射 ============ -->
+<h2 class="sec" id="map"><span class="no">R3+</span>回扣业务：每个业务问题现在有"技术配方"了</h2>
+<table>
+  <tr><th style="width:26%">业务问题</th><th>技术配方（对应裁决）</th><th style="width:12%">当前缺口</th></tr>
+  <tr><td><b>品位为什么低</b>（归因）</td><td class="rec">归因 Agent（T3 监督层）+ 机理反算（品位预测 13.30% 可用）+ 知识包证据卡 + 相似炉次判例</td><td>炉次级砝码数据</td></tr>
+  <tr><td><b>参数修正与个性化</b>（每台炉的脾气）</td><td class="rec">RLS 为主 + T2 物理约束残差网络试点对照 + T5 TabPFN 竞争上岗</td><td>CF-001 终审、TSC/烟气数据</td></tr>
+  <tr><td><b>异常来临的 90 秒</b></td><td class="rec">T3 验证环 + L2 ODE 快速推演（T1 启发的代理加速）+ 判例时序库（T6/Zep 思想防作废判例回捞）</td><td>孪生置信度定义、实时性预算</td></tr>
+  <tr><td><b>多厂/多车间扩展</b></td><td class="rec">T7 迁移协议 + 知识包五级级联（已建）+ 判例脱敏共享</td><td>每厂知识包隔离策略</td></tr>
+  <tr><td><b>专家经验治理</b></td><td class="rec">YAML 知识包（已建）+ 仲裁工作台（Doub方案+证据+人拍板）+ 时序知识图谱防回捞</td><td>审批流程定义</td></tr>
+  <tr><td><b>IP 保护 + 断网可用</b></td><td class="rec">IP 分级检索 + 云端强模型/厂内小模型双轨（第一轮结论维持）</td><td>小模型选型评测</td></tr>
+</table>
+
+<div class="card" style="margin-top:26px">
+  <div class="kicker">给决策者的三句话</div>
+  <h3>头脑风暴的最终油耗</h3>
+  <p style="margin-top:6px">1. <b>本轮真正的收获不是"用了新模型"，而是"拒绝了六个新模型里的四个"</b>——
+     采用的三个（T2/T3/T7）全部有同行论文背书且恰好嵌进已有五层架构，这就是克制的主场优势。</p>
+  <p style="margin-top:6px">2. <b>V-JEPA 2 的价值是方法论不是模型</b>：潜空间预演+动作条件规划 = 我们 ODE 代理 + Shadow 验证环的学术镜像；等千炉级带视频数据齐备，才有重新辩论的资格。</p>
+  <p style="margin-top:6px">3. <b>所有试点共享同一验收制式：历史回放</b>——V 氧化热这么验、TabPFN 这么验，任何新技术进门都走这条道，没有特权。</p>
+</div>
+
+<h2 class="sec"><span class="no">附</span>本轮引用文献总表</h2>
+<div class="card src">
+  <code>[arXiv 2506.09985]</code> V-JEPA 2: Self-Supervised Video Models Enable Understanding, Prediction and Planning (Meta FAIR, 2025-06) · 代码/权重: HuggingFace facebook/v-jepa-2<br>
+  <code>[arXiv 2502.13025]</code> Agentic Deep Graph Reasoning: Self-Organizing Knowledge Networks (Buehler, 2025-02)<br>
+  <code>[arXiv 2411.05904 / 2507.07115]</code> Autonomous Industrial Control & LLMs: Actor–Validator–Reprompter + DT Validation (2025)<br>
+  <code>[arXiv 2505.02076]</code> LLM Agents + Digital Twins for Fault Handling in Process Plants (ETFA 2025)<br>
+  <code>[MDPI Processes 14(14):2298]</code> Cognitive Supervisory Control with LLM Reasoning Agent (2025)<br>
+  <code>[arXiv 2512.03050 / Metall Trans A 2026]</code> Physics-Informed ML for Steel: CCT Diagram Framework (4100 图训练)<br>
+  <code>[Steel Res. Int. 2025-08]</code> fi-PINN 连铸中间包超热预测 · <code>[Metall Trans B 2025-06]</code> TTB-BOFNet (1万+ 炉次)<br>
+  <code>[arXiv 2508.17303]</code> PINN 核级钢疲劳寿命（物理约束进损失）<br>
+  <code>[arXiv 2510.15821]</code> Chronos-2: From Univariate to Universal Forecasting (2025-10)<br>
+  <code>[arXiv 2511.11698]</code> Moirai 2.0: When Less Is More (2025-11) · <code>[TimesFM 2.5]</code> Google<br>
+  <code>[arXiv 2510.13654]</code> Time Series Foundation Models: Benchmarking Challenges (训练/评测泄漏警示)<br>
+  <code>[Nature 637:319-326]</code> TabPFN v2: Accurate predictions on small data (Hollmann et al., 2025-01) · <code>[arXiv 2502.17361]</code> A Closer Look at TabPFN v2 · <code>[arXiv 2505.20003]</code> 统计学解读<br>
+  <code>[microsoft/graphrag]</code> GraphRAG / LazyGraphRAG / DRIFT Search · <code>[arXiv 2501.13956]</code> Zep: 时序知识图谱 Agent 记忆 · <code>[arXiv 2606.25656]</code> Is GraphRAG Needed? (ACL 2026 GEM, 检索-生成鸿沟)<br>
+  <code>[Ind. Eng. Chem. Res. 2026]</code> Transfer Learning for Soft Sensors in Process Industries (系统综述 · 多厂迁移依据)<br>
+  <code>[FITEE 2200366]</code> 高炉数据驱动软测量综述 · DSA-Former (2025) · <code>[WAIC 2025]</code> 宝信钢铁大模型（SAIL 奖 TOP30，通专融合四类模型）
+</div>
+
+<footer>
+  VEES 提钒冶炼智能体 · 第二轮深水区研讨（多轮制：立论→反驳→收敛→裁决） · 2026-09-22<br>
+  前置材料：第一轮纪要 VEES_AGENT_BRAINSTORM.html · 证据工件 PANGANG_EXCEL_DECODED.md / ARBITRATION_DEMO.md
+</footer>
+
+</div>
+</body>
+</html>

@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>提钒冶炼智能体 (VEES) 架构头脑风暴 · 多专家研讨纪要</title>
+<style>
+  :root{
+    --ink:#1a2332; --ink2:#3d4a5f; --paper:#f6f4ef; --card:#ffffff;
+    --molten:#e8590c; --molten2:#f76707; --steel:#2b4a6f; --steel2:#4c6a91;
+    --ok:#2b8a3e; --warn:#b54708; --line:#e3ded4; --soft:#fdf1e3;
+  }
+  *{box-sizing:border-box; margin:0; padding:0}
+  body{font-family:"PingFang SC","Hiragino Sans GB","Microsoft YaHei",system-ui,sans-serif;
+       background:var(--paper); color:var(--ink); line-height:1.75; font-size:15px}
+  nav{position:sticky; top:0; z-index:9; background:rgba(26,35,50,.96); backdrop-filter:blur(6px);
+      padding:10px 24px; display:flex; gap:18px; flex-wrap:wrap; align-items:center}
+  nav a{color:#cfd8e6; text-decoration:none; font-size:13px; padding:3px 8px; border-radius:6px}
+  nav a:hover{background:#37455c; color:#fff}
+  nav .brand{color:var(--molten2); font-weight:700; font-size:14px; margin-right:8px}
+  .wrap{max-width:1060px; margin:0 auto; padding:32px 24px 80px}
+
+  header.hero{background:linear-gradient(135deg,#1a2332 0%,#2b4a6f 60%,#7a431d 100%);
+     color:#fff; border-radius:18px; padding:44px 44px 36px; margin-bottom:36px;
+     box-shadow:0 14px 40px rgba(26,35,50,.35)}
+  header.hero h1{font-size:30px; line-height:1.35; letter-spacing:.5px}
+  header.hero .sub{margin-top:12px; color:#f8c9a8; font-size:15px}
+  header.hero .meta{margin-top:22px; display:flex; gap:26px; flex-wrap:wrap; font-size:13px; color:#c9d4e4}
+  header.hero .meta b{color:#fff}
+  .tagline{display:inline-block; margin-top:18px; background:rgba(247,103,7,.18); border:1px solid rgba(247,103,7,.55);
+     color:#ffd9b8; padding:8px 16px; border-radius:999px; font-size:13.5px}
+
+  h2.sec{font-size:21px; margin:52px 0 8px; display:flex; align-items:center; gap:10px}
+  h2.sec .no{background:var(--steel); color:#fff; font-size:13px; border-radius:8px;
+     padding:2px 10px; letter-spacing:1px}
+  .sec-desc{color:var(--ink2); font-size:14px; margin-bottom:18px}
+
+  .grid{display:grid; gap:16px}
+  .g2{grid-template-columns:1fr 1fr} .g3{grid-template-columns:repeat(3,1fr)}
+  @media(max-width:860px){.g2,.g3{grid-template-columns:1fr}}
+
+  .card{background:var(--card); border:1px solid var(--line); border-radius:14px; padding:20px 22px;
+        box-shadow:0 2px 8px rgba(26,35,50,.05)}
+  .card h3{font-size:16px; margin-bottom:8px}
+  .card p{color:var(--ink2); font-size:14px}
+  .kicker{font-size:12px; letter-spacing:2px; color:var(--molten); font-weight:700; margin-bottom:6px}
+
+  /* 专家卡 */
+  .expert{display:flex; gap:14px}
+  .avatar{flex:none; width:52px; height:52px; border-radius:14px; display:flex; align-items:center;
+     justify-content:center; color:#fff; font-weight:700; font-size:20px}
+  .expert .name{font-weight:700; font-size:15px}
+  .expert .role{font-size:12.5px; color:var(--molten); margin:1px 0 6px}
+  .expert .stance{font-size:13.5px; color:var(--ink2)}
+
+  /* 讨论块 */
+  .topic{background:var(--card); border:1px solid var(--line); border-radius:16px;
+         padding:26px 28px; margin-bottom:22px; box-shadow:0 2px 10px rgba(26,35,50,.06)}
+  .topic>h3{font-size:18px; margin-bottom:4px}
+  .topic .q{color:var(--ink2); font-size:14px; margin-bottom:16px}
+  .speech{border-left:3px solid var(--line); padding:10px 16px; margin:12px 0; background:#fbfaf7;
+          border-radius:0 10px 10px 0}
+  .speech .who{font-weight:700; font-size:13.5px}
+  .speech .who .tag{font-weight:400; color:#8a94a6; font-size:12px; margin-left:6px}
+  .speech p{font-size:14px; color:var(--ink2); margin-top:2px}
+  .s-ai{border-color:#7048e8} .s-ai .who{color:#7048e8}
+  .s-met{border-color:#e8590c} .s-met .who{color:#e8590c}
+  .s-pro{border-color:#1971c2} .s-pro .who{color:#1971c2}
+  .s-dat{border-color:#2b8a3e} .s-dat .who{color:#2b8a3e}
+  .s-saf{border-color:#c2255c} .s-saf .who{color:#c2255c}
+  .s-km{border-color:#b54708} .s-km .who{color:#b54708}
+
+  .badge{display:inline-block; font-size:12px; font-weight:700; padding:3px 12px; border-radius:999px; margin-right:8px}
+  .b-conflict{background:#ffe3e3; color:#c92a2a}
+  .b-consensus{background:#d3f9d8; color:#2b8a3e}
+  .b-decided{background:#d0ebff; color:#1971c2}
+  .b-open{background:#fff3bf; color:#b54708}
+  .b-evid{background:#e5dbff; color:#7048e8}
+
+  .verdict{background:var(--soft); border:1px solid #f3c89e; border-radius:12px; padding:14px 18px; margin-top:14px}
+  .verdict b{color:var(--molten)}
+  .verdict p{font-size:14px; color:#6b3d10; margin-top:2px}
+
+  /* 架构图 */
+  .arch{background:#14202f; border-radius:16px; padding:26px; color:#dce4f0}
+  .layer{border:1px solid #33506f; border-radius:12px; padding:14px 18px; margin-bottom:10px;
+         background:linear-gradient(180deg,#1c2c40,#182638)}
+  .layer h4{font-size:14.5px; color:#fff; display:flex; justify-content:space-between; align-items:center; gap:10px}
+  .layer h4 .en{font-size:11px; color:#7f97b5; font-weight:400; letter-spacing:1px}
+  .layer p{font-size:13px; color:#a8bcd6; margin-top:4px}
+  .layer .pill{font-size:11px; background:#2b4a6f; color:#cfe0f5; padding:2px 10px; border-radius:999px; margin-left:6px}
+  .arrow{ text-align:center; color:#5f7fa5; font-size:16px; margin:2px 0 10px}
+  .layer.hl{border-color:var(--molten2); background:linear-gradient(180deg,#33251a,#2a2016)}
+  .layer.hl h4{color:#ffc999}
+
+  /* 表格 */
+  table{width:100%; border-collapse:collapse; font-size:13.5px; background:#fff;
+        border-radius:12px; overflow:hidden; border:1px solid var(--line)}
+  th{background:#22334a; color:#fff; text-align:left; padding:10px 14px; font-size:13px}
+  td{padding:10px 14px; border-top:1px solid var(--line); vertical-align:top; color:var(--ink2)}
+  td b{color:var(--ink)}
+  tr:nth-child(even) td{background:#fbfaf7}
+  .rec{color:var(--ok); font-weight:700}
+  .risk{color:var(--warn); font-weight:700}
+
+  /* 证据墙 */
+  .evid{display:flex; flex-wrap:wrap; gap:12px}
+  .evid .card{flex:1 1 220px; padding:16px 18px}
+  .evid .num{font-size:26px; font-weight:800; color:var(--molten)}
+  .evid .lbl{font-size:13px; color:var(--ink2)}
+
+  /* 遗留问题 */
+  ol.open{padding-left:22px}
+  ol.open li{margin:8px 0; font-size:14px; color:var(--ink2)}
+  ol.open li b{color:var(--ink)}
+
+  /* 路线图 */
+  .roadmap{display:grid; grid-template-columns:repeat(4,1fr); gap:14px}
+  @media(max-width:860px){.roadmap{grid-template-columns:1fr}}
+  .phase{background:#fff; border:1px solid var(--line); border-radius:14px; padding:18px; position:relative}
+  .phase .ph{font-size:12px; font-weight:800; letter-spacing:1px; color:#fff; background:var(--steel2);
+     display:inline-block; padding:2px 10px; border-radius:6px; margin-bottom:8px}
+  .phase.done .ph{background:var(--ok)}
+  .phase.now .ph{background:var(--molten)}
+  .phase h4{font-size:14.5px; margin-bottom:6px}
+  .phase ul{padding-left:18px; font-size:13px; color:var(--ink2)}
+  .phase li{margin:3px 0}
+  .phase .st{font-size:12px; margin-top:8px; font-weight:700}
+  .st-done{color:var(--ok)} .st-now{color:var(--molten)} .st-next{color:#8a94a6}
+
+  footer{margin-top:60px; color:#8a94a6; font-size:12.5px; text-align:center}
+  code{background:#eef0f4; padding:1px 6px; border-radius:5px; font-size:12.5px; color:#414d63}
+</style>
+</head>
+<body>
+
+<nav>
+  <span class="brand">VEES 智能体研讨</span>
+  <a href="#bg">会议背景</a>
+  <a href="#experts">与会专家</a>
+  <a href="#topics">核心交锋</a>
+  <a href="#arch">目标架构</a>
+  <a href="#tech">技术选型</a>
+  <a href="#evidence">会前实证</a>
+  <a href="#open">遗留问题</a>
+  <a href="#roadmap">路线图</a>
+</nav>
+
+<div class="wrap">
+
+<!-- ================= HERO ================= -->
+<header class="hero">
+  <h1>提钒冶炼智能体到底怎么建？<br>—— 一场 AI 专家 × 冶炼专家 × 工艺专家的正面交锋</h1>
+  <div class="sub">围绕攀钢提钒四大平衡专家模型（703 公式 Excel）与现有 VEES v7.0 代码库的落地路径研讨</div>
+  <div class="tagline">会议结论先行：LLM 负责认知与解释，确定性内核负责数字，知识包负责经验，人负责拍板</div>
+  <div class="meta">
+    <span>日期：<b>2026-09-22</b></span>
+    <span>形式：<b>结构性头脑风暴（观点已按角色归纳）</b></span>
+    <span>输入材料：<b>3 份实证工件 + 1 个代码库</b></span>
+    <span>输出：<b>目标架构 · 技术选型 · 路线图 · 遗留问题清单</b></span>
+  </div>
+</header>
+
+<!-- ================= 背景 ================= -->
+<h2 class="sec" id="bg"><span class="no">01</span>会议背景：会前已完成的功课</h2>
+<p class="sec-desc">这不是纸上谈兵——开会前，系统已经把三件事做成了可验证的工件，所有讨论都建立在它们之上。</p>
+<div class="grid g3">
+  <div class="card">
+    <div class="kicker">工件一 · 模型解码</div>
+    <h3>攀钢秘诀 Excel 完全解码</h3>
+    <p>8 张工作表、703 个公式逐格提取：物料平衡 → 热量平衡 → 冷料边际响应 → 钒平衡/品位预测。发现铁水 C 差异系数 <b>1.157</b>、Ti 冷却效应折算比、凝固点双公式等教科书外专家知识，以及 6 处引用怪癖（Q1–Q6）。</p>
+    <p style="margin-top:8px"><code>PANGANG_EXCEL_DECODED.md</code></p>
+  </div>
+  <div class="card">
+    <div class="kicker">工件二 · 黄金复现</div>
+    <h3>Python 参考实现 75/75 通过</h3>
+    <p>四大平衡全链路翻译为代码，对照 Excel 缓存值最大误差 <b>0.0002%</b>；修正一处表格漏项（Q5）后热平衡闭合至机器精度。专家模型被证明物理自洽——这是后续一切讨论的信任基础。</p>
+    <p style="margin-top:8px"><code>backend/app/tools/pangang_reference.py</code></p>
+  </div>
+  <div class="card">
+    <div class="kicker">工件三 · 数据仲裁</div>
+    <h3>16 炉次反演 + 冲突清单</h3>
+    <p>V 氧化热之争（2777 vs 15000）用生产实绩回放给出证据；双引擎对照生成 6 条冲突（CF-001~006），含建龙文档自查出的内部矛盾。知识包 YAML 化完成，31 类参数一致性校验通过。</p>
+    <p style="margin-top:8px"><code>ARBITRATION_DEMO.md</code> · <code>knowledge/packs/pangang/base.yaml</code></p>
+  </div>
+</div>
+
+<!-- ================= 专家 ================= -->
+<h2 class="sec" id="experts"><span class="no">02</span>与会专家与基本立场</h2>
+<p class="sec-desc">六位角色的初始立场刻意放在对立面上——头脑风暴的价值在交锋，不在合唱。</p>
+<div class="grid g2">
+  <div class="card expert">
+    <div class="avatar" style="background:#7048e8">林</div>
+    <div>
+      <div class="name">林深</div>
+      <div class="role">AI 系统架构专家（大模型 Agent 方向）</div>
+      <div class="stance">"Agent = LLM + 工具 + 记忆 + 编排。现有 LangGraph 多智能体方向正确，缺的是工具层的事实纪律——Agent 之间传递的必须是引擎输出，不是模型生成物。"</div>
+    </div>
+  </div>
+  <div class="card expert">
+    <div class="avatar" style="background:#e8590c">高</div>
+    <div>
+      <div class="name">高韧</div>
+      <div class="role">钢铁冶炼专家（转炉提钒 30 年）</div>
+      <div class="stance">"我见过太多'智能炼钢'系统死在不懂守恒上。物料差 -0.019%、钒平衡差 0，这才是及格线。任何模型过不了四大平衡，免谈。另外——别让大模型碰我的配料单。"</div>
+    </div>
+  </div>
+  <div class="card expert">
+    <div class="avatar" style="background:#1971c2">沈</div>
+    <div>
+      <div class="name">沈炉</div>
+      <div class="role">工艺专家 / 前炉长（现场操作视角）</div>
+      <div class="stance">"操作工不信系统，是因为系统不会说人话。推荐球团 3.5 吨？为什么？和上周那炉有什么不一样？说不出这三句，界面做得再花也没人用。先解决'品位为什么低'，再谈智能。"</div>
+    </div>
+  </div>
+  <div class="card expert">
+    <div class="avatar" style="background:#2b8a3e">赵</div>
+    <div>
+      <div class="name">赵数</div>
+      <div class="role">数据科学家（工业小样本建模）</div>
+      <div class="stance">"几千炉数据做端到端深度学习是自杀。正确姿势是灰箱：机理打底 + 数据学残差 + 分聚类参数库。漂移检测比模型结构重要一百倍。"</div>
+    </div>
+  </div>
+  <div class="card expert">
+    <div class="avatar" style="background:#c2255c">何</div>
+    <div>
+      <div class="name">何稳</div>
+      <div class="role">工业控制系统 / 功能安全专家</div>
+      <div class="stance">"LLM 的输出永远不能直接下发设定值——这不是保守，是工程纪律。Shadow mode、审计日志、双通道校验，一个都不能少。系统要为'说错了话'设计隔离舱。"</div>
+    </div>
+  </div>
+  <div class="card expert">
+    <div class="avatar" style="background:#b54708">苏</div>
+    <div>
+      <div class="name">苏呈</div>
+      <div class="role">知识工程 / 产品负责人</div>
+      <div class="stance">"Excel 是专家经验的快照，不是资产。资产 = 可溯源 + 可版本化 + 可审批 + 可继承。冲突仲裁（双方案 + 证据 + 人拍板 + 判例入库）才是这个产品的灵魂交互。"</div>
+    </div>
+  </div>
+</div>
+
+<!-- ================= 核心交锋 ================= -->
+<h2 class="sec" id="topics"><span class="no">03</span>核心交锋：六个议题</h2>
+<p class="sec-desc">每个议题呈现立场原话 → 分歧点 → 会议结论。结论栏标注共识等级与证据支撑。</p>
+
+<div class="topic">
+  <h3><span class="badge b-conflict">交锋</span>议题一 · "智能体"到底是什么？</h3>
+  <div class="q">是套壳 LLM 的对话助手，还是一个能闭环的工业决策系统？</div>
+  <div class="speech s-ai"><div class="who">林深<span class="tag">AI 架构</span></div>
+    <p>按业界定义，Agent = 感知 + 规划 + 工具调用 + 反思。LLM 是"认知外壳"：理解操作工的自然语言提问、选择工具、组织解释。但我不接受"端到端大模型炼钢"——没有任何一家敢把温度设定值交给采样出来的 token。</p></div>
+  <div class="speech s-met"><div class="who">高韧<span class="tag">冶炼专家</span></div>
+    <p>我补充一个三十年前的参照：90 年代的静态控制模型 + 副枪动态修正，本质上就是"感知-认知-决策-执行"闭环，只是"认知"是查表和微分方程。今天的增量不在"智能"两个字，在<b>三件事</b>：机理内核的精度、经验知识的治理、解释的可信度。谁吹大模型替代机理，谁的系统活不过一次炉渣返干。</p></div>
+  <div class="speech s-pro"><div class="who">沈炉<span class="tag">工艺专家</span></div>
+    <p>从炉前视角补一刀：智能体最值钱的时刻不是开吹前算配料，而是<b>异常来临的 90 秒</b>——喷溅前兆、脱碳速率突变。这时候它要能在 10 秒内告诉我"现在发生了什么、按你现在的枪位下去会怎样、上一炉同样征兆是怎么处理的"。这要求它同时接住实时数据流和历史判例。</p></div>
+  <div class="verdict"><b>会议结论（强共识）</b>
+    <p>VEES = <b>认知外壳（LLM 编排/解释/检索） + 确定性内核（机理引擎 + 规则引擎，垄断一切数字） + 学习闭环（误差回流） + 人在环（决策权）</b>四层。LLM 永远不产出生产数字，只做四件事：解释、检索、what-if 编排、把专家口语转成规则草稿（人工审批后入库）。</p></div>
+</div>
+
+<div class="topic">
+  <h3><span class="badge b-consensus">共识+实证</span>议题二 · Excel 专家经验如何资产化？</h3>
+  <div class="q">秘诀躺在 703 个公式的单元格里，怎么变成系统能治理的知识？</div>
+  <div class="speech s-km"><div class="who">苏呈<span class="tag">知识工程</span></div>
+    <p>方案已经跑通了一遍：<b>Excel → 解码报告 → Python 参考实现 → 黄金用例回归 → YAML 知识包（含溯源/审批位）→ 一致性校验器</b>。关键设计是"单一事实来源"——引擎只从知识包取参，谁也不许在代码里私藏一个 22.5。</p></div>
+  <div class="speech s-met"><div class="who">高韧<span class="tag">冶炼专家</span></div>
+    <p>我审一遍就要问三个问题的：这个 1.157 是哪个厂哪类铁水得来的？季节修正有没有？极限工况外推到哪失效？知识包里每个参数必须带<b>适用边界</b>字段，否则就是新的黑盒。</p></div>
+  <div class="speech s-saf"><div class="who">何稳<span class="tag">功能安全</span></div>
+    <p>补治理要求：<b>IP 分级</b>（配方级机密加密存储、流程级知识才进 RAG）、<b>shadow mode</b>（新规则包并行跑不生效）、<b>判例库</b>（每次人工仲裁入库，同类冲突预填历史倾向但永不自动决定）。</p></div>
+  <div class="verdict"><b>会议结论（已部分落地）</b>
+    <p>知识包五级级联（行业基线 → 厂 → 车间 → 炉座 → 炉次学习值）；每参数带溯源单元格 + 适用边界 + 审批流；冲突仲裁 = 双方案对照 + 历史证据 + 人工决策位。已完成：31 类参数入库、6 条冲突登记、一致性校验器。</p></div>
+</div>
+
+<div class="topic">
+  <h3><span class="badge b-consensus">共识+实证</span>议题三 · 机理模型 vs 端到端数据驱动？</h3>
+  <div class="q">有了几千炉生产数据，要不要训一个端到端模型直接预测终点？</div>
+  <div class="speech s-dat"><div class="who">赵数<span class="tag">数据科学</span></div>
+    <p>反对。样本量支撑不起端到端，而且外推必崩——原料一变模型就哑。正确姿势是<b>灰箱三层</b>：①机理打底（守恒方程）②数据只学残差修正（RLS 更新热效率因子）③按 Si/温度聚类维护参数库。我们 16 炉次反演也证明了：光调一个 ΔH_V，RMSE 只能从 1.47 降到 1.00，剩下的偏差要靠逐炉工况数据，不是靠换模型结构。</p></div>
+  <div class="speech s-met"><div class="who">高韧<span class="tag">冶炼专家</span></div>
+    <p>同意，加一条硬约束：<b>任何学习结果必须通过守恒校验才能上线</b>——物料差、热差、钒平衡三道关。攀钢那个 93 MJ"富余"最后查出是表格漏项，就是守恒校验的价值。数据修正不许破坏物理。</p></div>
+  <div class="speech s-dat"><div class="who">赵数<span class="tag">数据科学</span></div>
+    <p>再补个数据基建提醒：现在 Excel 只有 16 天的日均值，粒度太粗。要接<b>炉次级</b>数据（TSC/TSO 副枪、烟气分析、氧枪曲线），否则残差学习没有训练对。时序库选型先别激进，PostgreSQL 分区表够用一年。</p></div>
+  <div class="verdict"><b>会议结论（强共识）</b>
+    <p>灰箱路线：机理内核（已复现至 0.0002%）+ 残差学习（RLS）+ 分聚类参数库 + 漂移检测（3σ 触发重校准）。学习结果上线前过三道守恒关。端到端 ML 降级为远期研究项。</p></div>
+</div>
+
+<div class="topic">
+  <h3><span class="badge b-conflict">交锋</span>议题四 · 编排框架与 RAG：用现成的还是自研？</h3>
+  <div class="q">LangGraph 已在代码库里，要不要换？知识库怎么建才不被 LLM 污染？</div>
+  <div class="speech s-ai"><div class="who">林深<span class="tag">AI 架构</span></div>
+    <p>保留 LangGraph，理由：状态机语义清晰（配料→仿真→校验→诊断的 DAG 天然适合）、checkpoint 可回放（炉次就是天然 state）、多智能体角色已经建好。自研编排是重复造轮子，省下的精力投给<b>工具层纪律</b>：MCP 工具服务器（已有雏形）+ 每个工具返回结构化事实 + trace_id 贯穿。RAG 上做混合检索（向量 + BM25 + 结构化规则路由），但索引对象是<b>已审批的知识包条目和规程片段</b>，绝不让 LLM 直接检索原始 Excel——防止配方级 IP 被对话套出。</p></div>
+  <div class="speech s-pro"><div class="who">沈炉<span class="tag">工艺专家</span></div>
+    <p>我不管什么框架，我只要求回答里必须有三样东西：引用哪条规则（版本号）、哪个相似炉次、什么物理依据。做不到的答案，界面直接标"未经核实"。</p></div>
+  <div class="speech s-ai"><div class="who">林深<span class="tag">AI 架构</span></div>
+    <p>这正是约束式生成该干的：回答模板强制包含 <code>rule_ref</code> / <code>similar_heat</code> / <code>mechanism</code> 三个字段，字段内容由引擎填充，LLM 只负责串联语言。做不到就拒答——比幻觉强。</p></div>
+  <div class="verdict"><b>会议结论（共识，附沈工否决权）</b>
+    <p>LangGraph + MCP 保留；RAG 索引已审批知识 + 规程，IP 分级访问；回答强制三要素（规则版本/相似炉次/物理依据），缺失即标注"未经核实"。模型选型：云端强模型做交互 + 厂内小模型兜底（断网可用），不做冶炼语料微调（收益低），优先保工具调用能力。</p></div>
+</div>
+
+<div class="topic">
+  <h3><span class="badge b-conflict">交锋</span>议题五 · 人机边界划在哪？</h3>
+  <div class="q">系统建议 → 操作工执行，这个链条上哪里必须有人？</div>
+  <div class="speech s-saf"><div class="who">何稳<span class="tag">功能安全</span></div>
+    <p>划三条红线：<b>①LLM 输出永远不进控制回路</b>（只进人机界面）；<b>②设定值下发必须人确认</b>，系统记录"谁、依据哪个版本规则、何时"；<b>③新知识/新参数默认 shadow</b>，新旧并行输出对照至少 N 炉，专家确认才切换。另外要设计"拒绝服务"：传感器置信度低于阈值时，系统应该说"我不可信"而不是硬给数。</p></div>
+  <div class="speech s-pro"><div class="who">沈炉<span class="tag">工艺专家</span></div>
+    <p>加一条来自现场的：例外通道必须有。<b>"本炉例外"按钮</b>——操作工凭经验驳回系统建议，但要留一句话理由。这句理由金贵：例外频发的规则就是该修订的规则，系统要自动把例外率报给专家委员会。</p></div>
+  <div class="speech s-met"><div class="who">高韧<span class="tag">冶炼专家</span></div>
+    <p>最容易被忽略的：模型也要有"认错"机制。终点实测出来后，误差必须自动回流更新参数——现在的 Excel 做不到这个，它的经验停在 2024 年。系统必须保证经验是活的。</p></div>
+  <div class="verdict"><b>会议结论（强共识）</b>
+    <p>三条红线 + 例外通道 + 误差自动回流。仲裁/例外/修订三张记录构成"活的专家经验"闭环：Excel v2024（静态）→ 系统判例库（持续）→ 规则包修订（人审批）。</p></div>
+</div>
+
+<div class="topic">
+  <h3><span class="badge b-open">开放</span>议题六 · 多厂多车间的终局形态？</h3>
+  <div class="q">攀钢、建龙、未来其他厂——一套系统还是各起炉灶？</div>
+  <div class="speech s-km"><div class="who">苏呈<span class="tag">知识工程</span></div>
+    <p>架构上已经准备好答案：知识包级联让"新厂 = 一份 override YAML + 历史回放验证"。真正的难题是<b>数据与 IP 治理</b>：攀钢的秘诀包和建龙的经验包能不能放同一个实例？我建议物理隔离（每厂独立知识库）+ 仲裁判例脱敏共享（只共享冲突类型与决策模式，不共享参数值）。</p></div>
+  <div class="speech s-dat"><div class="who">赵数<span class="tag">数据科学</span></div>
+    <p>学习层同理：参数库按厂隔离，但<b>漂移检测的统计方法</b>、<b>聚类策略</b>可以共享。跨厂联合建模是远期选项，前提是拿到双方数据授权。</p></div>
+  <div class="verdict"><b>会议结论（方向共识，细节待定）</b>
+    <p>一套代码 + 每厂独立知识包/参数库/判例库；判例模式脱敏共享。部署形态：厂内私有化（Docker Compose 已有基础）。该议题在 P3 阶段重开，先把手头单厂闭环做穿。</p></div>
+</div>
+
+<!-- ================= 架构 ================= -->
+<h2 class="sec" id="arch"><span class="no">04</span>目标架构：一图收拢</h2>
+<p class="sec-desc">六位专家的结论叠出来的最终形态。橙色高亮层是本次研讨新增/强化的部分。</p>
+<div class="arch">
+  <div class="layer">
+    <h4>L4 认知外壳 —— LLM 编排层 <span class="en">COGNITION / EXPLANATION</span><span class="pill">LangGraph + MCP</span></h4>
+    <p>自然语言交互 · what-if 编排 · 诊断叙述（规则版本 + 相似炉次 + 物理依据三要素）· 规则草拟（人审批入库）· <b>禁产出生产数字</b></p>
+  </div>
+  <div class="arrow">▲ 消费事实 / ▼ 调用工具（结构化，trace_id 贯穿）</div>
+  <div class="layer hl">
+    <h4>L3 学习闭环 —— 每台炉自己的经验 <span class="en">LEARNING</span><span class="pill">RLS · 聚类参数库 · 漂移检测</span></h4>
+    <p>炉次误差回流 → 热效率/速率因子修正 → 按 Si/温度分聚类参数库 → 3σ 漂移触发全局重校准 → 学习结果过三道守恒关才上线</p>
+  </div>
+  <div class="arrow">▲ 修正量 / ▼ 参数</div>
+  <div class="layer hl">
+    <h4>L2 知识层 —— 专家经验资产（本次核心产出）<span class="en">KNOWLEDGE PACK</span><span class="pill">YAML + 级联 + 仲裁</span></h4>
+    <p>五级级联（行业基线→厂→车间→炉座→炉次）· 溯源/边界/审批位 · 冲突仲裁（双方案 + 历史证据 + 人拍板 + 判例库）· IP 分级加密 · shadow mode</p>
+  </div>
+  <div class="arrow">▲ 经验参数 / ▼ 规则匹配</div>
+  <div class="layer">
+    <h4>L1 机理内核 —— 确定性计算 <span class="en">MECHANISM CORE</span><span class="pill">Python · scipy ODE</span></h4>
+    <p>攀钢四大平衡参考实现（75/75 黄金用例）· ODE 动力学仿真 · 软测量 + 卡尔曼滤波 · 三道守恒关（物料/热量/钒平衡）</p>
+  </div>
+  <div class="arrow">▲ 炉次实绩 / ▼ 设定建议</div>
+  <div class="layer">
+    <h4>L0 数据与感知 —— 现场接入 <span class="en">DATA & SENSING</span><span class="pill">PostgreSQL 分区 · 时序演进位</span></h4>
+    <p>铁水成分/温度 · TSC/TSO 副枪 · 烟气分析 CO/CO₂ · 氧枪曲线 · 炉次台账 · 传感器置信度门控</p>
+  </div>
+</div>
+
+<!-- ================= 技术选型 ================= -->
+<h2 class="sec" id="tech"><span class="no">05</span>技术选型表（含分歧记录）</h2>
+<p class="sec-desc">"推荐"是会议多数意见；"分歧"一栏如实保留少数派观点，供后续翻案。</p>
+<table>
+  <tr><th style="width:13%">领域</th><th style="width:24%">推荐</th><th>理由</th><th style="width:22%">分歧 / 风险记录</th></tr>
+  <tr><td><b>Agent 编排</b></td><td class="rec">LangGraph（保留现有）</td><td>炉次即状态机；checkpoint 可回放；多角色已建；自研不经济</td><td class="risk">抽象泄漏风险：工具返回必须强类型，禁止 dict 乱传</td></tr>
+  <tr><td><b>工具协议</b></td><td class="rec">MCP 工具服务器（已有雏形）</td><td>配料/仿真/诊断/平衡 已是天然工具边界；协议标准化利于换模型</td><td>工具粒度需评审：过细则 LLM 决策负担重</td></tr>
+  <tr><td><b>知识存储</b></td><td class="rec">YAML 知识包 + Git 版本化 + 校验器</td><td>专家可读可审；溯源/审批/级联字段完备；已跑通 31 类参数</td><td class="risk">规模大后查询效率 → 届时再加编译缓存，现在不上数据库</td></tr>
+  <tr><td><b>RAG 检索</b></td><td class="rec">混合检索（向量+BM25+规则路由）</td><td>规程 PDF/讲课稿/审批后条目；IP 分级过滤前置到检索层</td><td class="risk">禁止索引原始 Excel；防对话套取配方</td></tr>
+  <tr><td><b>机理计算</b></td><td class="rec">Python 双引擎并存</td><td>攀钢四大平衡（已复现）+ 建龙查表（快速场景）+ Danieli 平衡（交叉校验）</td><td class="risk">三引擎结果必须定期互审，防止各自漂移</td></tr>
+  <tr><td><b>时序数据</b></td><td class="rec">PostgreSQL 分区表起步</td><td>仓库已用 PG；炉次级数据量可控；少一个组件少一分运维</td><td class="risk">副枪高频数据上来后评估 TDengine/Timescale（P3 决策）</td></tr>
+  <tr><td><b>LLM 模型</b></td><td class="rec">云端强模型交互 + 厂内小模型兜底</td><td>断网可用是厂内刚需；IP 不出厂</td><td class="risk">不做冶炼语料微调（性价比低），保工具调用与长上下文</td></tr>
+  <tr><td><b>仿真推演</b></td><td class="rec">scipy ODE（已有 kinetics）+ 攀钢边际响应法</td><td>"1kg 边际响应 + 线性叠加 + 迭代修正"模式可复用到枪位优化</td><td class="risk">L2 实时性预算：10s 步长内完成，LLM 不在此回路</td></tr>
+  <tr><td><b>部署</b></td><td class="rec">Docker Compose 厂内私有化</td><td>已有 docker-compose.yml；知识包/判例库随实例隔离</td><td class="risk">多厂实例的升级与规则包分发流程待定义（P3）</td></tr>
+  <tr><td><b>前端交互</b></td><td class="rec">现有 frontend + 新增仲裁工作台</td><td>三视图：炉次驾驶舱 / 冲突仲裁台 / 规则治理台</td><td class="risk">沈工否决权：任何页面缺"规则版本+相似炉次+物理依据"不算完工</td></tr>
+</table>
+
+<!-- ================= 实证 ================= -->
+<h2 class="sec" id="evidence"><span class="no">06</span>会前实证墙：本次研讨的可信度来源</h2>
+<div class="evid">
+  <div class="card"><div class="num">75/75</div><div class="lbl">黄金用例通过，攀钢 703 公式复现最大误差 <b>0.0002%</b></div></div>
+  <div class="card"><div class="num">1.2e-16</div><div class="lbl">修正口径热平衡相对闭合差（机器精度），确认 Excel 93MJ"富余"系表格漏项</div></div>
+  <div class="card"><div class="num">31 类</div><div class="lbl">专家常数 YAML 入库，溯源到单元格，一致性校验通过</div></div>
+  <div class="card"><div class="num">6+1 条</div><div class="lbl">双引擎冲突清单（CF-001~006），含建龙文档内部矛盾自查</div></div>
+  <div class="card"><div class="num">16 炉次</div><div class="lbl">实绩回放：15000 假设 RMSE 占优（0.999 vs 1.466），但系统性偏高待解</div></div>
+  <div class="card"><div class="num">6 处</div><div class="lbl">Excel 引用怪癖（Q1-Q6）全部标注并修复口径分歧</div></div>
+</div>
+
+<!-- ================= 遗留问题 ================= -->
+<h2 class="sec" id="open"><span class="no">07</span>遗留问题清单（挂到人头上）</h2>
+<p class="sec-desc">系统只呈证据不代决策——以下每条都需要对应专家拍板后写入知识包。</p>
+<div class="card">
+  <ol class="open">
+    <li><b>[冶炼·高]</b> V 氧化热终审：16 炉次证据倾向 15000，但需解释攀钢 2777 的推导原文与产物形态假设（V₂O₅ vs V₂O₃/尖晶石）。<code>CF-001</code></li>
+    <li><b>[冶炼·高]</b> 铁水 C 差异系数 1.157 是否随铁水来源（承钢/西昌/外购）变化？适用边界写进知识包。<code>composition_corrections</code></li>
+    <li><b>[工艺·沈]</b> 建龙"基准 45 kg/t vs 上限 25 kg/t"内部矛盾澄清。<code>CF-006</code></li>
+    <li><b>[冶炼·高]</b> 冷料"金属铁"成分行映射到弃渣球行（SiO₂ 16.4%、Fe₂O₃ 77.1%）是否有意？还是 Excel 引用手误？<code>Q1/Q3/Q6</code></li>
+    <li><b>[工艺·沈]</b> 品位归因口径：14 日高硅条件专家算得 12.48%，参考实现得 12.91%，差 0.43pp——当时用了什么冷却制度假设？</li>
+    <li><b>[知识·苏]</b> 规则审批流程定义：谁有签字权？仲裁判例怎么脱敏跨厂共享？</li>
+    <li><b>[数据·赵]</b> 炉次级数据接入清单：TSC/TSO、烟气、氧枪曲线的字段与频率，决定时序库选型。<code>P3 前置</code></li>
+    <li><b>[AI·林]</b> L2 实时回路的延迟预算拆分：10s 步长里机理引擎占多少，LLM 是否完全出局？<code>安全红线①的落实</code></li>
+    <li><b>[安全·何]</b> Shadow mode 的并行期 N 定多少炉？切换标准（统计显著性 or 专家确认）？</li>
+    <li><b>[产品·苏]</b> 仲裁工作台原型：双方案对照 + 证据卡 + 四个决策按钮的最小可用版本。<code>P2</code></li>
+  </ol>
+</div>
+
+<!-- ================= 路线图 ================= -->
+<h2 class="sec" id="roadmap"><span class="no">08</span>路线图（P1 已过半）</h2>
+<div class="roadmap">
+  <div class="phase done">
+    <div class="ph">P1 · 地基</div>
+    <h4>知识资产化</h4>
+    <ul>
+      <li>Excel 解码 + 复现 ✅</li>
+      <li>知识包 YAML + 校验器 ✅</li>
+      <li>双引擎对照 + 冲突清单 ✅</li>
+      <li>知识包接入 initial_charge 替代硬编码（进行中）</li>
+    </ul>
+    <div class="st st-done">完成度 ~70%</div>
+  </div>
+  <div class="phase now">
+    <div class="ph">P2 · 认知</div>
+    <h4>LLM 外壳 + 真 RAG</h4>
+    <ul>
+      <li>三要素回答模板（拒答机制）</li>
+      <li>规程 PDF 混合检索 + IP 分级</li>
+      <li>品位归因 Agent（"为什么低"）</li>
+      <li>仲裁工作台前端原型</li>
+    </ul>
+    <div class="st st-now">下一步主攻</div>
+  </div>
+  <div class="phase">
+    <div class="ph">P3 · 进化</div>
+    <h4>学习闭环</h4>
+    <ul>
+      <li>炉次误差回流 + RLS</li>
+      <li>分聚类参数库</li>
+      <li>漂移检测 + 重校准</li>
+      <li>时序库选型决策</li>
+      <li>多厂实例治理重开议题六</li>
+    </ul>
+    <div class="st st-next">依赖 P2 + 数据接入</div>
+  </div>
+  <div class="phase">
+    <div class="ph">P4 · 治理</div>
+    <h4>规模化运营</h4>
+    <ul>
+      <li>规则审批流 + 审计完善</li>
+      <li>跨厂判例共享（脱敏）</li>
+      <li>例外率看板 → 规则修订信号</li>
+      <li>专家委员会季度评审制度</li>
+    </ul>
+    <div class="st st-next">持续</div>
+  </div>
+</div>
+
+<footer>
+  VEES 提钒冶炼智能体 · 多专家研讨纪要 · 由会前实证工件支撑生成 · 2026-09-22<br>
+  证据文件：PANGANG_EXCEL_DECODED.md · ARBITRATION_DEMO.md · backend/tests/test_pangang_reference.py · knowledge/packs/pangang/base.yaml
+</footer>
+
+</div>
+</body>
+</html>
