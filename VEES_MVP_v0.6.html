@@ -1,0 +1,784 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VEES 提钒智能体 · 分角色驾驶舱 v0.6</title>
+<style>
+:root{
+  --ink:#e6edf3;--ink2:#8b949e;--paper:#0a0e14;--paper2:#0d1117;--card:#161b22;--card2:#1c2128;
+  --line:#30363d;--line2:#21262d;
+  --molten:#ff6b1a;--molten-d:#ff8534;--steel:#3d6593;--steel-l:#58a6ff;
+  --ok:#3fb950;--warn:#d29922;--warn-d:#e3b341;--blue:#58a6ff;--teal:#39c5cf;--danger:#f85149;
+  --shadow:0 4px 20px rgba(0,0,0,.4),0 0 0 1px rgba(88,166,255,.06);
+  --shadow-hl:0 0 0 1px rgba(255,107,26,.5),0 0 24px rgba(255,107,26,.25);
+  --glow-orange:0 0 12px rgba(255,107,26,.4);
+  --glow-blue:0 0 12px rgba(88,166,255,.3);
+  --grid-line:rgba(88,166,255,.03);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{-webkit-text-size-adjust:100%}
+body{font-family:"PingFang SC","Hiragino Sans GB","Microsoft YaHei",system-ui,sans-serif;
+  background:var(--paper);background-image:
+    linear-gradient(var(--grid-line) 1px,transparent 1px),
+    linear-gradient(90deg,var(--grid-line) 1px,transparent 1px);
+  background-size:24px 24px;
+  color:var(--ink);line-height:1.65;font-size:15px;
+  -webkit-font-smoothing:antialiased;min-height:100vh}
+body.demo::before{content:"演示模式运行中";position:fixed;top:0;left:0;right:0;z-index:9999;
+  background:linear-gradient(90deg,#ff6b1a,#ff8534);color:#0a0e14;font-size:12px;font-weight:700;
+  text-align:center;padding:3px 0;letter-spacing:1px;box-shadow:0 2px 12px rgba(255,107,26,.5)}
+body.demo{animation:none}
+body.demo .header{box-shadow:0 0 0 2px var(--molten),0 6px 30px rgba(255,107,26,.35)}
+
+/* 顶栏 — 深色金属 */
+.header{background:linear-gradient(135deg,#0d1117 0%,#161b22 50%,#1c2128 100%);color:#e6edf3;
+  padding:18px 28px 14px;box-shadow:0 2px 14px rgba(0,0,0,.5);position:relative;
+  border-bottom:1px solid var(--line)}
+.header::after{content:"";position:absolute;left:0;right:0;bottom:0;height:1px;
+  background:linear-gradient(90deg,transparent,var(--molten),var(--steel-l),transparent);opacity:.6}
+.header-row{max-width:1320px;margin:0 auto;display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap}
+.header h1{font-size:19px;font-weight:700;letter-spacing:1px}
+.header h1 .v{font-weight:400;opacity:.6;font-size:14px;color:var(--molten)}
+.header .sub{color:#8b949e;font-size:13px;margin-top:3px;letter-spacing:.3px}
+.hdr-right{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.status{display:inline-flex;align-items:center;gap:6px;font-size:12px;color:#8b949e;
+  background:rgba(88,166,255,.08);padding:4px 10px;border-radius:999px;border:1px solid rgba(88,166,255,.2)}
+.status .dot{width:8px;height:8px;border-radius:50%;background:#3fb950;box-shadow:0 0 0 2px rgba(63,185,80,.25),0 0 8px #3fb950;animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 2px rgba(63,185,80,.25),0 0 8px #3fb950}50%{box-shadow:0 0 0 5px rgba(63,185,80,.1),0 0 12px #3fb950}}
+.btn{border:1px solid rgba(88,166,255,.25);background:rgba(88,166,255,.06);color:#c9d1d9;
+  padding:6px 12px;border-radius:8px;font-size:12.5px;font-weight:600;cursor:pointer;transition:.15s;font-family:inherit}
+.btn:hover{background:rgba(88,166,255,.14);border-color:rgba(88,166,255,.4);box-shadow:var(--glow-blue)}
+.btn.on{background:linear-gradient(135deg,#ff6b1a,#ff8534);border-color:#ff8534;color:#0a0e14;box-shadow:var(--glow-orange)}
+.btn-fs{border-color:rgba(255,107,26,.3);background:rgba(255,107,26,.06);color:#ffb085}
+.btn-fs:hover{background:rgba(255,107,26,.14);border-color:var(--molten);box-shadow:var(--glow-orange)}
+
+/* 角色标签页 */
+.tabs{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px;max-width:1320px;margin-left:auto;margin-right:auto}
+.tab{border:1px solid rgba(88,166,255,.2);background:rgba(13,17,23,.6);color:#8b949e;
+  padding:7px 16px;border-radius:10px;font-size:13.5px;font-weight:700;cursor:pointer;transition:.18s;
+  white-space:nowrap;letter-spacing:.5px}
+.tab:hover{background:rgba(88,166,255,.1);color:#c9d1d9}
+.tab.on{background:linear-gradient(135deg,#1c2128,#21262d);color:#e6edf3;border-color:var(--steel-l);box-shadow:0 0 0 1px rgba(88,166,255,.3),0 4px 16px rgba(88,166,255,.15)}
+.tab small{display:block;font-weight:400;font-size:11px;opacity:.6;margin-top:1px}
+
+/* 布局 */
+.wrap{max-width:1320px;margin:0 auto;padding:22px 18px 60px;display:grid;gap:16px}
+.view{display:none;animation:fadeIn .25s ease}
+.view.on{display:block}
+@keyframes fadeIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+.grid-top{display:grid;grid-template-columns:330px minmax(0,1fr) 400px;gap:16px;align-items:start}
+.grid-bot{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start}
+
+/* 面板 — 金属质感 + 四角科技装饰 */
+.panel{background:linear-gradient(180deg,var(--card2) 0%,var(--card) 100%);border:1px solid var(--line);
+  border-radius:12px;padding:16px 20px;box-shadow:var(--shadow);position:relative}
+.panel::before,.panel::after{content:"";position:absolute;width:10px;height:10px;border:1px solid var(--steel-l);opacity:.45;pointer-events:none}
+.panel::before{top:-1px;left:-1px;border-right:none;border-bottom:none;border-top-left-radius:12px}
+.panel::after{bottom:-1px;right:-1px;border-left:none;border-top:none;border-bottom-right-radius:12px}
+.panel h2{font-size:14.5px;font-weight:700;margin-bottom:12px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;letter-spacing:.3px}
+.panel h2 .hint{font-weight:400;font-size:11.5px;color:#8b949e;margin-left:auto;text-align:right}
+.num{display:inline-block;background:linear-gradient(135deg,var(--steel-l),var(--steel));color:#0a0e14;font-size:11px;border-radius:5px;padding:1px 8px;font-weight:700;letter-spacing:.5px}
+.num.m{background:linear-gradient(135deg,#ff6b1a,#ff8534)}
+
+label{display:block;font-size:12.5px;color:#8b949e;margin:12px 0 3px}
+label b{color:#e6edf3}
+input[type=range]{width:100%;accent-color:var(--molten);height:22px;cursor:pointer;background:transparent}
+.val{float:right;font-variant-numeric:tabular-nums;color:var(--molten);font-weight:700;font-size:16px;text-shadow:var(--glow-orange)}
+.radios{display:flex;gap:8px;margin-top:5px}
+.radios label{margin:0;cursor:pointer;border:1px solid var(--line);border-radius:10px;padding:8px 6px;font-size:12.5px;flex:1;text-align:center;background:rgba(13,17,23,.6);color:#8b949e;transition:.15s}
+.radios input{accent-color:var(--molten);margin-right:4px}
+.radios .on{border-color:var(--molten);background:rgba(255,107,26,.12);color:var(--molten);font-weight:700;box-shadow:var(--glow-orange)}
+
+/* KPI */
+.kpis{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.kpi{background:rgba(13,17,23,.5);border:1px solid var(--line);border-radius:10px;padding:12px 14px;transition:.2s}
+.kpi .l{font-size:12px;color:#8b949e}
+.kpi .l .tip{font-weight:400;color:#6e7681}
+.kpi .v{font-size:22px;font-weight:800;font-variant-numeric:tabular-nums;color:#e6edf3;line-height:1.25;transition:color .25s;font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
+.kpi .v small{font-size:12px;font-weight:500;color:#8b949e;margin-left:3px}
+.kpi .u{font-size:11.5px;color:#6e7681;margin-top:1px}
+.kpi.hl{background:linear-gradient(135deg,rgba(255,107,26,.12),rgba(255,107,26,.04));border-color:rgba(255,107,26,.5);box-shadow:var(--shadow-hl)}
+.kpi.hl .v{font-size:34px;color:var(--molten);text-shadow:var(--glow-orange)}
+.kpi.hl.warn{background:linear-gradient(135deg,rgba(210,153,34,.15),rgba(210,153,34,.05));border-color:rgba(210,153,34,.6);box-shadow:0 0 0 1px rgba(210,153,34,.5),0 0 28px rgba(210,153,34,.25)}
+.kpi.hl.warn .v{color:var(--warn-d);text-shadow:0 0 12px rgba(210,153,34,.5)}
+
+/* LED 灯 */
+.led{display:inline-block;width:13px;height:13px;border-radius:50%;vertical-align:middle;margin-right:5px;position:relative}
+.led::after{content:"";position:absolute;inset:-3px;border-radius:50%;border:1px solid currentColor;opacity:.4}
+.led-g{background:#3fb950;color:#3fb950;animation:pg 2s infinite}
+.led-y{background:#d29922;color:#d29922;animation:py 1.3s infinite}
+@keyframes pg{0%,100%{box-shadow:0 0 6px #3fb950}50%{box-shadow:0 0 14px #3fb950}}
+@keyframes py{0%,100%{box-shadow:0 0 6px #d29922}50%{box-shadow:0 0 16px #d29922}}
+
+.badge{display:inline-flex;align-items:center;font-size:11px;font-weight:700;padding:3px 10px;border-radius:999px;white-space:nowrap}
+.b-g{background:rgba(63,185,80,.15);color:#3fb950;border:1px solid rgba(63,185,80,.3)}
+.b-y{background:rgba(210,153,34,.15);color:#e3b341;border:1px solid rgba(210,153,34,.3)}
+.b-r{background:rgba(248,81,73,.15);color:#ff7b72;border:1px solid rgba(248,81,73,.3)}
+
+.say{background:rgba(255,107,26,.08);border:1px solid rgba(255,107,26,.35);border-radius:10px;padding:11px 13px;font-size:14px;color:#ffb085;font-weight:600}
+.say.warn{background:rgba(210,153,34,.1);border-color:rgba(210,153,34,.5);color:#e3b341}
+
+.btn-primary{margin-top:12px;width:100%;border:none;background:linear-gradient(135deg,#ff6b1a,#ff8534);color:#0a0e14;
+  padding:11px 16px;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;transition:.15s;font-family:inherit;
+  box-shadow:0 4px 16px rgba(255,107,26,.35);letter-spacing:.5px}
+.btn-primary:hover{transform:translateY(-1px);box-shadow:0 6px 24px rgba(255,107,26,.5)}
+.btn-primary:disabled,.btn-primary.done{background:#30363d;color:#6e7681;cursor:default;box-shadow:none;transform:none}
+
+.btn-row{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.btn-mini{border:1px solid var(--line);background:rgba(13,17,23,.6);color:var(--steel-l);padding:5px 10px;border-radius:8px;
+  font-size:12px;font-weight:600;cursor:pointer;transition:.15s;font-family:inherit}
+.btn-mini:hover{border-color:var(--steel-l);color:#c9d1d9;background:rgba(88,166,255,.1);box-shadow:var(--glow-blue)}
+.btn-mini.s{background:rgba(88,166,255,.15);border-color:var(--steel-l);color:#c9d1d9}
+
+.explain{background:rgba(13,17,23,.4);border:1px solid var(--line);border-radius:10px;padding:11px 13px;font-size:13.5px;color:#8b949e}
+.explain div{margin:4px 0}
+.explain .hl-k{color:var(--steel-l);font-weight:700}
+.note{font-size:12px;color:#6e7681}
+
+.scroll-x{overflow-x:auto;-webkit-overflow-scrolling:touch}
+table.tb{font-size:13px;border-collapse:collapse;width:100%;min-width:380px}
+.tb th,.tb td{border:1px solid var(--line);padding:5px 8px;text-align:center;font-variant-numeric:tabular-nums}
+.tb th{background:rgba(88,166,255,.06);font-weight:600;color:#c9d1d9}
+.tb td{color:#8b949e}
+details{margin-top:10px}details summary{cursor:pointer;font-size:13px;color:var(--steel-l);font-weight:600}
+table.gold{font-size:12px;border-collapse:collapse;width:100%;min-width:420px}
+.gold td,.gold th{border:1px solid var(--line);padding:3px 8px;font-variant-numeric:tabular-nums}
+.gold th{background:rgba(88,166,255,.06);color:#c9d1d9}
+.gold td{color:#8b949e}
+.legend{display:flex;gap:16px;font-size:12px;color:#8b949e;margin-top:4px;flex-wrap:wrap}
+
+.gov{border:1px solid var(--line);border-radius:10px;padding:14px 16px;background:rgba(13,17,23,.4)}
+.gov h3{font-size:13.5px;font-weight:700;margin-bottom:6px;color:#c9d1d9;letter-spacing:.3px}
+.gov .mono{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px;color:#8b949e;line-height:1.7}
+.gov .placeholder{color:#484f58;font-style:italic}
+
+footer{margin-top:26px;padding:16px 28px;background:linear-gradient(135deg,#0d1117,#161b22);color:#6e7681;font-size:12px;display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;border-top:1px solid var(--line)}
+
+/* ===== 全屏模式：自适应填满视口高度，外层不纵向滚动 ===== */
+body.fs{height:100vh;height:100dvh;overflow:hidden;display:flex;flex-direction:column}
+body.fs .header,body.fs .tabs{flex:0 0 auto}
+body.fs .header-row,body.fs .tabs{max-width:none}
+body.fs .wrap{flex:1 1 auto;min-height:0;overflow:hidden;display:flex;flex-direction:column;padding:14px 18px;max-width:none;width:100%}
+body.fs .view.on{flex:1 1 auto;min-height:0;display:flex;flex-direction:column;overflow:hidden}
+body.fs .grid-top,body.fs .grid2,body.fs .grid-bot{flex:1 1 0;min-height:0;align-items:stretch}
+body.fs .grid-top>div,body.fs .grid2>div,body.fs .grid-bot>div{min-height:0;overflow-y:auto;align-content:start}
+body.fs .panel{overflow:hidden}
+body.fs .gov{overflow-y:auto}
+body.fs footer{flex:0 0 auto;margin-top:0}
+/* 全屏下小屏断点：保持单列但锁定外层高度，列内滚动 */
+@media(max-width:1140px){
+  body.fs .grid-top,body.fs .grid2,body.fs .grid-bot{grid-template-columns:1fr;grid-auto-rows:min-content}
+  body.fs .grid-top>div,body.fs .grid2>div,body.fs .grid-bot>div{overflow-y:auto}
+}
+
+/* 响应式 */
+@media(max-width:1140px){
+  .grid-top{grid-template-columns:1fr}
+  .grid2,.grid-bot{grid-template-columns:1fr}
+}
+@media(max-width:900px){
+  .wrap{padding:14px 12px 40px}
+  .header{padding:14px 14px 10px}
+  .header h1{font-size:16px}
+  .header .sub{font-size:12px}
+  .tabs{gap:6px;flex-wrap:nowrap;overflow-x:auto;padding-bottom:4px;-webkit-overflow-scrolling:touch}
+  .tab{padding:6px 12px;font-size:12.5px;flex:0 0 auto}
+  .panel{padding:14px 16px}
+  .kpis{grid-template-columns:1fr 1fr}
+  .kpi.hl .v{font-size:28px}
+}
+@media(max-width:640px){
+  body{font-size:14px}
+  .header{padding:12px 12px 8px}
+  .header-row{flex-direction:column;align-items:flex-start}
+  .hdr-right{width:100%;justify-content:space-between}
+  .grid-top,.grid2,.grid-bot,.kpis{grid-template-columns:1fr}
+  .kpi.hl .v{font-size:26px}
+  .panel{padding:12px 14px}
+  .panel h2{font-size:13.5px}
+  .panel h2 .hint{display:none}
+  .tb,.gold{font-size:11px}
+  .tb th,.tb td,.gold td,.gold th{padding:4px 5px}
+  footer{padding:12px 14px;flex-direction:column;gap:4px}
+}
+</style>
+</head>
+<body>
+
+<header class="header">
+  <div class="header-row">
+    <div>
+      <h1>提钒冶炼智能体 · 分角色驾驶舱 <span class="v">v0.6</span></h1>
+      <div class="sub">攀钢「四大平衡」机理引擎 · 黄金回归对照 Excel 703 公式 · 同一引擎，三层角色视图</div>
+    </div>
+    <div class="hdr-right">
+      <span class="status"><span class="dot"></span>离线运行中</span>
+      <button class="btn" id="demoBtn">▶ 演示</button>
+      <button class="btn" id="resetBtn">↺ 重置</button>
+      <button class="btn btn-fs" id="fsBtn" title="一键进入/退出全屏">⛶ 全屏</button>
+    </div>
+  </div>
+  <div class="tabs" id="tabs">
+    <button class="tab on" data-v="furnace">炉长驾驶舱<small>生产 · 10 秒读配吃</small></button>
+    <button class="tab" data-v="process">工艺工作台<small>工艺专家 · 复核仲裁</small></button>
+    <button class="tab" data-v="data">数据治理台<small>数据专家 · 引擎与接口</small></button>
+  </div>
+</header>
+
+<div class="wrap">
+
+<!-- ================= 炉长驾驶舱 ================= -->
+<div class="view on" id="view-furnace">
+  <div class="grid-top">
+    <!-- 01 输入 -->
+    <div class="panel">
+      <h2><span class="num">01</span>开吹条件 <span class="hint">按化验单填写</span></h2>
+      <label><b>铁水装入量</b><span class="val" id="vW"></span></label>
+      <input type="range" id="inW" min="60000" max="120000" step="1000" value="80000">
+      <label><b>铁水 Si 含量</b><span class="val" id="vSi"></span></label>
+      <input type="range" id="inSi" min="0.10" max="0.30" step="0.005" value="0.215">
+      <label><b>铁水 V 含量</b><span class="val" id="vV"></span></label>
+      <input type="range" id="inV" min="0.20" max="0.36" step="0.005" value="0.284">
+      <label><b>铁水温度</b><span class="val" id="vT"></span></label>
+      <input type="range" id="inT" min="1250" max="1350" step="5" value="1300">
+      <fieldset style="border:none;margin-top:16px">
+        <legend style="font-size:12.5px"><b>口径选择</b><span style="font-weight:400;color:#6e7681">（V 氧化反应热 · 专家审定中）</span></legend>
+        <div class="radios">
+          <label class="on" id="lb2777"><input type="radio" name="dh" value="2777" checked>经验口径 · 攀钢<br><b>2777 kJ/kg</b></label>
+          <label id="lb15000"><input type="radio" name="dh" value="15000">文献口径 · 热力学<br><b>15000 kJ/kg</b></label>
+        </div>
+      </fieldset>
+    </div>
+
+    <!-- 02 配吃 KPI -->
+    <div style="display:grid;gap:16px;align-content:start">
+      <div class="panel">
+        <h2><span class="num m">02</span>本炉配吃建议
+          <span class="hint">依据：pangang/base.yaml v1.0.0（试用）</span>
+          <span class="badge b-g" id="confBadge"><span class="led led-g" id="confLed"></span>绿灯</span></h2>
+        <div class="kpis">
+          <div class="kpi hl" id="kpi-pel"><div class="l">冷却剂配吃量 · 球团（t）<span class="tip"> 现场称「球返」</span></div><div class="v" id="kPel">--</div><div class="u">配吃量 = 富余热量 ÷ 单位吸热</div></div>
+          <div class="kpi hl" id="kpi-gr"><div class="l">预测精钒渣 V₂O₅ 品位（%）</div><div class="v" id="kGr">--</div><div class="u">预算目标 ≥ 14.0</div></div>
+          <div class="kpi"><div class="l">热量富余（GJ）</div><div class="v" id="kSur">--</div><div class="u">配吃前静态测算</div></div>
+          <div class="kpi"><div class="l">预计终态渣量（t）</div><div class="v" id="kSlg">--</div><div class="u">含配吃带入与铁水带渣</div></div>
+          <div class="kpi"><div class="l">预计半钢量（t）</div><div class="v" id="kSt">--</div><div class="u">按终点 1370 ℃ 计</div></div>
+          <div class="kpi"><div class="l">物料收支校验（%）</div><div class="v" id="kBal">--</div><div class="u" id="kBal2">守恒校验之一</div></div>
+        </div>
+        <div class="say" id="confOne" style="margin-top:12px"></div>
+        <div id="trustAnchor" style="margin-top:8px;padding:8px 11px;background:rgba(88,166,255,.05);border-radius:8px;border:1px dashed var(--line);font-size:12.5px;color:#8b949e"></div>
+        <button class="btn-primary" id="confirmBtn">确认照单执行 · 留痕</button>
+        <div id="warnCase" style="display:none;margin-top:10px"></div>
+      </div>
+    </div>
+
+    <!-- 引导 -->
+    <div style="display:grid;gap:16px;align-content:start">
+      <div class="panel">
+        <h2><span class="num">如何用</span>炉长驾驶舱</h2>
+        <div class="explain">
+          <div>1. 按化验单拨动左侧四个滑杆（也可由 PLC/化验室自动带入）。</div>
+          <div>2. 看右侧<b style="color:var(--molten)">两个大数字</b>：配吃量 + 品位预测。</div>
+          <div>3. 看<b>红黄绿灯</b>：绿灯正常照做，黄灯按预案并记例外。</div>
+          <div class="note" style="margin-top:6px">相似判例已内联为「信任锚」；双口径仲裁、敏感性曲线、黄金回归等专家级信息在「工艺工作台 / 数据治理台」。</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ================= 工艺工作台 ================= -->
+<div class="view" id="view-process">
+  <div class="grid2">
+    <div style="display:grid;gap:16px;align-content:start">
+      <div class="panel">
+        <h2><span class="num">03</span>敏感性分析 <span class="hint">铁水 Si 含量 → 精钒渣品位</span></h2>
+        <div id="sweep" class="scroll-x"></div>
+        <div class="legend"><span>— 当前口径下的机理预测</span><span style="color:var(--steel-l)">┃ 当前铁水条件</span>
+          <span class="note">曲线下行段即「硅稀释」敏感区：Si 每升 0.01%，品位约降 0.2–0.3pp</span></div>
+      </div>
+      <div class="panel">
+        <h2><span class="num">04</span>解释卡（为何如此推荐）</h2>
+        <div class="explain" id="explain"></div>
+      </div>
+    </div>
+    <div style="display:grid;gap:16px;align-content:start">
+      <div class="panel">
+        <h2><span class="num">05</span>V 氧化反应热 · 双口径对照 <span class="hint">16 炉实绩为证 · 专家审定中</span></h2>
+        <div class="scroll-x"><table class="tb" id="arb"></table></div>
+        <div class="explain" id="arbnote" style="margin-top:8px"></div>
+        <div class="btn-row" id="arbBtns">
+          <button class="btn-mini" data-d="采用 A · 经验 2777">采用 A</button>
+          <button class="btn-mini" data-d="采用 B · 文献 15000">采用 B</button>
+          <button class="btn-mini" data-d="本炉例外">本炉例外</button>
+          <button class="btn-mini" data-d="挂起待议">挂起待议</button>
+        </div>
+      </div>
+      <div class="panel">
+        <h2><span class="num">07</span>判例库（相似炉次全量） <span class="hint">与 05 仲裁联动 · 先例佐证</span></h2>
+        <div id="sim" class="scroll-x"></div>
+      </div>
+      <div class="panel">
+        <h2><span class="num">06</span>生产实绩回放（最近 16 日）</h2>
+        <div id="replay" class="scroll-x"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ================= 数据治理台 ================= -->
+<div class="view" id="view-data">
+  <div class="grid2">
+    <div style="display:grid;gap:16px;align-content:start">
+      <div class="panel">
+        <h2><span class="num">A</span>黄金回归自检 <span class="hint">JS 引擎 vs 攀钢 Excel 基准</span>
+          <button class="btn-mini s" id="recheckBtn" style="margin-left:auto">重新自检</button></h2>
+        <div id="goldbox" class="scroll-x"></div>
+      </div>
+      <div class="gov">
+        <h3>知识包溯源（pangang/base.yaml）</h3>
+        <div class="mono">v1.0.0（试用）· 31 类参数 → 攀钢 Excel 单元格<br>状态：draft 待专家批准 · 与 pangang_reference.py 一致性由 pangang_pack.py 校验</div>
+      </div>
+    </div>
+    <div style="display:grid;gap:16px;align-content:start">
+      <div class="panel">
+        <h2><span class="num">B</span>计算留痕 <span class="hint">本地无网络请求，可复制导出</span></h2>
+        <div class="explain" id="trace"></div>
+        <div class="explain" id="opLog" style="margin-top:8px;border-color:rgba(63,185,80,.25);background:rgba(63,185,80,.04)">
+          <div style="color:#6e7681;font-size:12.5px">操作留痕区：炉长确认 / 工艺仲裁将记录于此（localStorage 持久化，刷新不丢失）</div>
+        </div>
+      </div>
+      <div class="gov">
+        <h3>P3 数据接口规范 <span class="badge b-y">待建 · HANDOVER D6</span></h3>
+        <div class="mono">TSC/TSO · 烟气 CO/CO₂/流量 · 氧枪/枪位 · 炉后台账<br>字段/频率/网络边界 → 见 docs/DATA_INTERFACE_SPEC.md</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</div>
+
+<footer style="display:flex;flex-wrap:wrap;gap:10px">
+  <span>VEES MVP v0.6 · 深色工业金属风 + 全屏 · 性能缓存(72→5) + 留痕持久化 + 边界保护 + 术语统一 · 黄金基准 11/11 全绿</span>
+  <span class="glossary">术语：配吃=冷料加入 · 球返=球团矿返矿 · 品位=V₂O₅ 质量分数 · 富余=热量富余 · 留痕=全量计算记录</span>
+</footer>
+
+<script>
+"use strict";
+/* ============ 攀钢四大平衡引擎（JS 同源移植自 pangang_reference.py，与 v0.2/v0.3 完全一致） ============ */
+const K={cF:1.157,hmSlag:5e-4,co:.90,co2:.10,feo:.42,feOx2:.03,beads:.10,spit:.003,
+ dust:.002,dFeo:.70,dFeOx2:.20,liningR:17e-5,
+ Lin:{CaO:.02,SiO2:.02,MgO:.81,Al2O3:.01,C:.14},fO2:.005,pur:.998,
+ cpI:{cs:.745,L:218,cl:.837},cpS:{cs:.699,L:272,cl:.837},cpSl:{cl:1.247,L:209},
+ gasCp:1.141,dustCp:{cl:.996,L:209},
+ dSi:29177,dMn:6593,dTi:29177/1.89*1.38,dP:18980,dcCO:11637,dcCO2:34824,
+ dFeFeO:4249,dFeFe2O3:6459,dCr:7598,dSiO2:1620,
+ gasT:1450,spitT:1600,slagD:20,othL:.04,amb:25,
+ fFeO:56/72,fFe2O3:112/160,v2o5pV:182/102};
+const COOL={pellet:{fe2o3:.8797142857142858,sio2:.0326,v2o5:.00451},
+ metalFe:{fe2o3:.7714285714285715,sio2:.164,v2o5:.0045,metallic:true,absFixed:1111.2042634879963},
+ ore:{fe2o3:.9714285714285715,sio2:.0326,v2o5:1e-5},
+ waste:{fe2o3:.8797142857142858,sio2:.0326,v2o5:.0046,noDil:true}};
+const EP={C:3.485,Si:.006,Mn:.02,P:.12225,S:.0708828522920203,V:.025,Cr:.02,Ti:.00833024691358023};
+
+function ironFrz(C,Si,Mn,P,S){return 1535-(C*100+Si*8+Mn*5+P*30+S*25)-7;}
+function steelFrz(){return 1535-(EP.C*65+EP.Si*8+EP.Mn*5+EP.P*30+EP.S*25)-7;}
+
+function runModel(inp){
+  const W=inp.W,dHV=inp.dhV;
+  const fc=inp.C*K.cF;
+  const ox={C:fc-EP.C,Si:inp.Si-EP.Si,Mn:.18-EP.Mn,P:.132572156196944-EP.P,S:0,
+            V:inp.V-EP.V,Cr:.09-EP.Cr,Ti:(inp.Ti!=null?inp.Ti:.11)-EP.Ti};
+  const om={Si:ox.Si*W/100,Mn:ox.Mn*W/100,Ti:ox.Ti*W/100,Cr:ox.Cr*W/100,V:ox.V*W/100,P:ox.P*W/100,
+            cCO:.9*ox.C*W/100,cCO2:.1*ox.C*W/100};
+  const pr={SiO2:om.Si*60/28,MnO:om.Mn*71/55,TiO2:om.Ti*80/48,Cr2O3:om.Cr*150/102,
+            V2O5:om.V*182/102,P2O5:om.P*142/62,CO:om.cCO*28/12,CO2:om.cCO2*44/12};
+  let o2={Si:om.Si*32/28,Mn:om.Mn*16/55,Ti:om.Ti*32/48,Cr:om.Cr*48/102,V:om.V*80/102,P:om.P*80/62,
+          cCO:om.cCO*16/12,cCO2:om.cCO2*32/12};
+  const lin=K.liningR*W;
+  const lSiO2=lin*K.Lin.SiO2,lCaO=lin*K.Lin.CaO,lMgO=lin*K.Lin.MgO,lAl=lin*K.Lin.Al2O3;
+  const nonFe=pr.V2O5+pr.TiO2+pr.Cr2O3+pr.SiO2+lSiO2+pr.P2O5+pr.MnO+lCaO+lMgO+lAl;
+  const slg=nonFe/(1-K.feo-K.feOx2);
+  const oxFeO=slg*K.feo*K.fFeO, oxFe2=slg*K.feOx2*K.fFe2O3;
+  o2.Fe1=oxFeO*16/56; o2.Fe2=oxFe2*48/112;
+  const oxTot=om.Si+om.Mn+om.Ti+om.Cr+om.V+om.P+om.cCO+om.cCO2+oxFeO+oxFe2;
+  const o2Tot=o2.Si+o2.Mn+o2.Ti+o2.Cr+o2.V+o2.P+o2.cCO+o2.cCO2+o2.Fe1+o2.Fe2;
+  const dust=K.dust*W;
+  const dustO2=dust*K.dFeo*16/72+dust*K.dFeOx2*48/160;
+  const dustFe=dust*K.dFeo*K.fFeO+dust*K.dFeOx2*K.fFe2O3;
+  const lCO=lin*K.Lin.C*K.co*28/12, lCO2=lin*K.Lin.C*K.co2*44/12;
+  const lO2=lCO*16/28+lCO2*32/44;
+  const co=pr.CO+lCO, co2=pr.CO2+lCO2;
+  const vCO=co*22.4/28, vCO2=co2*22.4/44;
+  const rhs1=(vCO+vCO2)*K.fO2*100, rhs2=(o2Tot+dustO2+lO2)*22.4/32*(1-K.pur)*100;
+  const vO2=(rhs1*99.8-.5*rhs2)/(99.5*99.8-.5*.2), vN2=(99.5*rhs2-.2*rhs1)/(99.5*99.8-.5*.2);
+  const o2fM=vO2*32/22.4, n2M=vN2*28/22.4;
+  const o2kg=o2Tot+dustO2+o2fM+n2M+lO2;
+  const beads=slg*K.beads, spit=K.spit*W;
+  const steel=W-(oxTot+dustFe+beads+spit);
+  const gasMass=co+co2+o2fM+n2M;
+  const income=W+lin+o2kg, outlay=steel+slg+gasMass+dust+beads+spit;
+  const balPct=(income-outlay)/outlay;
+
+  const tI=ironFrz(fc,inp.Si,.18,.132572156196944,.0708828522920203), tS=steelFrz();
+  const hIron=W*(K.cpI.cs*(tI-K.amb)+K.cpI.L+K.cpI.cl*(inp.T-tI));
+  const hEl=om.Si*K.dSi+om.Mn*K.dMn+om.Ti*K.dTi+om.Cr*K.dCr+om.V*dHV+om.P*K.dP+
+            om.cCO*K.dcCO+om.cCO2*K.dcCO2+oxFeO*K.dFeFeO+oxFe2*K.dFeFe2O3+(pr.SiO2+lSiO2)*K.dSiO2;
+  const hDust=dust*K.dFeo*K.fFeO*K.dFeFeO+dust*K.dFeOx2*K.fFe2O3*K.dFeFe2O3;
+  const hLinC=lCO*(12/28)*K.dcCO+lCO2*(12/44)*K.dcCO2;
+  const income2=hIron+hEl+hDust+hLinC;
+  const hSteel=steel*(K.cpS.cs*(tS-K.amb)+K.cpS.L+K.cpS.cl*(1370-tS));
+  const hSlag=slg*(K.cpSl.cl*(1370-20-K.amb)+K.cpSl.L);
+  const hGas=gasMass*K.gasCp*(K.gasT-K.amb);
+  const hDustP=dust*(K.dustCp.cl*(K.gasT-K.amb)+K.dustCp.L);
+  const beadF=K.cpS.cs*(tS-K.amb)+K.cpS.L+K.cpS.cl*(1370-20-tS);
+  const hBeads=beads*beadF;
+  const hSpit=spit*(K.cpS.cs*(tS-K.amb)+K.cpS.L+K.cpS.cl*(1600-tS));
+  const hOther=income2*K.othL;
+  const surplus=income2-(hSteel+hSlag+hGas+hDustP+hBeads+hSpit+hOther);
+
+  const pc=COOL.pellet;
+  const sUp=(1-pc.fe2o3)/(1-K.feo-K.feOx2);
+  const bUp=sUp*K.beads;
+  const steelUp=pc.fe2o3*K.fFe2O3-bUp-sUp*(K.feo*K.fFeO+K.feOx2*K.fFe2O3);
+  const o2Down=(pc.fe2o3*48/160-sUp*(K.feo*16/72+K.feOx2*48/160))/K.pur;
+  const stkK=K.cpS.cs*(tS-K.amb)+K.cpS.L+K.cpS.cl*(1370-tS);
+  const slgK=K.cpSl.cl*(1370-20-K.amb)+K.cpSl.L;
+  const hIn=sUp*(K.dFeFeO*K.feo*K.fFeO+K.dFeFe2O3*K.feOx2*K.fFe2O3)+pc.sio2*K.dSiO2;
+  const hOut=steelUp*stkK+sUp*slgK+bUp*beadF+pc.fe2o3*K.fFe2O3*K.dFeFe2O3+hIn*K.othL;
+  const pl=surplus/Math.max(hOut-hIn,1);
+  const steel2=steel+steelUp*pl, slg2=slg+sUp*pl, beads2=beads+bUp*pl;
+  const den=W*K.hmSlag+slg2;
+  const grade=(pr.V2O5+pl*(pc.v2o5-EP.V*K.v2o5pV/100))/den*100;
+  return {W,fc,Si:inp.Si,V:inp.V,T:inp.T,dhV:inp.dhV,pr,slg,steel,steel2,slg2,beads2,spit,
+          o2kg,o2vol:0,income,outlay,balPct,tI,tS,surplus,pl,grade,beadF,gasMass,absU:hOut-hIn};
+}
+/* ============ 引擎结束 ============ */
+</script>
+
+<script>
+"use strict";
+/* ============ 应用层（分角色渲染，引擎与 v0.2/v0.3 一致） ============ */
+const HEATS=[
+ {day:1,si:.19, v:.319,rough:14.47,fine:14.06},{day:2,si:.152,v:.325,rough:14.41,fine:13.25},
+ {day:3,si:.154,v:.323,rough:15.11,fine:13.59},{day:4,si:.14, v:.329,rough:14.05,fine:13.67},
+ {day:5,si:.172,v:.332,rough:14.17,fine:13.64},{day:6,si:.142,v:.33, rough:15.85,fine:13.91},
+ {day:7,si:.138,v:.333,rough:14.59,fine:14.24},{day:8,si:.135,v:.319,rough:null, fine:14.19},
+ {day:9,si:.128,v:.331,rough:14.68,fine:14.59},{day:10,si:.125,v:.298,rough:14.92,fine:13.90},
+ {day:11,si:.195,v:.294,rough:13.41,fine:13.28},{day:12,si:.192,v:.284,rough:14.03,fine:13.21},
+ {day:13,si:.144,v:.286,rough:13.06,fine:12.72},{day:14,si:.266,v:.299,rough:12.24,fine:13.59},
+ {day:15,si:.251,v:.287,rough:13.48,fine:14.70},{day:16,si:.13, v:.288,rough:14.27,fine:12.61}];
+const $=id=>document.getElementById(id);
+const fmt=(v,d=2)=>Number(v).toLocaleString("en-US",{minimumFractionDigits:d,maximumFractionDigits:d});
+/* 品位门限附近（14.0±0.2）显 3 位，其余 2 位 */
+const fmtGrade=(v)=>{const d=Math.abs(v-14.0)<0.2?3:2;return fmt(v,d);};
+
+/* 数字滚动动画 */
+const _tweens=new Map();
+function animateNum(el,to,dec){
+  if(!(el&&isFinite(to)))return;
+  const cur=parseFloat(el.dataset.v)||0;
+  if(_tweens.has(el))cancelAnimationFrame(_tweens.get(el));
+  const start=performance.now(),dur=240,from=cur,delta=to-from;
+  if(Math.abs(delta)<1e-9){el.textContent=fmt(to,dec);el.dataset.v=to;return;}
+  function step(t){
+    const k=Math.min(1,(t-start)/dur);
+    const e=1-Math.pow(1-k,3);
+    el.textContent=fmt(from+delta*e,dec);
+    if(k<1)_tweens.set(el,requestAnimationFrame(step));
+    else{el.dataset.v=to;el.textContent=fmt(to,dec);}
+  }
+  _tweens.set(el,requestAnimationFrame(step));
+}
+
+function readInput(){
+  return {W:+$("inW").value, Si:+$("inSi").value, V:+$("inV").value, T:+$("inT").value,
+          C:4.3, dhV:+(document.querySelector("input[name=dh]:checked").value)};
+}
+function nearH(Si,V){
+  if(!HEATS.length)return [];
+  return HEATS.map(h=>({h,d:2*Math.abs(h.si-Si)+Math.abs(h.v-V)}))
+              .sort((a,b)=>a.d-b.d).slice(0,4);
+}
+
+/* ============ 性能缓存：dhV 不变时只算一次（72 次 → ~5 次） ============ */
+let _cache={dhV:null,sweepPts:null,replayPreds:null,rmseA:null,rmseB:null,altModel:null};
+function calcRmse(dh){
+  const base={W:80000,T:1300,C:4.3,dhV:dh};
+  let se=0,n=0;
+  HEATS.forEach(h=>{const g=runModel(Object.assign({},base,{Si:h.si,V:h.v})).grade;
+    se+=(g-h.fine)*(g-h.fine);n++;});
+  return Math.sqrt(se/n);
+}
+function ensureCache(inp){
+  if(_cache.dhV===inp.dhV)return;
+  _cache.dhV=inp.dhV;
+  /* drawSweep 21 点曲线（只随 dhV 变，不随当前 Si 变） */
+  _cache.sweepPts=[];
+  const baseS={W:inp.W,V:inp.V,T:inp.T,C:inp.C,dhV:inp.dhV};
+  for(let v=.10;v<=.3001;v+=.01)_cache.sweepPts.push([v,runModel(Object.assign({},baseS,{Si:v})).grade]);
+  /* drawReplay 16 预测（W/T 固定 80000/1300） */
+  const baseR={W:80000,T:1300,C:4.3,dhV:inp.dhV};
+  _cache.replayPreds=HEATS.map(h=>runModel(Object.assign({},baseR,{Si:h.si,V:h.v})).grade);
+  /* rmse 两口径（只依赖 dhV） */
+  _cache.rmseA=calcRmse(2777);
+  _cache.rmseB=calcRmse(15000);
+  /* alt model（arb 对照口径） */
+  const other=inp.dhV===2777?15000:2777;
+  _cache.altModel=runModel(Object.assign({},inp,{dhV:other}));
+}
+
+/* 操作留痕 — localStorage 持久化（刷新不丢失） */
+let opLog=[];
+try{opLog=JSON.parse(localStorage.getItem("vees_oplog")||"[]");}catch(e){opLog=[];}
+function saveOpLog(){try{localStorage.setItem("vees_oplog",JSON.stringify(opLog));}catch(e){}}
+function pushLog(msg){
+  opLog.unshift({t:new Date().toLocaleString("zh-CN",{hour12:false}),msg});
+  if(opLog.length>50)opLog.pop();
+  saveOpLog();
+  renderOpLog();
+}
+function renderOpLog(){
+  if(!opLog.length){$("opLog").innerHTML='<div style="color:#6e7681;font-size:12.5px">操作留痕区：炉长确认 / 工艺仲裁将记录于此（已持久化到本地）</div>';return;}
+  $("opLog").innerHTML='<div style="margin-bottom:6px;font-weight:700;color:#3fb950">📋 操作留痕（最近 '+opLog.length+' 条 · 本地持久化）</div>'+
+    opLog.map(r=>'<div style="padding:4px 0;border-bottom:1px dashed rgba(63,185,80,.15)"><span style="color:#6e7681;font-size:11px">'+r.t+'</span> '+r.msg+'</div>').join("");
+}
+
+function update(){
+  const inp=readInput(); const r=runModel(inp);
+  $("vW").textContent=fmt(inp.W/1000,1)+" t";
+  $("vSi").textContent=inp.Si.toFixed(3)+" %";
+  $("vV").textContent=inp.V.toFixed(3)+" %";
+  $("vT").textContent=inp.T+" ℃";
+
+  const risky=inp.Si>0.25||inp.V<0.27;
+  animateNum($("kPel"),r.pl/1000,2);
+  $("kGr").textContent=fmtGrade(r.grade);
+  animateNum($("kSur"),r.surplus/1e6,1);
+  animateNum($("kSlg"),r.slg2/1000,2);
+  animateNum($("kSt"),r.steel2/1000,1);
+  $("kBal").textContent=(r.balPct*100).toFixed(4);
+
+  /* LED + badge */
+  const cb=$("confBadge"),led=$("confLed");
+  cb.className="badge "+(risky?"b-y":"b-g");
+  cb.innerHTML='<span class="led '+(risky?"led-y":"led-g")+'"></span>'+(risky?"黄灯":"绿灯");
+  /* 关键 KPI 卡状态色 */
+  $("kpi-pel").classList.toggle("warn",risky);
+  $("kpi-gr").classList.toggle("warn",risky);
+  /* 一句话建议 */
+  const say=$("confOne"); say.className="say"+(risky?" warn":"");
+  say.innerHTML=(risky?
+    "建议配吃 <b>"+fmt(r.pl/1000,2)+" t</b> 球团，预测精钒渣 V₂O₅ 品位 <b>"+fmtGrade(r.grade)+"%</b>。参数逼近适用边界，建议对照高硅预案并按例外流程记录本炉。":
+    "建议配吃 <b>"+fmt(r.pl/1000,2)+" t</b> 球团，预测精钒渣 V₂O₅ 品位 <b>"+fmtGrade(r.grade)+"%</b>，落在常用区间，照单执行。");
+
+  $("explain").innerHTML=
+    "<div>🧭 知识口径：pangang/base.yaml v1.0.0（试用）· 31 类参数溯源至攀钢 Excel 单元格</div>"+
+    "<div>⚙️ 机理依据：四大平衡全链路，物料收支校验差 <b>"+(r.balPct*100).toFixed(4)+"%</b>（≤0.02% 为通过）</div>"+
+    "<div>📘 相似炉次判例："+nearH(inp.Si,inp.V).map(x=>"第"+x.h.day+"日（Si "+x.h.si.toFixed(2)+"/V "+x.h.v.toFixed(2)+"，实绩精钒渣 "+x.h.fine+"%）").join("；")+"</div>"+
+    (risky?"<div style='margin-top:6px'><span class='badge b-y'>建议对照高硅预案，并按例外流程记录本炉</span></div>":"");
+  ensureCache(inp);
+  drawSweep(inp,r.grade);
+  arb(inp,r);
+  drawReplay(inp);
+  simTB(inp);
+  renderTrust(inp,r,risky);
+  traceTB(inp);
+  renderOpLog();
+}
+function renderTrust(inp,r,risky){
+  const top=nearH(inp.Si,inp.V).slice(0,3);
+  const fines=top.map(x=>x.h.fine).filter(v=>v!=null);
+  if(!fines.length){$("trustAnchor").innerHTML="📌 信任锚：近炉相似实绩数据不足，无法比对";const wc=$("warnCase");wc.style.display="none";wc.innerHTML="";return;}
+  const lo=Math.min(...fines),hi=Math.max(...fines);
+  const tag=r.grade<lo?" <span style='color:#ff7b72'>↓ 低于近炉下限</span>":r.grade>hi?" <span style='color:#3fb950'>↑ 高于近炉上限</span>":" <span style='color:#8b949e'>· 落在近炉区间</span>";
+  $("trustAnchor").innerHTML="📌 信任锚：近 3 炉相似实绩精钒渣品位 <b style='color:#e6edf3'>"+fmt(lo,2)+"–"+fmt(hi,2)+"%</b>，本炉预测 <b style='color:var(--molten)'>"+fmtGrade(r.grade)+"%</b>"+tag;
+  const wc=$("warnCase");
+  if(risky){
+    const c=top[0];
+    wc.style.display="block";
+    wc.innerHTML="<div class='panel' style='background:rgba(210,153,34,.1);border-color:rgba(210,153,34,.5);padding:12px 14px'>"+
+      "<div style='font-weight:700;color:#e3b341;font-size:13px;margin-bottom:6px'>⚠ 参数逼近边界 · 最近相似判例</div>"+
+      "<div style='font-size:13px;color:#8b949e'>第 <b style='color:#e6edf3'>"+c.h.day+"</b> 日：Si "+c.h.si.toFixed(2)+"% / V "+c.h.v.toFixed(2)+"% → 实绩精钒渣 <b style='color:#e3b341'>"+c.h.fine+"%</b>（相似度 "+c.d.toFixed(3)+"）</div>"+
+      "<div style='margin-top:8px'><button class='btn-mini' id='planBtn' style='background:rgba(210,153,34,.15);border-color:#d29922;color:#e3b341'>📋 查看高硅预案</button></div>"+
+      "</div>";
+    const pb=$("planBtn"); if(pb)pb.onclick=()=>pushLog("炉长查看高硅预案（参数逼近边界）");
+  }else{wc.style.display="none";wc.innerHTML="";}
+}
+function simTB(inp){
+  let s="<table class='tb'><tr><th>炉次</th><th>Si %</th><th>V %</th><th>实测粗钒渣品位 %</th><th>实测精钒渣品位 %</th><th>相似度*</th></tr>";
+  nearH(inp.Si,inp.V).forEach(x=>{
+    s+="<tr><td><b>第 "+x.h.day+" 日</b></td><td>"+x.h.si.toFixed(2)+"</td><td>"+x.h.v.toFixed(2)+
+       "</td><td>"+(x.h.rough!=null?x.h.rough:"未取样")+"</td><td>"+(x.h.fine!=null?x.h.fine:"—")+"</td><td>"+x.d.toFixed(3)+"</td></tr>"});
+  s+="</table><div class='note' style='margin-top:4px'>* 相似度 = 2×|ΔSi|+|ΔV|，数值越小越相似；判例库 P3 接入全量炉次台账。</div>";
+  $("sim").innerHTML=s;
+}
+function arb(inp,r){
+  const alt=_cache.altModel;
+  let s="<tr><th></th><th>经验口径 · 攀钢<br>2777 kJ/kg</th><th>文献口径 · 热力学<br>15000 kJ/kg</th></tr>";
+  s+="<tr><td><b>冷却剂配吃量</b></td><td>"+fmt(inp.dhV===2777?r.pl/1000:alt.pl/1000,2)+" t</td><td>"+fmt(inp.dhV===15000?r.pl/1000:alt.pl/1000,2)+" t</td></tr>";
+  s+="<tr><td><b>预测精钒渣品位</b></td><td>"+fmtGrade(inp.dhV===2777?r.grade:alt.grade)+"%</td><td>"+fmtGrade(inp.dhV===15000?r.grade:alt.grade)+"%</td></tr>";
+  s+="<tr><td><b>热量富余</b></td><td>"+fmt((inp.dhV===2777?r:alt).surplus/1e6,1)+" GJ</td><td>"+fmt((inp.dhV===15000?r:alt).surplus/1e6,1)+" GJ</td></tr>";
+  $("arb").innerHTML=s;
+  $("arbnote").innerHTML="📊 证据（16 日回放·精钒渣）：攀钢口径 2777 → "+fmt(_cache.rmseA,3)+"；文献 15000 → "+fmt(_cache.rmseB,3)+
+   "（均方根误差 RMSE，越小越贴近实绩）。系统只呈证据，不代裁决：下方按钮由专家决断，结果记入操作留痕。";
+}
+function drawSweep(inp,cur){
+  const pts=_cache.sweepPts;
+  const Wd=580,Ht=225,L=46,R=14,Tt=12,pb=30;
+  const x=v=>L+(v-.10)/.2*(Wd-L-R);
+  const yy=g=>pb-(Math.min(Math.max(g,11),18)-11)/7*(Ht-Tt-pb);
+  let s="<svg width='100%' viewBox='0 0 "+Wd+" "+Ht+"' style='display:block'>"+
+    "<line x1='"+L+"' y1='"+pb+"' x2='"+(Wd-R)+"' y2='"+pb+"' stroke='#30363d'/>"+
+    "<line x1='"+L+"' y1='"+Tt+"' x2='"+L+"' y2='"+pb+"' stroke='#30363d'/>";
+  for(let g=12;g<=18;g+=2){s+="<text x='"+(L-7)+"' y='"+(yy(g)+4)+"' text-anchor='end' font-size='10' fill='#6e7681'>"+g+"</text>"+
+    "<line x1='"+L+"' y1='"+yy(g)+"' x2='"+(Wd-R)+"' y2='"+yy(g)+"' stroke='#21262d'/>";}
+  for(let v=.1;v<=.3001;v+=.05)s+="<text x='"+x(v)+"' y='"+(Ht-9)+"' font-size='10' fill='#6e7681' text-anchor='middle'>"+v.toFixed(2)+"</text>";
+  s+="<path d='"+pts.map((p,i)=>(i?"L":"M")+x(p[0]).toFixed(1)+","+yy(p[1]).toFixed(1)).join("")+"' fill='none' stroke='#ff6b1a' stroke-width='2.5' style='filter:drop-shadow(0 0 4px rgba(255,107,26,.5))'/>";
+  const cx=x(inp.Si),cy=yy(cur);
+  s+="<line x1='"+cx+"' y1='"+Tt+"' x2='"+cx+"' y2='"+pb+"' stroke='#58a6ff' stroke-dasharray='3 3'/>"+
+     "<circle cx='"+cx+"' cy='"+yy(cur)+"' r='5' fill='#58a6ff' style='filter:drop-shadow(0 0 4px #58a6ff)'/>"+
+     "<text x='"+cx+"' y='"+(yy(cur)-10)+"' font-size='11' fill='#58a6ff' text-anchor='middle'>当前 Si → "+fmtGrade(cur)+"%</text>";
+  s+="</svg>";
+  $("sweep").innerHTML=s;
+}
+function drawReplay(inp){
+  const Wd=580,Ht=225,L=46,R=14,Tt=12,pb=30;
+  const x=i=>L+i*(Wd-L-R)/15;
+  const yy=g=>pb-(Math.min(Math.max(g,11),18)-11)/7*(Ht-Tt-pb);
+  const preds=_cache.replayPreds;
+  let s="<svg width='100%' viewBox='0 0 "+Wd+" "+Ht+"' style='display:block'>";
+  s+="<line x1='"+L+"' y1='"+pb+"' x2='"+(Wd-R)+"' y2='"+pb+"' stroke='#30363d'/><line x1='"+L+"' y1='"+Tt+"' x2='"+L+"' y2='"+pb+"' stroke='#30363d'/>";
+  for(let g=12;g<=18;g+=2){s+="<text x='"+(L-7)+"' y='"+(yy(g)+4)+"' text-anchor='end' font-size='10' fill='#6e7681'>"+g+"</text>"+
+    "<line x1='"+L+"' y1='"+yy(g)+"' x2='"+(Wd-R)+"' y2='"+yy(g)+"' stroke='#21262d'/>";}
+  s+="<path d='"+preds.map((g,i)=>(i?"L":"M")+x(i).toFixed(1)+","+yy(g).toFixed(1)).join("")+"' fill='none' stroke='#58a6ff' stroke-width='2' style='filter:drop-shadow(0 0 3px rgba(88,166,255,.4))'/>";
+  HEATS.forEach((h,i)=>{
+    if(h.rough!=null)s+="<circle cx='"+x(i).toFixed(1)+"' cy='"+yy(h.rough).toFixed(1)+"' r='3.5' fill='#ff6b1a'><title>第"+h.day+"日 粗钒渣实测 "+h.rough+"% ｜ 预测 "+fmtGrade(preds[i])+"%</title></circle>";});
+  HEATS.forEach((h,i)=>{s+="<circle cx='"+x(i).toFixed(1)+"' cy='"+yy(h.fine).toFixed(1)+"' r='3' fill='#3fb950'><title>第"+h.day+"日 精钒渣实测 "+h.fine+"% ｜ 预测 "+fmtGrade(preds[i])+"%</title></circle>";});
+  for(let d=4;d<=16;d+=4)s+="<text x='"+x(d-1)+"' y='"+(Ht-9)+"' font-size='10' fill='#6e7681' text-anchor='middle'>第"+d+"日</text>";
+  s+="</svg><div class='legend'><span><span style='color:#58a6ff;font-weight:700'>—</span> 机理预测</span>"+
+     "<span><span style='color:#ff6b1a'>●</span> 粗钒渣实测（装车样）</span><span><span style='color:#3fb950'>●</span> 精钒渣实测</span></div>";
+  const rm=(t,n)=>{let se=0,cnt=0;HEATS.forEach((h,i)=>{if(h[t]!=null){const e=preds[i]-h[t];se+=e*e;cnt++;}});return {v:Math.sqrt(se/cnt),n:cnt}};
+  const rmR=rm("rough"),rmF=rm("fine");
+  s+="<div class='note' style='margin-top:6px'>均方根误差（RMSE，当前口径）：粗钒渣 <b style='color:#e6edf3'>"+fmt(rmR.v,3)+"</b>（n="+rmR.n+"，第8炉未取样）　精钒渣 <b style='color:#e6edf3'>"+fmt(rmF.v,3)+"</b>（n="+rmF.n+"）　<span class='note'>对照 Python 基准脚本结果一致</span></div>";
+  $("replay").innerHTML=s;
+}
+function goldTB(){
+  const r=runModel({W:80000,Si:.215,V:.284,T:1300,C:4.3,dhV:2777});
+  const cmp=[["铁水 C 修正值 %",r.fc,4.9751],["炉渣总量 kg",r.slg,2075.9151777],["钢水量 kg",r.steel,76881.0973],
+   ["实际氧耗 kg",r.o2kg,2500.4605],["铁水凝固点 ℃",r.tI,1022.1208],["钢水凝固点 ℃",r.tS,1295.8874],
+   ["热量富余 kJ",r.surplus,16495062.03],["球团配吃 kg",r.pl,3529.5978],["冷料后钢水 kg",r.steel2,78709.0574],
+   ["预测品位 %",r.grade,13.2989651],["物料差 %",r.balPct*100,-0.0193868754]];
+  let bad=0,html="<table class='gold'><tr><th>检查项</th><th>浏览器内引擎</th><th>Excel/Python 基准</th><th>相对误差</th></tr>";
+  cmp.forEach(c=>{const a=c[1],e=c[2];const err=Math.abs(a-e)/Math.abs(e);const p=err<1e-4;if(!p)bad++;
+    html+="<tr><td>"+c[0]+"</td><td>"+fmt(a,4)+"</td><td>"+fmt(e,4)+"</td><td style='color:"+(p?"#3fb950":"#f85149")+"'>"+(err*100).toFixed(4)+"%</td></tr>";});
+  html+="</table><div class='note' style='margin-top:5px'>门限 0.01%。基准值来自攀钢 Excel 公式缓存（Python 复现 75/75，最大误差 0.0002%）—— "+
+   (bad===0?"<b style='color:#3fb950'>全部通过</b>":"<b style='color:#f85149'>有 "+bad+" 项超差！</b>")+"</div>";
+  $("goldbox").innerHTML=html;
+}
+function traceTB(inp){
+  $("trace").innerHTML=
+   "<div>时间："+new Date().toLocaleString("zh-CN",{hour12:false})+"</div>"+
+   "<div>输入：铁水 "+fmt(inp.W/1000,1)+" t／Si "+inp.Si.toFixed(3)+"%／V "+inp.V.toFixed(3)+"%／"+inp.T+" ℃；氧化热口径 "+inp.dhV+" kJ/kg</div>"+
+   "<div>链路：物料平衡 → 热量平衡 → 冷料配吃 → 钒平衡 → 品位预测（单次 <1ms）</div>"+
+   "<div>口径：pangang/base.yaml v1.0.0（试用）· 31 类工程参数（<b style='color:#3fb950'>全部计算在本页浏览器内完成，零网络请求</b>；导出：整页复制，P2 升级 JSONL）</div>";
+}
+
+/* 角色视图切换 */
+$("tabs").addEventListener("click",e=>{
+  const btn=e.target.closest(".tab"); if(!btn)return;
+  document.querySelectorAll(".tab").forEach(t=>t.classList.toggle("on",t===btn));
+  document.querySelectorAll(".view").forEach(v=>v.classList.toggle("on",v.id==="view-"+btn.dataset.v));
+});
+
+/* 输入响应（节流：连续滑动时合并到下一帧） */
+let _raf=0,_dirty=false;
+document.addEventListener("input",e=>{if(e.target.tagName==="INPUT"){
+  if(e.target.name==="dh"){
+    document.querySelectorAll(".radios label").forEach(l=>l.classList.remove("on"));
+    e.target.closest("label").classList.add("on");
+  }
+  if(!_dirty){_dirty=true;_raf=requestAnimationFrame(()=>{_dirty=false;update();});}
+}});
+
+/* 全屏切换 — Fullscreen API，一键进入/退出 */
+$("fsBtn").addEventListener("click",()=>{
+  if(!document.fullscreenElement){
+    document.documentElement.requestFullscreen().catch(()=>{});
+  }else{
+    document.exitFullscreen();
+  }
+});
+document.addEventListener("fullscreenchange",()=>{
+  const fs=!!document.fullscreenElement;
+  document.body.classList.toggle("fs",fs);
+  const b=$("fsBtn");if(b){b.textContent=fs?"⤢ 退出全屏":"⛶ 全屏";b.classList.toggle("on",fs);}
+});
+
+/* 演示模式：自动滑动 Si，展示品位变化与红黄绿灯切换 */
+let demoTimer=null,demoDir=1,demoField="Si";
+$("demoBtn").addEventListener("click",()=>{
+  if(demoTimer){clearInterval(demoTimer);demoTimer=null;$("demoBtn").textContent="▶ 演示";$("demoBtn").classList.remove("on");document.body.classList.remove("demo");}
+  else{
+    $("demoBtn").textContent="⏸ 停止";$("demoBtn").classList.add("on");document.body.classList.add("demo");
+    /* 演示剧本：先扫 Si（触发黄灯→绿灯），再扫 V */
+    demoField="Si";demoDir=1;
+    demoTimer=setInterval(()=>{
+      const el=$(demoField==="Si"?"inSi":"inV");
+      const step=(demoField==="Si"?0.005:0.005);
+      let v=+el.value+demoDir*step;
+      const max=demoField==="Si"?0.30:0.36, min=demoField==="Si"?0.10:0.20;
+      if(v>=max){v=max;demoDir=-1;if(demoField==="Si"){demoField="V";demoDir=-1;}}
+      if(v<=min){v=min;demoDir=1;}
+      el.value=v;el.dispatchEvent(new Event("input",{bubbles:true}));
+    },850);
+  }
+});
+/* tab 切走时暂停演示省电 */
+document.addEventListener("visibilitychange",()=>{
+  if(document.hidden&&demoTimer){
+    clearInterval(demoTimer);demoTimer=null;
+    $("demoBtn").textContent="▶ 演示";$("demoBtn").classList.remove("on");
+    document.body.classList.remove("demo");
+  }
+});
+
+/* 重置 */
+$("resetBtn").addEventListener("click",()=>{
+  if(demoTimer){clearInterval(demoTimer);demoTimer=null;$("demoBtn").textContent="▶ 演示";$("demoBtn").classList.remove("on");document.body.classList.remove("demo");}
+  $("inW").value=80000;$("inSi").value=0.215;$("inV").value=0.284;$("inT").value=1300;
+  const r27=$("lb2777").querySelector("input");r27.checked=true;
+  document.querySelectorAll(".radios label").forEach(l=>l.classList.toggle("on",l.id==="lb2777"));
+  update();
+});
+
+/* 炉长确认 */
+$("confirmBtn").addEventListener("click",()=>{
+  const inp=readInput();const r=runModel(inp);
+  const risky=inp.Si>0.25||inp.V<0.27;
+  pushLog("✓ 炉长确认照单执行｜配吃 <b>"+fmt(r.pl/1000,2)+"t</b> · 品位 <b>"+fmt(r.grade,2)+"%</b> · "+
+    (risky?'<span class="badge b-y">黄灯</span> 例外流程':'<span class="badge b-g">绿灯</span> 照做'));
+  const b=$("confirmBtn");b.textContent="✓ 已留痕";b.disabled=true;b.classList.add("done");
+  setTimeout(()=>{b.textContent="确认照单执行 · 留痕";b.disabled=false;b.classList.remove("done");},1400);
+});
+
+/* 工艺仲裁按钮 */
+$("arbBtns").addEventListener("click",e=>{
+  const b=e.target.closest(".btn-mini");if(!b)return;
+  const inp=readInput();
+  pushLog("⚖ 工艺仲裁｜"+b.dataset.d+"（当前口径 "+(inp.dhV===2777?"经验 2777":"文献 15000")+" kJ/kg）");
+  b.classList.add("s");setTimeout(()=>b.classList.remove("s"),900);
+});
+
+/* 黄金回归重新自检 */
+$("recheckBtn").addEventListener("click",()=>{
+  const b=$("recheckBtn");b.textContent="自检中…";b.disabled=true;
+  setTimeout(()=>{goldTB();b.textContent="✓ 已自检";setTimeout(()=>{b.textContent="重新自检";b.disabled=false;},900);},350);
+});
+
+update();
+goldTB(); /* 黄金回归自检：输入固定，只在加载/手动重检时算一次 */
+</script>
+</body>
+</html>

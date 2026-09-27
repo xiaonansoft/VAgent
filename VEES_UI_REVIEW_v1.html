@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VEES 界面设计评审报告 v1</title>
+<style>
+:root{
+  --ink:#141d2b;--ink2:#3d4a5f;--paper:#f5f2ec;--card:#fff;--line:#ddd8ce;--line2:#ece8df;
+  --molten:#e8590c;--molten-d:#d9480f;--steel:#2b4a6f;--ok:#2b8a3e;--warn:#f59f00;--warn-d:#b54708;
+  --blue:#1971c2;--teal:#0f766e;--danger:#c92a2a;--purple:#6741d9;
+  --shadow:0 1px 3px rgba(20,29,43,.06),0 4px 14px rgba(20,29,43,.05);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:"PingFang SC","Hiragino Sans GB","Microsoft YaHei",system-ui,sans-serif;
+  background:var(--paper);color:var(--ink);line-height:1.7;font-size:15px;-webkit-font-smoothing:antialiased}
+.header{background:linear-gradient(135deg,#141d2b 0%,#2b4a6f 60%,#7a431d 100%);color:#fff;padding:22px 28px 16px}
+.header h1{font-size:20px;font-weight:700;letter-spacing:.5px}
+.header .sub{color:#ffd9b8;font-size:13px;margin-top:4px}
+.header .meta{color:#cfe0ef;font-size:12px;margin-top:8px;display:flex;gap:14px;flex-wrap:wrap}
+.header .meta span{background:rgba(255,255,255,.1);padding:3px 10px;border-radius:999px;border:1px solid rgba(255,255,255,.2)}
+.wrap{max-width:1180px;margin:0 auto;padding:24px 18px 60px;display:grid;gap:18px}
+.section{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:20px 24px;box-shadow:var(--shadow)}
+.section h2{font-size:17px;font-weight:700;margin-bottom:14px;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--line2);padding-bottom:10px}
+.section h2 .n{background:var(--steel);color:#fff;font-size:12px;border-radius:6px;padding:2px 9px;font-weight:700}
+.section h2 .n.m{background:var(--molten)}
+.section h3{font-size:14.5px;font-weight:700;margin:16px 0 8px;color:var(--steel)}
+.section p{margin:6px 0;color:var(--ink2)}
+.verdict{background:linear-gradient(135deg,#fff8ef,#fff1e0);border:1px solid #f3c89e;border-radius:10px;padding:14px 16px;margin:10px 0}
+.verdict b{color:var(--molten-d)}
+table{font-size:13px;border-collapse:collapse;width:100%;margin:8px 0}
+th,td{border:1px solid var(--line);padding:6px 9px;text-align:left;vertical-align:top}
+th{background:#f1ede4;font-weight:600;text-align:center}
+td.c,th.c{text-align:center}
+.pri{display:inline-block;width:26px;height:22px;border-radius:5px;font-size:11px;font-weight:700;line-height:22px;text-align:center;color:#fff}
+.p0{background:var(--danger)}.p1{background:var(--molten)}.p2{background:var(--warn)}.p3{background:var(--steel)}.p4{background:#8a94a6}
+.role{display:inline-block;font-size:11px;font-weight:700;padding:2px 8px;border-radius:5px;color:#fff}
+.r-pd{background:var(--purple)}.r-ai{background:var(--teal)}.r-pe{background:var(--steel)}.r-fm{background:var(--molten)}.r-op{background:var(--blue)}
+.badge{display:inline-block;font-size:11px;font-weight:700;padding:2px 9px;border-radius:999px;white-space:nowrap}
+.b-g{background:#d3f9d8;color:#2b8a3e}.b-y{background:#fff3bf;color:#b54708}.b-r{background:#ffe3e3;color:#c92a2a}.b-b{background:#d0ebff;color:#1971c2}
+.scroll{overflow-x:auto;-webkit-overflow-scrolling:touch}
+.note{font-size:12px;color:#8a94a6;margin-top:4px}
+.tag{display:inline-block;font-size:11px;padding:1px 7px;border-radius:4px;background:#eef2f7;color:#3d4a5f;margin-right:4px}
+.kt{font-weight:700;color:var(--molten-d)}
+ol li{margin:6px 0}
+.footer{padding:14px 24px;background:#141d2b;color:#93a2b8;font-size:12px;border-radius:10px;margin-top:8px}
+@media(max-width:680px){.wrap{padding:14px 10px 40px}.section{padding:14px 16px}.header{padding:16px 14px 12px}table{font-size:11px}th,td{padding:4px 5px}}
+</style>
+</head>
+<body>
+
+<header class="header">
+  <h1>VEES 界面设计评审报告 <span style="font-weight:400;opacity:.65;font-size:14px">v1</span></h1>
+  <div class="sub">针对 VEES_MVP_v0.4.html · 三路专家智能体并行评估（产品+AI 总监 / 工艺专家 / 炉长+操作工）综合</div>
+  <div class="meta">
+    <span>评审对象 v0.4</span>
+    <span>三维度：信息层级 · 交互流程 · 可视化布局</span>
+    <span>五角色：产品总监 · AI 总监 · 工艺专家 · 炉长 · 操作工</span>
+  </div>
+</header>
+
+<div class="wrap">
+
+<!-- 摘要 -->
+<div class="section">
+  <h2><span class="n m">摘</span>要 · 三条裁决</h2>
+  <div class="verdict">
+    <p><b>① 炉长视图信息过载</b>：02 卡 6 个 KPI 有 4 个是工艺校核项（富余/渣量/半钢/物料差），炉长决策不看；「口径选择 2777/15000」是未终审的专家级争议（CF-001），泄漏到生产视线。10 秒读配吃目标守不稳。</p>
+    <p><b>② 相似判例（07）位置错位</b>：炉长视图的 2 条判例表信息密度过高，对炉长是<b>干扰而非辅助</b>；工艺工作台的全量判例被压在右栏最底（05/06 之下），对工艺专家却被<b>严重低估</b>——它本该是仲裁的"先例佐证"。</p>
+    <p><b>③ 留痕可审计性为零</b>：操作留痕只存内存数组（刷新即失、无哈希、无用户、无炉次键），AI 总监视角下等于无留痕。这是工业级产品的硬伤。</p>
+  </div>
+  <p class="note">下文按子任务展开：① 相似判例位置分析 ② 五角色功能优先级矩阵 ③ 逐界面三维度评审 ④ 优化路线图。</p>
+</div>
+
+<!-- 子任务1 -->
+<div class="section">
+  <h2><span class="n">1</span>相似炉次判例位置分析与建议</h2>
+
+  <h3>1.1 当前位置盘点</h3>
+  <table>
+    <tr><th class="c">视图</th><th>当前位置</th><th>呈现形态</th><th>面向角色</th></tr>
+    <tr><td class="c">炉长驾驶舱</td><td>02 配吃卡<b>正下方</b>，第二块面板</td><td>精简表：2 条 × 5 列（炉次/Si/V/品位/相似度）</td><td><span class="role r-fm">炉长</span> <span class="role r-op">操作工</span></td></tr>
+    <tr><td class="c">工艺工作台</td><td>右栏<b>最下方</b>（05 仲裁、06 回放之下）</td><td>全量表：4 条 × 6 列（含粗渣实测）</td><td><span class="role r-pe">工艺专家</span></td></tr>
+    <tr><td class="c">数据治理台</td><td>—（无）</td><td>—</td><td>—</td></tr>
+  </table>
+
+  <h3>1.2 合理性评估（三视角共识）</h3>
+  <table>
+    <tr><th class="c">视角</th><th>判例对该角色的价值</th><th>当前位置合理性</th></tr>
+    <tr><td class="c"><span class="role r-fm">炉长</span></td><td><b>低</b>。10 秒决策窗口内无暇比对 5 列数据；判例应是"信任锚点"而非"对照表"</td><td><span class="badge b-r">不合理</span> 放在 02 下方抢视线，与"读配吃"目标冲突</td></tr>
+    <tr><td class="c"><span class="role r-pe">工艺专家</span></td><td><b>高</b>。仲裁时"同类炉次先例"比 RMSE 更直白支撑决策（以前这么干、结果好/坏）</td><td><span class="badge b-r">被低估</span> 压在 05/06 之下须滚到底才见，价值未释放</td></tr>
+    <tr><td class="c"><span class="role r-ai">AI 总监</span></td><td>中。判例库是模型治理的数据资产，但属数据治理台范畴</td><td><span class="badge b-y">可接受</span> 不在数据治理台呈现符合角色边界</td></tr>
+  </table>
+
+  <h3>1.3 位置调整建议</h3>
+  <div class="verdict">
+    <p><b>炉长视图</b>：移出 07 判例表。改为 02 一句话信任锚——「近 3 炉相似工况实绩 <span class="kt">13.6–14.2%</span>，本炉预测 <span class="kt">13.30%</span>」嵌在配吃建议下方一行。<b>仅在黄灯态</b>弹 1 条最近炉次（"上炉 Si 0.26 类似，实绩 13.59%，照此执行"）。</p>
+    <p><b>工艺工作台</b>：07 升格，与 05 仲裁<b>并排</b>（左 05 决策 / 右 07 判例佐证），构成"裁决—先例"联动；点击判例行联动 06 回放高亮对应炉次。</p>
+    <p><b>数据治理台</b>：不单列判例面板（保持角色边界），但在"知识包溯源"里加一行判例库条目数与最近入库时间。</p>
+  </div>
+</div>
+
+<!-- 子任务2 -->
+<div class="section">
+  <h2><span class="n">2</span>五角色功能优先级矩阵</h2>
+  <p>使用场景与权限需求梳理（P0=必看/P1=常用/P2=偶用/P3=不看·可隐藏）：</p>
+  <div class="scroll">
+  <table>
+    <tr>
+      <th>界面功能</th>
+      <th class="c"><span class="role r-pd">产品总监</span></th>
+      <th class="c"><span class="role r-ai">AI 总监</span></th>
+      <th class="c"><span class="role r-pe">工艺专家</span></th>
+      <th class="c"><span class="role r-fm">炉长</span></th>
+      <th class="c"><span class="role r-op">操作工</span></th>
+    </tr>
+    <tr><td>01 开吹条件输入（4 滑杆）</td><td class="c"><span class="pri p3">P3</span></td><td class="c"><span class="pri p3">P3</span></td><td class="c"><span class="pri p2">P2</span></td><td class="c"><span class="pri p2">P2</span></td><td class="c"><span class="pri p0">P0</span></td></tr>
+    <tr><td><b>02 配吃量 + 品位（大数字）</b></td><td class="c"><span class="pri p1">P1</span></td><td class="c"><span class="pri p2">P2</span></td><td class="c"><span class="pri p1">P1</span></td><td class="c"><span class="pri p0">P0</span></td><td class="c"><span class="pri p1">P1</span></td></tr>
+    <tr><td>02 红黄绿灯</td><td class="c"><span class="pri p2">P2</span></td><td class="c"><span class="pri p3">P3</span></td><td class="c"><span class="pri p2">P2</span></td><td class="c"><span class="pri p0">P0</span></td><td class="c"><span class="pri p0">P0</span></td></tr>
+    <tr><td>02 富余/渣量/半钢/物料差（4 KPI）</td><td class="c"><span class="pri p3">P3</span></td><td class="c"><span class="pri p2">P2</span></td><td class="c"><span class="pri p0">P0</span></td><td class="c"><span class="pri p3">P3</span></td><td class="c"><span class="pri p3">P3</span></td></tr>
+    <tr><td>02 一句话建议</td><td class="c"><span class="pri p2">P2</span></td><td class="c"><span class="pri p3">P3</span></td><td class="c"><span class="pri p2">P2</span></td><td class="c"><span class="pri p0">P0</span></td><td class="c"><span class="pri p1">P1</span></td></tr>
+    <tr><td>炉长「确认照单执行」</td><td class="c"><span class="pri p3">P3</span></td><td class="c"><span class="pri p1">P1</span></td><td class="c"><span class="pri p2">P2</span></td><td class="c"><span class="pri p0">P0</span></td><td class="c"><span class="pri p0">P0</span></td></tr>
+    <tr><td>炉次号/班次/时间戳锚定</td><td class="c"><span class="pri p1">P1</span></td><td class="c"><span class="pri p0">P0</span></td><td class="c"><span class="pri p1">P1</span></td><td class="c"><span class="pri p0">P0</span></td><td class="c"><span class="pri p0">P0</span></td></tr>
+    <tr><td>03 敏感性曲线</td><td class="c"><span class="pri p3">P3</span></td><td class="c"><span class="pri p2">P2</span></td><td class="c"><span class="pri p0">P0</span></td><td class="c"><span class="pri p3">P3</span></td><td class="c"><span class="pri p3">P3</span></td></tr>
+    <tr><td>04 解释卡</td><td class="c"><span class="pri p2">P2</span></td><td class="c"><span class="pri p2">P2</span></td><td class="c"><span class="pri p1">P1</span></td><td class="c"><span class="pri p2">P2</span></td><td class="c"><span class="pri p3">P3</span></td></tr>
+    <tr><td><b>05 双口径仲裁（+按钮）</b></td><td class="c"><span class="pri p1">P1</span></td><td class="c"><span class="pri p1">P1</span></td><td class="c"><span class="pri p0">P0</span></td><td class="c"><span class="pri p3">P3</span></td><td class="c"><span class="pri p3">P3</span></td></tr>
+    <tr><td>06 生产实绩回放（16 炉）</td><td class="c"><span class="pri p2">P2</span></td><td class="c"><span class="pri p1">P1</span></td><td class="c"><span class="pri p0">P0</span></td><td class="c"><span class="pri p3">P3</span></td><td class="c"><span class="pri p3">P3</span></td></tr>
+    <tr><td><b>07 相似炉次判例（全量）</b></td><td class="c"><span class="pri p3">P3</span></td><td class="c"><span class="pri p2">P2</span></td><td class="c"><span class="pri p0">P0</span></td><td class="c"><span class="pri p3">P3</span></td><td class="c"><span class="pri p3">P3</span></td></tr>
+    <tr><td>A 黄金回归自检</td><td class="c"><span class="pri p1">P1</span></td><td class="c"><span class="pri p0">P0</span></td><td class="c"><span class="pri p2">P2</span></td><td class="c"><span class="pri p3">P3</span></td><td class="c"><span class="pri p3">P3</span></td></tr>
+    <tr><td>B 计算留痕 + 操作留痕</td><td class="c"><span class="pri p1">P1</span></td><td class="c"><span class="pri p0">P0</span></td><td class="c"><span class="pri p2">P2</span></td><td class="c"><span class="pri p2">P2</span></td><td class="c"><span class="pri p2">P2</span></td></tr>
+    <tr><td>知识包溯源 / P3 接口规范</td><td class="c"><span class="pri p0">P0</span></td><td class="c"><span class="pri p0">P0</span></td><td class="c"><span class="pri p2">P2</span></td><td class="c"><span class="pri p3">P3</span></td><td class="c"><span class="pri p3">P3</span></td></tr>
+    <tr><td>角色视图切换标签页</td><td class="c"><span class="pri p1">P1</span></td><td class="c"><span class="pri p1">P1</span></td><td class="c"><span class="pri p1">P1</span></td><td class="c"><span class="pri p1">P1</span></td><td class="c"><span class="pri p1">P1</span></td></tr>
+    <tr><td>演示模式 / 重置</td><td class="c"><span class="pri p0">P0</span></td><td class="c"><span class="pri p2">P2</span></td><td class="c"><span class="pri p3">P3</span></td><td class="c"><span class="pri p3">P3</span></td><td class="c"><span class="pri p3">P3</span></td></tr>
+  </table>
+  </div>
+  <p class="note">读法：炉长的 P0 集中在「配吃量+品位+灯+一句话+确认+炉次锚定」6 项，其余全 P2/P3——这就是该从炉长视图砍掉的内容。工艺专家的 P0 是「03/05/06/07」证据四联。AI 总监的 P0 是「留痕+自检+接口」。产品总监 P0 是「演示+知识包溯源」（向外部展示用）。</p>
+</div>
+
+<!-- 子任务3 -->
+<div class="section">
+  <h2><span class="n">3</span>逐界面三维度评审</h2>
+
+  <h3>3.1 炉长驾驶舱</h3>
+  <table>
+    <tr><th class="c" style="width:120px">维度</th><th>现状</th><th>问题</th><th>优化方案</th></tr>
+    <tr><td class="c"><b>信息层级</b></td>
+      <td>02 卡 6 KPI 平铺；口径选择（2777/15000）单选框在 01；无炉次号/班次/时间戳</td>
+      <td>4 个工艺校核 KPI（富余/渣量/半钢/物料差）对炉长无决策价值却占视线；口径选择是未终审争议泄漏到生产视线；无炉次锚定则留痕无法定位</td>
+      <td>02 砍到「配吃量+品位」2 大数字 + 灯 + 一句话 + 信任锚（近 3 炉实绩区间）；4 校核 KPI 下沉工艺工作台；口径选择移出（默认 2777，标注"工艺侧已仲裁"）；顶栏加「炉次 #1234 · 3 号炉 · A 班」标识条</td></tr>
+    <tr><td class="c"><b>交互流程</b></td>
+      <td>01 滑杆在左→02 灯在中→确认按钮在 02 底部；黄灯态提示"高硅预案"但无入口</td>
+      <td>操作工填完滑杆需跨栏找按钮，动线偏；黄灯提到预案却要切到工艺工作台翻找</td>
+      <td>确认按钮上移贴近 02 大数字；加键盘 Enter 确认；黄灯一句话旁加「查看高硅预案」按钮，一键展开预案要点（不跳转）</td></tr>
+    <tr><td class="c"><b>可视化布局</b></td>
+      <td>grid-top 三栏（330/1fr/400）；LED 灯仅在炉长视图；KPI 大数字 34px</td>
+      <td>三栏在 1140px 以下折叠为单列，炉长视图变很长；LED 未扩展到其他视图一致性弱</td>
+      <td>保留三栏；中屏（900-1140）改为「输入列 + 主结果列」两栏，引导卡折叠进顶栏抽屉；LED 状态点扩展到所有视图顶栏</td></tr>
+  </table>
+
+  <h3>3.2 工艺工作台</h3>
+  <table>
+    <tr><th class="c" style="width:120px">维度</th><th>现状</th><th>问题</th><th>优化方案</th></tr>
+    <tr><td class="c"><b>信息层级</b></td>
+      <td>左栏 03+04（轻）；右栏 05+06+07（重，纵向高度远超左）</td>
+      <td>视觉重心右倾；专家进工作台第一眼应是「裁决—证据」对子，却先看到偏调试的 03 敏感性；07 判例被压在底</td>
+      <td>左栏置 <b>05 仲裁 + 07 判例</b>（裁决—先例联动并排）；右栏置 <b>06 回放 + 03 敏感性</b>；04 解释卡横跨全宽置顶或底</td></tr>
+    <tr><td class="c"><b>交互流程</b></td>
+      <td>05 仲裁 4 按钮点击仅写一行留痕；06 回放无炉次钻取</td>
+      <td>决策链太短（无高亮选中行/无理由输入/无联动 06 切口径）；专家怀疑某炉离群无法钻取</td>
+      <td>点击仲裁按钮→高亮表格对应列 + 弹理由输入框（可选）+ 联动 06 重绘为所选口径预测线；06 回放点炉次点→钻取该炉 Si/V/配吃/品位明细，与 07 判例互为入口</td></tr>
+    <tr><td class="c"><b>可视化布局</b></td>
+      <td>grid2 两栏均分；SVG 图表 viewBox 响应</td>
+      <td>两栏均分导致右栏三块纵向过长；05 仲裁表与 07 判例表都是表格，并排时列宽不一致难对照</td>
+      <td>采用「左 1fr / 右 1fr」但左栏固定 05+07 双表并排子布局（内部 grid2）；表头对齐统一 Si/V/品位列宽；06/03 图表共用一条时间轴</td></tr>
+  </table>
+
+  <h3>3.3 数据治理台</h3>
+  <table>
+    <tr><th class="c" style="width:120px">维度</th><th>现状</th><th>问题</th><th>优化方案</th></tr>
+    <tr><td class="c"><b>信息层级</b></td>
+      <td>左 A 黄金回归 + 知识包溯源；右 B 留痕 + P3 接口</td>
+      <td>黄金回归仅 11 项（Python 75/75），覆盖窄；操作留痕区与计算留痕区并列但前者空时占位尴尬；P3 接口仅占位文字</td>
+      <td>黄金回归扩到全 75 项（折叠展示，超差项自动展开）；操作留痕区与计算留痕区合并为「会话留痕」带筛选；P3 接口补字段表（即使标注待建，也要列出字段/频率/边界）</td></tr>
+    <tr><td class="c"><b>交互流程</b></td>
+      <td>重新自检按钮；留痕仅内存</td>
+      <td>操作留痕刷新即失、无哈希、无用户、无炉次键——可审计性为零；JSONL 导出仍是 P2 承诺</td>
+      <td>留痕落地 <span class="tag">localStorage</span> + 时间戳 + 用户 + 炉次键 + 输入快照 + 哈希链；加「导出 JSONL」按钮（P2 升级前置）；自检失败项点击钻取引擎某步</td></tr>
+    <tr><td class="c"><b>可视化布局</b></td>
+      <td>grid2 两栏；gold 表格 min-width 420 横滚</td>
+      <td>留痕区是 explain 文本框，结构化差；知识包溯源是虚线占位卡，信息密度低</td>
+      <td>留痕区改结构化表格（时间/用户/炉次/动作/输入快照/哈希）；知识包溯源卡补「31 类参数 × scope × status」迷你表 + 签字状态徽章</td></tr>
+  </table>
+
+  <h3>3.4 全局元素（顶栏 / 标签页 / 演示模式 / footer）</h3>
+  <table>
+    <tr><th class="c" style="width:120px">维度</th><th>现状</th><th>问题</th><th>优化方案</th></tr>
+    <tr><td class="c"><b>顶栏</b></td><td>渐变 + 状态点 + 演示/重置按钮 + 三标签页</td><td>演示模式只扫 Si/V，不覆盖工艺仲裁与黄金自检；状态点仅"离线运行"无炉次锚定</td><td>演示剧本扩展为三段（炉长读配吃→工艺仲裁→数据自检）；顶栏加炉次锚定条</td></tr>
+    <tr><td class="c"><b>标签页</b></td><td>三角色 on 态白底高亮</td><td>角色边界靠标签页，但炉长视图泄漏口径选择，边界未严格</td><td>标签页加角色图标；炉长视图严格只放 P0 项，专家级内容一律不渲染</td></tr>
+    <tr><td class="c"><b>footer</b></td><td>术语表 + 版本说明</td><td>信息被动，无导航价值</td><td>加「快速跳转」锚点（到各视图各面板）+ 版本变更日志链接</td></tr>
+  </table>
+</div>
+
+<!-- 路线图 -->
+<div class="section">
+  <h2><span class="n m">4</span>优化路线图</h2>
+  <table>
+    <tr><th class="c" style="width:60px">优先级</th><th>项</th><th>对应问题</th><th class="c">工作量</th></tr>
+    <tr><td class="c"><span class="pri p0">P0</span></td><td>炉长视图砍 4 校核 KPI + 移出口径选择 + 07 判例改一句话信任锚</td><td>10 秒读配吃目标</td><td class="c">小</td></tr>
+    <tr><td class="c"><span class="pri p0">P0</span></td><td>操作留痕 localStorage + 哈希链 + 用户/炉次键 + JSONL 导出</td><td>可审计性为零</td><td class="c">中</td></tr>
+    <tr><td class="c"><span class="pri p0">P0</span></td><td>顶栏加炉次号/班次/时间戳锚定条</td><td>留痕无法定位</td><td class="c">小</td></tr>
+    <tr><td class="c"><span class="pri p1">P1</span></td><td>工艺工作台重构：左 05+07 并排 / 右 06+03，仲裁按钮联动 06</td><td>判例被低估、仲裁交互过轻</td><td class="c">中</td></tr>
+    <tr><td class="c"><span class="pri p1">P1</span></td><td>黄灯态加「查看高硅预案」快捷入口</td><td>预案无入口</td><td class="c">小</td></tr>
+    <tr><td class="c"><span class="pri p1">P1</span></td><td>06 回放点炉次钻取（与 07 判例互为入口）</td><td>无钻取</td><td class="c">中</td></tr>
+    <tr><td class="c"><span class="pri p2">P2</span></td><td>黄金回归扩到全 75 项（折叠 + 超差自动展开）</td><td>覆盖窄</td><td class="c">中</td></tr>
+    <tr><td class="c"><span class="pri p2">P2</span></td><td>演示模式扩展为三段剧本</td><td>演示只扫两滑杆</td><td class="c">小</td></tr>
+    <tr><td class="c"><span class="pri p2">P2</span></td><td>P3 接口规范补字段表（即使待建）</td><td>D6 最紧急项占位</td><td class="c">中</td></tr>
+    <tr><td class="c"><span class="pri p3">P3</span></td><td>footer 加快速跳转锚点 + 变更日志</td><td>无导航</td><td class="c">小</td></tr>
+  </table>
+  <p class="note">P0 三项是"守验收目标 + 工业级留痕"的硬约束，建议立即落地为 v0.5；P1 是工艺工作台体验升级；P2/P3 是治理台完善与演示增强。</p>
+</div>
+
+<div class="footer">
+  VEES 界面设计评审报告 v1 · 三路专家智能体并行评估综合 · 评审对象 VEES_MVP_v0.4.html · 引擎与黄金基准未动，本报告为设计层方案
+</div>
+
+</div>
+</body>
+</html>

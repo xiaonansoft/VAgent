@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VEES 界面重构方案 · 四路智能体评审汇总</title>
+<style>
+:root{
+  --ink:#e6edf3;--ink2:#9aa4ae;--ink3:#6e7681;--paper:#0b0d10;--card:#14171c;--card2:#181c22;
+  --line:#262c34;--line2:#1c2128;
+  --molten:#e8620f;--molten-d:#ff8534;--steel-l:#6b93b8;
+  --ok:#4a9e5c;--warn:#c99a2e;--danger:#d9534f;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:"PingFang SC","Microsoft YaHei",system-ui,sans-serif;background:var(--paper);
+  color:var(--ink);line-height:1.7;font-size:15px;padding:28px 20px 60px}
+.wrap{max-width:1140px;margin:0 auto}
+h1{font-size:22px;font-weight:700;letter-spacing:.5px;border-bottom:2px solid var(--molten);padding-bottom:10px;margin-bottom:8px}
+.sub{color:var(--ink2);font-size:13px;margin-bottom:24px}
+h2{font-size:17px;font-weight:700;margin:30px 0 12px;color:var(--steel-l);letter-spacing:.3px;
+  border-left:3px solid var(--steel-l);padding-left:10px}
+h3{font-size:14.5px;font-weight:700;margin:18px 0 8px;color:var(--molten)}
+h4{font-size:13.5px;font-weight:700;margin:12px 0 6px;color:#c9d1d9}
+.panel{background:linear-gradient(180deg,var(--card2),var(--card));border:1px solid var(--line);
+  border-radius:8px;padding:16px 20px;margin:12px 0}
+table{width:100%;border-collapse:collapse;font-size:13px;margin:8px 0}
+th,td{border:1px solid var(--line);padding:7px 9px;text-align:left;vertical-align:top}
+th{background:rgba(107,147,184,.08);color:#c9d1d9;font-weight:600}
+td{color:var(--ink2)}
+td b,td strong{color:var(--ink)}
+.tag{display:inline-block;font-size:11px;font-weight:700;padding:2px 8px;border-radius:999px;white-space:nowrap}
+.t-p0{background:rgba(217,83,79,.15);color:#ff7b72;border:1px solid rgba(217,83,79,.3)}
+.t-p1{background:rgba(201,154,46,.15);color:#e3b341;border:1px solid rgba(201,154,46,.3)}
+.t-p2{background:rgba(107,147,184,.15);color:#6b93b8;border:1px solid rgba(107,147,184,.3)}
+.t-rec{background:rgba(230,98,15,.15);color:var(--molten);border:1px solid rgba(230,98,15,.4)}
+.note{font-size:12.5px;color:var(--ink3);margin-top:6px}
+ul,ol{margin:6px 0 6px 20px}li{margin:3px 0}
+.kw{color:var(--molten);font-weight:700}
+.verdict{background:rgba(217,83,79,.08);border-left:3px solid var(--danger);padding:12px 16px;margin:12px 0;border-radius:6px}
+.good{background:rgba(74,158,92,.08);border-left:3px solid var(--ok);padding:12px 16px;margin:12px 0;border-radius:6px}
+.rec{background:rgba(230,98,15,.08);border-left:3px solid var(--molten);padding:12px 16px;margin:12px 0;border-radius:6px}
+code{background:rgba(0,0,0,.4);padding:1px 5px;border-radius:4px;font-size:12.5px;color:#8fb8d8}
+pre{background:#0d1117;border:1px solid var(--line);border-radius:8px;padding:12px 14px;overflow-x:auto;margin:8px 0}
+pre code{background:none;padding:0;font-size:12px;line-height:1.6}
+.score{font-size:20px;font-weight:800;color:var(--molten)}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+footer{margin-top:36px;padding:14px 0;border-top:1px solid var(--line);color:var(--ink3);font-size:12px;text-align:center}
+@media(max-width:800px){.two-col{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<h1>VEES 界面重构方案 <span style="color:var(--molten)">· 四路智能体评审汇总</span></h1>
+<div class="sub">对象：VEES_MVP_v0.6.html · 方法：UI 设计师 / 前端工程师 / UX 研究员 / 设计总监 四路并行独立评审，主智能体汇总裁决 · 2026-09-27</div>
+
+<!-- ============ 一、总体判断 ============ -->
+<h2>一、总体判断（结论先行）</h2>
+
+<div class="verdict">
+<b>核心诊断（四路一致）：当前界面是「GitHub Dark 皮肤 + 电竞发光特效包」的拼贴品，不是工业金属感。</b><br>
+色板直接沿用 GitHub Primer 原值（#0d1117/#161b22/#30363d/#58a6ff），再叠加熔融橙发光、LED 脉冲、L 形角标、网格底纹——视觉锚点在「科技 SaaS 仪表盘」，不在「冶金生产决策终端」。<b>骨架（信息架构/角色分层/引擎/缓存）是产品级，视觉系统是拖后腿的那一环。</b>
+</div>
+
+<table>
+<tr><th>评审视角</th><th>评分</th><th>一句话判断</th></tr>
+<tr><td><b>UI 设计师</b>（视觉设计系统）</td><td><span class="score">5.0</span>/10</td><td>信息架构合格但视觉系统失控：12+ 种间距值、5 种圆角、4 处发光机制、橙蓝双主色平权对抗。删掉一半装饰，留下一倍可信。</td></tr>
+<tr><td><b>前端工程师</b>（实现质量）</td><td><span class="score">6.5</span>/10</td><td>缓存/rAF 节流/留痕持久化体现工程意识；但内联样式失控、innerHTML 拼接有 XSS 面、可访问性近乎为零。视图层还是原型级。</td></tr>
+<tr><td><b>UX 研究员</b>（体验与信息架构）</td><td><span class="score">6.5</span>/10</td><td>动线骨架正确，但 02 卡 7 层状态信号叠加、「10 秒读数」承诺与信号冗余度不符；黄灯证据卡在按钮之后违反「先证据后决策」。</td></tr>
+<tr><td><b>设计总监</b>（方向与行业适配）</td><td><span class="score">4.5</span>/10</td><td>设计语言错位：无金属材质隐喻、发光即炫技、无使用场景概念（1.5m 视距/投屏形态缺失）。停止在发光程度上迭代。</td></tr>
+</table>
+
+<!-- ============ 二、问题清单 ============ -->
+<h2>二、问题清单（四视角合并去重）</h2>
+
+<h3>P0 — 方向性/伤害专业可信度（必须改）</h3>
+<div class="panel">
+<table>
+<tr><th style="width:14%">类别</th><th style="width:22%">位置</th><th style="width:30%">问题</th><th>改进方向</th></tr>
+<tr><td>装饰噪音</td><td>.panel::before/::after L 形角标</td><td>每屏 20+ 个发光角标，游戏 HUD 语汇，与冶炼工业语义零关联</td><td><b>整体删除</b>，金属感靠 1px 描边+顶部内高光</td></tr>
+<tr><td>装饰噪音</td><td>全站 12+ 处 glow/pulse/text-shadow/drop-shadow</td><td>发光是全场唯一强调手段 → 强调通货膨胀；每个发光都在说"这是游戏界面"</td><td><b>发光只留 1 处</b>（告警态）；数字辉光全删</td></tr>
+<tr><td>装饰噪音</td><td>24px 网格底纹 + LED 呼吸 + 数字滚动动画</td><td>三类无限动画常开，注意力被持续切割；滚动暗示"估算中"</td><td>网格删或降至 opacity .015；绿灯静态仅告警慢闪；数字瞬时更新</td></tr>
+<tr><td>色彩语义</td><td>橙 #ff6b1a + 蓝 #58a6ff 双高饱和主色</td><td>平权对抗互抢；蓝是 SaaS 链接蓝非"钢青"；teal 死变量</td><td>橙为唯一品牌锚色（降纯度 #e8620f），蓝降级为低饱和图表第二色</td></tr>
+<tr><td>字级倒挂</td><td>h2 14.5px < body 15px</td><td>标题比正文小，9+ 级字阶无比例系统</td><td>收敛 5 级：11/13/15/20/32</td></tr>
+<tr><td>信号冗余</td><td>02 卡：LED+badge+KPI 变色+一句话+信任锚+按钮+warnCase 共 7 层</td><td>告警冗余 → 告警疲劳，"哪个信号要我行动"不可辨</td><td>单点信号源：badge 承载状态、一句话承载行动</td></tr>
+<tr><td>证据错位</td><td>黄灯 warnCase 在确认按钮<b>之后</b></td><td>违反"先证据后决策"：看到按钮时判例还没进视区</td><td>黄灯判例上移至一句话与按钮之间</td></tr>
+<tr><td>门限隐形</td><td>品位"预算目标 ≥14.0"仅 11.5px 灰字</td><td>全系统最重要合规红线无条件视觉编码；14.01 与 13.99 视觉等价</td><td>品位 KPI 三色门限态（达标/临近/破限）+ 内联门限刻度</td></tr>
+<tr><td>责任陷阱</td><td>口径选择（2777/15000）暴露在炉长视图</td><td>炉长无裁决能力却被要求选择，选了偏差谁负责？术语泄漏</td><td>炉长视图隐藏选择权，仅显示"计算口径：攀钢经验（审定中）"灰字；切换权限收归工艺台</td></tr>
+<tr><td>非行动导向</td><td>黄灯文案"参数逼近适用边界"</td><td>没说哪个参数、边界值、超出多少，炉长无法行动</td><td>具体表述："Si 0.266% 超上限 0.25%，超 0.016pp → 按高硅预案：核心动作一句话"</td></tr>
+<tr><td>场景缺失</td><td>15px 正文/11px 辅助字/22px 细滑杆</td><td>按 27 寸 Retina 50cm 设计，非按值班室 1.5-2m/戴手套/投屏设计</td><td>桌面/投屏双档字阶（投屏正文 ≥18px、KPI ≥48px）；滑杆拇指 ≥32px 带刻度</td></tr>
+<tr><td>可访问性</td><td>滑杆无 aria-label；红黄绿仅靠色相；无焦点态</td><td>读屏不可用；红绿色盲（男性 8%）不可辨 LED</td><td>aria-label 全套；颜色+文字/形状双通道；:focus-visible</td></tr>
+</table>
+</div>
+
+<h3>P1 — 系统性问题（应改）</h3>
+<div class="panel">
+<table>
+<tr><th style="width:14%">类别</th><th style="width:28%">问题</th><th>改进方向</th></tr>
+<tr><td>间距失控</td><td>15+ 个离散间距值并存，无 4pt 网格</td><td>收敛 4 的倍数：4/8/12/16/24/32；面板 padding 16，卡内 12</td></tr>
+<tr><td>圆角失控</td><td>5/6/8/10/12/999px 六套并存</td><td>三级制：面板 8 / 控件 6 / 徽章 pill</td></tr>
+<tr><td>对比度</td><td>#8b949e 用于 12px 小字不达 AA；#6e7681 仅 ~3.5:1</td><td>次级文字升 #9aa4ae；#6e7681 仅装饰性 caption</td></tr>
+<tr><td>焦点稀释</td><td>6 KPI 并排，4 个工程自证项与决策数字同面积竞争</td><td>炉长视图只留 2 大数（配吃 36px 主 / 品位 24px 校验）；其余收"工程详情"折叠</td></tr>
+<tr><td>黄金视区浪费</td><td>右列 400px 放静态"如何用"说明书</td><td>首访后自动折叠为 i 图标；或改"本班动态区"</td></tr>
+<tr><td>裁决无终态</td><td>仲裁 4 按钮点击仅 900ms 高亮，可重复点产生矛盾日志</td><td>裁决单选锁定+可改判；裁决结果回写炉长视图口径行</td></tr>
+<tr><td>工程债</td><td>40+ 处硬编码色值，变量体系名存实亡；渐变/glow 重复 10+ 次</td><td>三层 token：色板层→语义层→组件层；组件 CSS 禁出现 hex 字面量</td></tr>
+<tr><td>工程债</td><td>innerHTML 字符串拼接 10+ 处（opLog 含 &lt;b&gt; 拼数据），P3 接台账即 XSS 入口</td><td>esc() 统一转义；数据 textContent、骨架才 innerHTML；opLog 存结构化对象</td></tr>
+<tr><td>工程债</td><td>update() 上帝函数串 9 子渲染；display:none 的视图仍全量重建</td><td>依赖分层：input 变只刷 KPI/游标；dhV 变才刷仲裁/回放；非可见视图暂停渲染</td></tr>
+<tr><td>工程债</td><td>SVG 每次全量 innerHTML 重建（~80 节点），hover 态丢失</td><td>静态骨架一次构建，动态部分 setAttribute（3 节点）</td></tr>
+<tr><td>兼容性</td><td>Fullscreen API 无 webkit 前缀，catch 静默吞错</td><td>加前缀回退+不支持时明示</td></tr>
+<tr><td>编号乱序</td><td>工艺台面板 03/04/05/07/06 编号与视觉顺序不一致</td><td>按视觉顺序连续编号或弃编号用语义名</td></tr>
+<tr><td>信任锚表述</td><td>"近 3 炉"实为"最相似 3 炉"，易误读为时间近</td><td>改"最相似 3 炉（第 a/b/c 日）" + min-max 刻度尺</td></tr>
+<tr><td>emoji 轻佻</td><td>🧭⚙️📘📌⚖ 满屏，冶金语境显轻佻</td><td>换单色线性图标或纯文字标签</td></tr>
+<tr><td>开发痕迹外露</td><td>标题带 v0.6、footer 自述"性能缓存(72→5)"</td><td>版本号进关于区；footer 只留系统状态与术语表</td></tr>
+</table>
+</div>
+
+<h3>P2 — 打磨项</h3>
+<div class="panel">
+<ul>
+<li>正常建议语 .say 占用品牌橙，告警黄反而权重更低 → 正常态中性卡片，橙只给主 KPI/CTA</li>
+<li>两张 .kpi.hl 同尺寸同 glow 无主次 → 配吃（决策对象）> 品位（校验指标）</li>
+<li>演示横幅橙条与黄灯色温相近 → 改蓝色系或描边</li>
+<li>RMSE 裸数字无参照系 → 加解读句"相当于品位平均偏差 ±Ypp"</li>
+<li>相似度"越小越相似"反直觉 → 归一化 0–100%</li>
+<li>黄金回归全绿时 11 行证据过载 → 默认折叠为摘要条"11/11 通过·最大误差 x%"</li>
+<li>_tweens Map 动画结束未 delete → 轻微内存泄漏，补 delete</li>
+<li>warnCase display 切换致布局抖动 → visibility 预留占位</li>
+<li>h1 letter-spacing 1px 偏大 → 0.5px</li>
+<li>grid-top 三列 px 定宽 → fr 比例 + minmax 随视口流变</li>
+</ul>
+</div>
+
+<!-- ============ 三、重构方向 ============ -->
+<h2>三、重构方向选项（设计总监三案）</h2>
+<div class="panel">
+<table>
+<tr><th style="width:16%"></th><th>A 收敛克制派</th><th>B 工业仪表派 <span class="tag t-rec">推荐主体</span></th><th>C 数据终端派</th></tr>
+<tr><td><b>参照</b></td><td>Linear / GitHub Dark（去发光版）</td><td>航空座舱 / 船舶驾驶台 / ABB Ability</td><td>Grafana / Bloomberg 终端</td></tr>
+<tr><td><b>核心特征</b></td><td>单锚色、零发光、1px 灰线、大留白</td><td>刻度盘/量规语汇，读数即仪表，厚重面板</td><td>高密度表格+迷你图，等宽数字</td></tr>
+<tr><td><b>色板</b></td><td>底 #0e1113 / 卡 #16191c / 锚橙 #e8611a</td><td>底 #101214 / 黄铜刻度 #c8a44d / 熔橙只做告警与关键读数</td><td>纯灰阶 + 橙红绿三信号色，无蓝</td></tr>
+<tr><td><b>取舍</b></td><td>砍 LED 脉冲/角标/网格/glow/滚动动画</td><td>砍 SaaS 圆角卡片和渐变；配吃量做量规、温度做刻度条、红绿灯做实体灯质感</td><td>砍插画化装饰/emoji；判例库密表</td></tr>
+<tr><td><b>风险</b></td><td>最"安全"但可能被评"普通"</td><td>做好是 ABB，做差是蒸汽朋克 cosplay，实现成本最高</td><td>对炉长不够友好，首屏过载</td></tr>
+<tr><td><b>推荐度</b></td><td>★★★★☆（作底座）</td><td>★★★★★</td><td>★★★☆☆（留给数据治理台）</td></tr>
+</table>
+</div>
+
+<div class="rec">
+<b>最终推荐：B（工业仪表派）为主体 + A（收敛克制）为底座 = 「克制的仪表」。</b><br>
+整体遵循 A 的零发光、零纹理、五级字阶纪律；在炉长驾驶舱的<b>两个核心读数</b>（配吃量、品位预测）和<b>红绿灯状态</b>上用 B 的仪表语言做出物理厚重感（刻度、量规、实体灯）；C 的信息密度美学留给数据治理台。<br>
+<b>理由</b>：钢厂用户信任"朴素可靠"，但朴素不等于"像 Linear"——真正的高级感来自仪表的确定感：带刻度、指针干脆、数字稳如磐石的界面，才是 1500℃ 场景的对等物。<b>发光和网格从来不是工业，刻度才是。</b>
+</div>
+
+<!-- ============ 四、设计系统规范 ============ -->
+<h2>四、设计系统规范（v0.7 目标态）</h2>
+
+<div class="two-col">
+<div>
+<h3>色板（9 色封顶）</h3>
+<pre><code>底色:  --bg:#0b0d10  --surface:#12151a  --raised:#181c22
+描边:  --line:#262c34  --line-hi:#3a424c(hover)
+文字:  --t1:#e8ecf1  --t2:#9aa4ae  --t3:#5f6873(仅装饰)
+品牌:  --accent:#e8620f (仅主KPI/CTA/告警强调)
+语义:  --ok:#4a9e5c --warn:#c99a2e --danger:#d9534f
+信息:  --info:#6b93b8 (低饱和，图表第二序列)</code></pre>
+<div class="note">原则：橙/蓝饱和度压 15-20%，向"烧蚀金属/炉膛余温"靠，而非霓虹灯管。告警色是唯一高饱和色。</div>
+</div>
+<div>
+<h3>间距 / 圆角 / 字级</h3>
+<pre><code>间距（4pt，6 档）: 4 / 8 / 12 / 16 / 24 / 32
+  面板 padding 16 · 卡内 12 · 面板 gap 16 · 区块 24
+圆角（3 级）: 面板 8 · 控件 6 · 徽章 pill
+字级（5 级 + 数字规则）:
+  display 32/700 · h1 20/700 · h2 15/600
+  body 14/400 · caption 12/400
+  数字一律 tabular-nums（不单独换 monospace，
+  等宽只留给溯源/日志 .mono）
+投屏档（独立媒体查询）:
+  正文 ≥18 · KPI ≥48 · 辅助 ≥13 · 触控 ≥44px</code></pre>
+</div>
+</div>
+
+<h3>装饰预算（硬规则）</h3>
+<div class="panel">
+<ul>
+<li>每屏发光元素 ≤ 1 处（当前告警态）；无限循环动画 ≤ 1 个</li>
+<li>删除全部 L 形角标 / 网格底纹（或 opacity ≤.015）/ 数字滚动动画 / emoji 图标</li>
+<li>金属感 = <code>linear-gradient(180deg,#181c22,#12151a)</code> + 顶部 1px <code>rgba(255,255,255,.04)</code> 内高光——哑光钢板，不是亚克力灯牌</li>
+<li>信号分级：状态只 1 个主信号（badge）+ 1 个行动文本；KPI 变色仅保留品位破限一种语义</li>
+</ul>
+</div>
+
+<h3>组件 token（5 个，贯穿三层视图）</h3>
+<div class="panel">
+<table>
+<tr><th>token</th><th>规范</th></tr>
+<tr><td><code>panel</code></td><td>8px 圆角、1px --line、16px padding、顶部内高光、无阴影无角标</td></tr>
+<tr><td><code>kpi / gauge</code></td><td>tabular-nums 大数字；炉长双核心读数做量规式（配吃量带刻度标尺、品位带 14.0 门限刻度线）</td></tr>
+<tr><td><code>status-light</code></td><td>静态常亮；仅黄/红允许 ≤0.5Hz 慢闪；颜色+文字双通道（色盲安全）</td></tr>
+<tr><td><code>table</code></td><td>1px 线、表头 --raised 底、数字 tabular-nums 右对齐；数据台可加密度档</td></tr>
+<tr><td><code>input-slider</code></td><td>拇指 ≥32px 带刻度；配数字直输（点击 .val 可编辑）+ ± 微调按钮</td></tr>
+</table>
+</div>
+
+<!-- ============ 五、实施路线图 ============ -->
+<h2>五、实施路线图（三步走）</h2>
+<div class="panel">
+<h3>第一步 · 清零（半天）—— 让界面"安静下来"</h3>
+<ol>
+<li>删除全部 glow/pulse/text-shadow/drop-shadow/L 角标/网格底纹/emoji/数字滚动动画</li>
+<li>色板整体降饱和，橙只保留锚色+告警，蓝降级低饱和</li>
+<li>字级收敛 5 级、圆角收敛 3 级、间距收敛 4pt</li>
+</ol>
+<h3>第二步 · 立骨（1-2 天）—— 仪表语言 + 场景适配</h3>
+<ol>
+<li>桌面/投屏两档字阶；滑杆改 32px+ 拇指带刻度 + 数字直输</li>
+<li>炉长视图重构：两栏布局、双核心读数量规化（配吃量主 36px / 品位校验 24px 带门限刻度）、4 次级 KPI 收折叠、右列说明书首访后折叠</li>
+<li>黄灯证据卡上移至按钮前；黄灯文案行动化（哪个参数/超多少/核心动作）</li>
+<li>口径选择收归工艺台（炉长侧只读灰字）；仲裁按钮加终态并回写</li>
+<li>品位 KPI 三色门限态；状态信号收敛为单点信号源</li>
+</ol>
+<h3>第三步 · 定型（2-3 天）—— 工程还债 + 验收冻结</h3>
+<ol>
+<li>CSS 三层 token 收敛（硬编码色值归零）；update() 依赖分层；SVG 静动分离；esc() 防 XSS</li>
+<li>可访问性清单全落地（aria-label/focus-visible/双通道/reduced-motion/SVG 语义化）</li>
+<li>工艺台编号理顺、RMSE 加解读、黄金回归折叠摘要；数据台套 C 案密度规范</li>
+<li><b>验收</b>：1366 桌面 + 1920 投屏双分辨率实拍，1.5m 视距可读性达标后冻结视觉层</li>
+</ol>
+</div>
+
+<div class="good">
+<b>保留不动（已是产品级）</b>：引擎与黄金基准 11/11、性能缓存机制（72→1 次/帧）、留痕 localStorage 持久化、三层角色视图的信息架构骨架、信任锚"区间+落点"结构、解释卡三段式。本次重构只动视觉层与交互层，引擎与应用逻辑零改动。
+</div>
+
+<footer>VEES 界面重构方案 · 四路智能体评审汇总（UI 设计 / 前端工程 / UX 研究 / 设计总监）· 2026-09-27 · 下一步：按路线图第一步「清零」落地 v0.7</footer>
+
+</div>
+</body>
+</html>

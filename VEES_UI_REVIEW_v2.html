@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VEES 交互模块四维评审报告 v2</title>
+<style>
+:root{
+  --ink:#e6edf3;--ink2:#8b949e;--paper:#0a0e14;--card:#161b22;--card2:#1c2128;
+  --line:#30363d;--molten:#ff6b1a;--steel-l:#58a6ff;--ok:#3fb950;--warn:#d29922;--danger:#f85149;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:"PingFang SC","Microsoft YaHei",system-ui,sans-serif;background:var(--paper);
+  background-image:linear-gradient(rgba(88,166,255,.03) 1px,transparent 1px),linear-gradient(90deg,rgba(88,166,255,.03) 1px,transparent 1px);
+  background-size:24px 24px;color:var(--ink);line-height:1.7;font-size:15px;padding:24px 18px 60px}
+.wrap{max-width:1100px;margin:0 auto}
+h1{font-size:22px;font-weight:700;letter-spacing:1px;border-bottom:1px solid var(--molten);padding-bottom:10px;margin-bottom:8px}
+.sub{color:var(--ink2);font-size:13px;margin-bottom:24px}
+h2{font-size:17px;font-weight:700;margin:28px 0 12px;color:var(--steel-l);letter-spacing:.5px;
+  border-left:3px solid var(--steel-l);padding-left:10px}
+h3{font-size:14.5px;font-weight:700;margin:18px 0 8px;color:var(--molten)}
+.panel{background:linear-gradient(180deg,var(--card2),var(--card));border:1px solid var(--line);
+  border-radius:10px;padding:16px 20px;margin:12px 0;position:relative}
+.panel::before{content:"";position:absolute;top:-1px;left:-1px;width:10px;height:10px;
+  border:1px solid var(--steel-l);opacity:.45;border-right:none;border-bottom:none;border-top-left-radius:10px}
+.panel::after{content:"";position:absolute;bottom:-1px;right:-1px;width:10px;height:10px;
+  border:1px solid var(--steel-l);opacity:.45;border-left:none;border-top:none;border-bottom-right-radius:10px}
+table{width:100%;border-collapse:collapse;font-size:13px;margin:8px 0}
+th,td{border:1px solid var(--line);padding:7px 9px;text-align:left;vertical-align:top}
+th{background:rgba(88,166,255,.06);color:#c9d1d9;font-weight:600}
+td{color:#8b949e}
+td b{color:#e6edf3}
+.tag{display:inline-block;font-size:11px;font-weight:700;padding:2px 8px;border-radius:999px;white-space:nowrap}
+.t-p0{background:rgba(248,81,73,.15);color:#ff7b72;border:1px solid rgba(248,81,73,.3)}
+.t-p1{background:rgba(210,153,34,.15);color:#e3b341;border:1px solid rgba(210,153,34,.3)}
+.t-p2{background:rgba(88,166,255,.15);color:#58a6ff;border:1px solid rgba(88,166,255,.3)}
+.t-done{background:rgba(63,185,80,.15);color:#3fb950;border:1px solid rgba(63,185,80,.3)}
+.note{font-size:12.5px;color:var(--ink2);margin-top:6px}
+ul{margin:6px 0 6px 20px}li{margin:3px 0}
+.kw{color:var(--molten);font-weight:700}
+.bug{background:rgba(248,81,73,.08);border-left:3px solid var(--danger);padding:10px 14px;margin:10px 0;border-radius:6px}
+.ok{background:rgba(63,185,80,.08);border-left:3px solid var(--ok);padding:10px 14px;margin:10px 0;border-radius:6px}
+code{background:rgba(13,17,23,.6);padding:1px 5px;border-radius:4px;font-size:12.5px;color:#79c0ff}
+footer{margin-top:36px;padding:14px 0;border-top:1px solid var(--line);color:#6e7681;font-size:12px;text-align:center}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<h1>VEES 交互模块四维评审报告 <span style="color:var(--molten)">v2</span></h1>
+<div class="sub">对象：VEES_MVP_v0.6.html（深色工业金属风 + 全屏）· 方法：四路专家智能体并行评估（UX / 数据准确性 / 性能 / 边界处理）· 主智能体综合 · P0 明确 bug 已同步落地修复</div>
+
+<!-- ============ 一、敏感性分析 ============ -->
+<h2>一、敏感性分析的作用与解读</h2>
+<div class="panel">
+<h3>作用</h3>
+<p>固定其他开吹条件，单独扫描一个输入参数（当前实现：铁水 Si 含量 0.10%→0.30%），观察输出（预测精钒渣 V₂O₅ 品位）如何随之变化，画出"输入→输出"的机理响应曲线。它是工艺专家判断<b>哪个参数最该盯紧、参数逼近哪个值时品位会跌穿目标</b>的决策依据。</p>
+<h3>解读要点（对应 03 模块）</h3>
+<ul>
+<li><span class="kw">曲线下行段 = 硅稀释敏感区</span>：Si 每升 0.01%，品位约降 0.2–0.3 个百分点。机理是 Si 氧化产生的 SiO₂ 作为脉石进入炉渣，稀释了 V₂O₅ 的质量分数。</li>
+<li><span class="kw">蓝色虚线 + 圆点 = 当前铁水条件落点</span>：把当前 Si 滑杆值映射到曲线上，一眼看出当前品位处在曲线的平缓区还是陡降区。</li>
+<li><span class="kw">斜率 = 敏感度</span>：陡的地方说明该区间 Si 微小波动就会显著影响品位，炉长/工艺专家要重点控制；平缓的地方容忍度高。</li>
+<li><span class="kw">三模块联动</span>：03 给"趋势"，02 给"当前点数值"，05 给"口径选择对当前点的影响"——三者共同支撑工艺专家的复核决策。</li>
+</ul>
+<div class="note">局限：当前仅扫 Si 单参数；V、T 的敏感性曲线未画；多参数联合敏感性（如 Si×V 交叉）未建。属 P2 扩展。</div>
+</div>
+
+<!-- ============ 二、四维评审综合 ============ -->
+<h2>二、四维评审综合（结论先行）</h2>
+<div class="ok"><b>总体判断：</b>视觉层级与反馈即时性优秀（UX），引擎移植准确（数据，黄金 11/11），rAF 节流充分（性能），全屏 CSS 驱动零重算（性能）。但挖出 <b>1 个真 bug</b>（热量单位差 1000 倍）、<b>3 个边界崩溃点</b>（空数组/坐标溢出/留痕丢失）、<b>1 组性能冗余</b>（72 次 runModel 可压到 ~20）、<b>3 个 UX 隐患</b>（缺二次确认/留痕仅内存/列底触达低）。</div>
+
+<h3>1. 用户体验（UX）角度</h3>
+<div class="panel">
+<table>
+<tr><th>模块</th><th>优点</th><th>问题</th></tr>
+<tr><td><b>02 配吃 KPI</b></td><td>双大字(34px)+LED 一眼可读；animateNum 240ms 过渡</td><td>黄灯态"确认照单执行"无二次确认，例外流程下是隐患</td></tr>
+<tr><td><b>顶栏 重置</b></td><td>—</td><td class="bug-cell"><span class="tag t-p0">P0</span> 无二次确认，演示运行中误点即丢失当前调参</td></tr>
+<tr><td><b>05 仲裁 4 按钮</b></td><td>900ms .s 高亮+留痕</td><td>"采用A/B""本炉例外"无二次确认；4 按钮平级未区分"采用"与"挂起"权重</td></tr>
+<tr><td><b>06 回放</b></td><td>蓝线+橙绿散点对比清晰；&lt;title&gt; tooltip</td><td>位于右列底部，全屏下触达效率低</td></tr>
+<tr><td><b>B 操作留痕</b></td><td>实时更新</td><td><span class="tag t-p0">P0</span> 仅 opLog 内存数组，刷新即失，生产场景必须持久化</td></tr>
+<tr><td><b>全屏</b></td><td>body.fs 锁视口、列独立滚动</td><td>工艺/数据台双列在 1140px 下变单列，06/A 位于列底需长滚动</td></tr>
+</table>
+</div>
+
+<h3>2. 数据准确性角度</h3>
+<div class="panel">
+<div class="bug"><b>🚨 真 bug：热量富余单位差 1000 倍。</b>引擎 <code>surplus</code> 单位为 kJ（<code>cpI.cs=0.745 kJ/(kg·K)</code>，hIron≈95.5×10⁶ kJ），黄金回归表正确标"kJ"显示 16495062；但 02 KPI 与 05 arb 表显示 <code>surplus/1e6</code> 标注"MJ"——16,495,062 kJ ÷ 1e6 = <b>16.5 GJ</b>（不是 MJ），标 MJ 差 1000 倍。<b>已修：标签 MJ→GJ，数值逻辑不变。</b></div>
+<table>
+<tr><th>项</th><th>问题</th><th>建议</th></tr>
+<tr><td>品位 2 位小数</td><td>13.995→14.00 看似达标（目标 ≥14.0）</td><td>关键门限附近显 3 位</td></tr>
+<tr><td>03/06 Y 轴 clamp 不一致</td><td>drawSweep 双向 [11,18]；drawReplay 仅上限 <code>min(g,18)</code> 无下限</td><td><span class="tag t-done">已修</span> drawReplay 加 <code>Math.max(g,11)</code> 双向 clamp</td></tr>
+<tr><td>术语"品位/精渣/精钒渣"</td><td>同指一物，KPI/信任锚/回放术语不统一</td><td>统一为"精钒渣 V₂O₅ 品位"</td></tr>
+<tr><td>rough-RMSE 分母</td><td>第 8 炉 rough=null 被过滤，分母 15/16 未标注</td><td>表注说明"n=15（第8炉未取样）"</td></tr>
+<tr><td>物料差门限 0.05%</td><td>黄金基准 -0.0194%，门限差 2.5 倍，失去区分力</td><td>收紧到 0.02%</td></tr>
+<tr><td>黄灯阈值 Si&gt;0.25</td><td>第14日(Si.266→13.59%)与第15日(Si.251→14.70%)品位差1.11pp，同阈值结果矛盾</td><td>用 16 炉数据回归拟合阈值，或改区间判据</td></tr>
+<tr><td>相似度权重 2:1</td><td>经验值，未与品位灵敏度回归拟合</td><td>用 16 炉数据拟合 Si/V 对品位的影响系数</td></tr>
+<tr><td>信任锚"近 3 炉"</td><td>3 样本极差受噪声支配（第14/15日差1.11pp）</td><td>扩至 5 炉或用四分位数</td></tr>
+</table>
+</div>
+
+<h3>3. 性能影响角度</h3>
+<div class="panel">
+<div class="ok"><b>实测：</b>单次 update 触发 <b>72 次 runModel</b>（主1 + drawSweep 21 + arb alt 1 + rmse×2 各16=32 + drawReplay 16 + goldTB 1）。runModel 纯算术单次 &lt;1ms，72 次约 5–8ms，rAF 合并下连续拖滑杆不掉帧。</div>
+<table>
+<tr><th>冗余点</th><th>现状</th><th>优化</th><th>收益</th></tr>
+<tr><td>goldTB</td><td>输入写死 {W:80000,Si:.215,V:.284,T:1300,dhV:2777}，每次 update 重算</td><td>初始化算一次缓存</td><td><span class="tag t-p1">P1</span> -1 次</td></tr>
+<tr><td>arb 两次 rmse</td><td>共 32 次，结果只依赖 dhV，与滑杆无关</td><td>dhV 切换时算一次缓存</td><td><span class="tag t-p1">P1</span> -32 次</td></tr>
+<tr><td>drawReplay 16 次</td><td>同上，dhV 不变即可缓存</td><td>缓存预测数组</td><td><span class="tag t-p1">P1</span> -16 次</td></tr>
+<tr><td>drawSweep 21 次</td><td>拖 Si 时曲线形状不变</td><td>只移动游标、不重算 21 点</td><td><span class="tag t-p1">P1</span> -21 次</td></tr>
+</table>
+<div class="note">剔除冗余后单次 update 可从 72 次压到 ~20 次（甚至 ~5 次）。当前不卡，但为后续多参数扫描留余量。</div>
+<h3>其他</h3>
+<ul>
+<li><b>内存</b>：opLog 上限 12 条→<span class="tag t-done">已修</span>提到 50；_tweens Map 6 key 正确回收，无泄漏。</li>
+<li><b>演示模式</b>：850ms 合理；但 tab 切走后定时器仍按 850ms 触发（rAF 后台被节流到 ~1s），建议 <code>visibilitychange</code> 暂停省电。</li>
+<li><b>全屏</b>：仅切换 body.fs class + Fullscreen API，零重算，性能优秀。</li>
+</ul>
+</div>
+
+<h3>4. 边界处理角度</h3>
+<div class="panel">
+<table>
+<tr><th>风险点</th><th>现状</th><th>处理</th></tr>
+<tr><td><b>renderTrust 空数组</b></td><td><code>Math.min(...[]) = Infinity</code>，fines 全 null 时信任锚显示"Infinity–-Infinity%"</td><td><span class="tag t-done">已修</span> 加 <code>if(!fines.length)</code> 兜底返回</td></tr>
+<tr><td><b>drawReplay yy 无下限</b></td><td>品位&lt;11 时圆点绘制到 X 轴下方</td><td><span class="tag t-done">已修</span> 加 <code>Math.max(g,11)</code></td></tr>
+<tr><td><b>opLog 12 条 pop</b></td><td>12 炉后早期确认/仲裁永久丢失</td><td><span class="tag t-done">已修</span> 上限提到 50；localStorage 留 P2</td></tr>
+<tr><td><b>引擎 pl 分母</b></td><td><code>pl=surplus/(hOut-hIn)</code>，极端边界 surplus 极小时分母趋零，pl 产出 -Infinity/负值</td><td><span class="tag t-p1">P1</span> 加 <code>Math.max(hOut-hIn, 1)</code> 下限保护 + 负值提示</td></tr>
+<tr><td><b>top[0] 空判例库</b></td><td>HEATS 固定 16 条安全；若接入空台账则 <code>c.h.day</code> 抛 TypeError</td><td><span class="tag t-p1">P1</span> 加 <code>if(!top.length)</code> 兜底</td></tr>
+<tr><td><b>演示剧本不完整</b></td><td>Si 到顶切 V 后只扫 V 永不复位 Si</td><td><span class="tag t-p2">P2</span> 加 V 到底后复位 Si 回默认</td></tr>
+<tr><td><b>确认按钮态</b></td><td>1400ms timeout 内刷新则态丢失</td><td>低风险，可接受</td></tr>
+</table>
+</div>
+
+<!-- ============ 三、逐模块优化清单 ============ -->
+<h2>三、逐模块优化清单（P0/P1/P2 分级）</h2>
+<div class="panel">
+<table>
+<tr><th>模块</th><th>维度</th><th>问题</th><th>建议</th><th>状态</th></tr>
+<tr><td>02 KPI 热量富余</td><td>数据</td><td>单位 MJ 实为 GJ，差 1000 倍</td><td>标签 MJ→GJ</td><td><span class="tag t-done">已修</span></td></tr>
+<tr><td>05 arb 热量富余</td><td>数据</td><td>同上</td><td>同上</td><td><span class="tag t-done">已修</span></td></tr>
+<tr><td>renderTrust</td><td>边界</td><td>空数组 Math.min/max 崩</td><td>兜底返回</td><td><span class="tag t-done">已修</span></td></tr>
+<tr><td>drawReplay yy</td><td>边界</td><td>无下限 clamp，圆点溢出</td><td>双向 clamp</td><td><span class="tag t-done">已修</span></td></tr>
+<tr><td>opLog 上限</td><td>边界/UX</td><td>12 条 pop 丢关键记录</td><td>上限 50 + localStorage</td><td><span class="tag t-done">50 已修</span> <span class="tag t-p2">localStorage P2</span></td></tr>
+<tr><td>顶栏 重置</td><td>UX</td><td>无二次确认，误点丢调参</td><td>confirm 二次确认</td><td><span class="tag t-p0">P0 待修</span></td></tr>
+<tr><td>02 确认(黄灯)</td><td>UX</td><td>例外流程无二次确认</td><td>黄灯态 confirm</td><td><span class="tag t-p0">P0 待修</span></td></tr>
+<tr><td>05 仲裁 采用/例外</td><td>UX</td><td>无二次确认；4 按钮平级</td><td>采用/例外 confirm；视觉区分采用vs挂起</td><td><span class="tag t-p0">P0 待修</span></td></tr>
+<tr><td>B 留痕持久化</td><td>UX/数据</td><td>仅内存，刷新即失</td><td>localStorage + 哈希链 + JSONL 导出</td><td><span class="tag t-p0">P0 待修</span></td></tr>
+<tr><td>引擎 pl 分母</td><td>边界</td><td>极端输入分母趋零</td><td>Math.max 下限 + 负值提示</td><td><span class="tag t-p1">P1</span></td></tr>
+<tr><td>top[0] 空兜底</td><td>边界</td><td>空判例库崩</td><td>if(!top.length) 兜底</td><td><span class="tag t-p1">P1</span></td></tr>
+<tr><td>goldTB 缓存</td><td>性能</td><td>输入写死每次重算</td><td>初始化算一次</td><td><span class="tag t-p1">P1</span></td></tr>
+<tr><td>rmse 缓存</td><td>性能</td><td>32 次冗余</td><td>dhV 切换时算</td><td><span class="tag t-p1">P1</span></td></tr>
+<tr><td>drawReplay 缓存</td><td>性能</td><td>16 次冗余</td><td>缓存预测数组</td><td><span class="tag t-p1">P1</span></td></tr>
+<tr><td>drawSweep 游标</td><td>性能</td><td>拖 Si 重算 21 点</td><td>只移游标</td><td><span class="tag t-p1">P1</span></td></tr>
+<tr><td>演示 visibilitychange</td><td>性能</td><td>tab 切走仍跑</td><td>暂停省电</td><td><span class="tag t-p1">P1</span></td></tr>
+<tr><td>物料差门限</td><td>数据</td><td>0.05% 失区分力</td><td>收紧 0.02%</td><td><span class="tag t-p1">P1</span></td></tr>
+<tr><td>黄灯阈值</td><td>数据</td><td>Si&gt;0.25 缺数据支撑</td><td>16 炉回归拟合</td><td><span class="tag t-p2">P2</span></td></tr>
+<tr><td>相似度权重</td><td>数据</td><td>2:1 经验值</td><td>拟合 Si/V 影响系数</td><td><span class="tag t-p2">P2</span></td></tr>
+<tr><td>信任锚样本</td><td>数据</td><td>近 3 炉噪声大</td><td>扩 5 炉或四分位</td><td><span class="tag t-p2">P2</span></td></tr>
+<tr><td>03 多参数扫描</td><td>功能</td><td>仅扫 Si</td><td>加 V/T 扫描 + 交叉</td><td><span class="tag t-p2">P2</span></td></tr>
+<tr><td>全屏列底锚点</td><td>UX</td><td>06/A 触达低</td><td>侧边迷你导航</td><td><span class="tag t-p2">P2</span></td></tr>
+</table>
+</div>
+
+<!-- ============ 四、已落地修复 ============ -->
+<h2>四、本轮已落地修复（v0.6 内）</h2>
+<div class="ok">
+<ul>
+<li><b>热量单位</b>：02 KPI 与 05 arb 表"热量富余（MJ）"→"（GJ）"，修正 kJ/1e6 应标 GJ 的 1000 倍差错（数值逻辑不变，仍 16.5）。</li>
+<li><b>renderTrust 空数组兜底</b>：<code>fines</code> 过滤 null 后若为空，<code>Math.min(...[])=Infinity</code> 导致信任锚显示崩；加 <code>if(!fines.length)</code> 提前返回提示语。</li>
+<li><b>drawReplay yy 双向 clamp</b>：原仅 <code>Math.min(g,18)</code> 无下限，品位&lt;11 时圆点溢出到 X 轴下方；加 <code>Math.max(g,11)</code>。</li>
+<li><b>opLog 上限 12→50</b>：缓解 12 炉后早期记录丢失（localStorage 持久化留 P2）。</li>
+</ul>
+<div class="note">验证：引擎黄金基准 11/11 PASS（配吃 3529.598、品位 13.2990、surplus 16495062 kJ 不变）；应用层 JS 语法 OK；HTTP 200（46462 bytes）。</div>
+</div>
+
+<footer>VEES 交互模块四维评审报告 v2 · 2026-09-27 · 四路专家智能体并行评估（UX/数据/性能/边界）· P0 明确 bug 已同步落地 v0.6 · P0 设计争议项（二次确认/留痕持久化）待用户拍板后落地</footer>
+
+</div>
+</body>
+</html>
