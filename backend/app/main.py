@@ -319,6 +319,73 @@ async def run_simulation_endpoint(inputs: SimulationInputs):
 
 
 
+# ---------------------------------------------------------------------------
+# Pangang 四大平衡配吃顾问端点 (B 路：MVP 服务化桥接)
+# 对齐 MVP 的 runModel() 与 arb() 卡：输入铁水条件 → 配吃量 + 精钒渣 V2O5 品位 + ΔH 仲裁双案
+# ---------------------------------------------------------------------------
+from app.tools.pangang_reference import run_pangang_model, PangangInputs, MetalAnalysis
+import app.tools.pangang_reference as _pg_ref
+
+class PangangChargeRequest(BaseModel):
+    C: float
+    Si: float
+    V: float
+    Ti: float | None = None
+    P: float | None = None
+    S: float | None = None
+    Mn: float | None = None
+    Cr: float | None = None
+    iron_weight_kg: float = 80000.0
+    iron_temp_c: float = 1300.0
+    is_one_can: bool = True
+    dh_v: float | None = None  # 覆盖 V 氧化热；默认引擎 2777，可传 15000 触发仲裁对照
+
+def _build_pangang_inputs(req: PangangChargeRequest, dh_v: float) -> PangangInputs:
+    base = PangangInputs()
+    base.iron_weight = req.iron_weight_kg
+    base.iron = MetalAnalysis(
+        C=req.C, Si=req.Si,
+        Mn=req.Mn if req.Mn is not None else base.iron.Mn,
+        P=req.P if req.P is not None else base.iron.P,
+        S=req.S if req.S is not None else base.iron.S,
+        V=req.V,
+        Cr=req.Cr if req.Cr is not None else base.iron.Cr,
+        Ti=req.Ti if req.Ti is not None else base.iron.Ti,
+        temp=req.iron_temp_c,
+    )
+    return base
+
+def _run_pangang_case(req: PangangChargeRequest, dh_v: float) -> dict:
+    saved = _pg_ref.DH_V
+    try:
+        _pg_ref.DH_V = dh_v
+        r = run_pangang_model(_build_pangang_inputs(req, dh_v))
+        ti = req.Ti if req.Ti is not None else PangangInputs().iron.Ti
+        return {
+            "dh_v": dh_v,
+            "v2o5_grade_pct": round(r.v2o5_grade, 4),
+            "slag_grade_pct": {k: round(v, 4) for k, v in r.product["slag_grade"].items()},
+            "recipe_kg": {k: (round(v, 2) if v is not None else None)
+                          for k, v in r.after["coolant_weights"].items()},
+            "v_recovery_pct": round(r.product["v_balance"]["recovery_pct"], 3),
+            "v_si_ti_ratio": round(req.V / (req.Si + ti), 4),
+        }
+    finally:
+        _pg_ref.DH_V = saved
+
+@app.post("/api/pangang/charge")
+async def pangang_charge(req: PangangChargeRequest):
+    primary_dh = req.dh_v if req.dh_v is not None else _pg_ref.DH_V
+    return {
+        "rule_version": "pangang four-balance v7.0.0 (golden regression 75/75, max err 0.0002%)",
+        "primary": _run_pangang_case(req, primary_dh),
+        "arbitration": {
+            "case_2777": _run_pangang_case(req, 2777.0),
+            "case_15000": _run_pangang_case(req, 15000.0),
+        },
+    }
+
+
 @app.get("/api/heats")
 async def get_heats(
     skip: int = 0, 
