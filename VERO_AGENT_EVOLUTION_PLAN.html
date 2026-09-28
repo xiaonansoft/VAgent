@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VERO 智能体化改造规划报告 · 2026-09-27</title>
+<style>
+:root{
+  --c-bg:#0b0d10; --c-surface:#12151a; --c-raised:#181c22;
+  --c-line:#262c34; --c-line-hi:#3a424c;
+  --c-t1:#e8ecf1; --c-t2:#9aa4ae; --c-t3:#5f6873;
+  --c-accent:#e8620f; --c-accent-d:#b84e0c;
+  --c-ok:#4a9e5c; --c-warn:#c99a2e; --c-danger:#d9534f;
+  --c-info:#6b93b8;
+  --bg:var(--c-bg); --surface:var(--c-surface); --raised:var(--c-raised);
+  --line:var(--c-line); --line-hi:var(--c-line-hi);
+  --t1:var(--c-t1); --t2:var(--c-t2); --t3:var(--c-t3);
+  --accent:var(--c-accent); --ok:var(--c-ok); --warn:var(--c-warn); --danger:var(--c-danger); --info:var(--c-info);
+  --grad-panel:linear-gradient(180deg,var(--raised),var(--surface));
+  --inlay-top:inset 0 1px 0 rgba(255,255,255,.04);
+  --r-panel:8px; --r-ctrl:6px; --r-pill:999px;
+  --s1:4px; --s2:8px; --s3:12px; --s4:16px; --s5:24px; --s6:32px;
+  --fs-cap:12px; --fs-body:14px; --fs-h2:15px; --fs-h1:20px; --fs-kpi:32px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:"PingFang SC","Hiragino Sans GB","Microsoft YaHei",system-ui,sans-serif;
+  background:var(--bg);color:var(--t1);line-height:1.75;font-size:var(--fs-body);
+  -webkit-font-smoothing:antialiased}
+.wrap{max-width:1060px;margin:0 auto;padding:var(--s5) var(--s4) 80px}
+
+/* 页头 */
+.hero{border-bottom:1px solid var(--line);padding-bottom:var(--s5);margin-bottom:var(--s5)}
+.hero h1{font-size:26px;font-weight:800;letter-spacing:.5px;line-height:1.4}
+.hero .sub{color:var(--t2);font-size:var(--fs-body);margin-top:6px}
+.hero .meta{display:flex;gap:var(--s3);margin-top:var(--s3);font-size:var(--fs-cap);color:var(--t3);flex-wrap:wrap}
+.hero .meta span{background:var(--surface);padding:3px 10px;border-radius:var(--r-pill);border:1px solid var(--line)}
+
+/* SCQA */
+.scqa{display:grid;grid-template-columns:repeat(4,1fr);gap:var(--s3);margin:var(--s5) 0}
+.scqa-card{background:var(--grad-panel);border:1px solid var(--line);border-radius:var(--r-panel);
+  padding:var(--s4);box-shadow:var(--inlay-top)}
+.scqa-card .tag{font-size:var(--fs-cap);font-weight:800;letter-spacing:1px;margin-bottom:6px}
+.scqa-card.s .tag{color:var(--info)} .scqa-card.c .tag{color:var(--danger)}
+.scqa-card.q .tag{color:var(--warn)} .scqa-card.a .tag{color:var(--ok)}
+.scqa-card .txt{font-size:var(--fs-body);color:var(--t2);line-height:1.7}
+.scqa-card .txt b{color:var(--t1)}
+
+/* 结论卡 */
+.verdict{background:var(--grad-panel);border:1px solid var(--accent);border-left-width:3px;
+  border-radius:var(--r-panel);padding:var(--s5);margin:var(--s5) 0;box-shadow:var(--inlay-top)}
+.verdict h2{font-size:var(--fs-h1);font-weight:800;color:var(--accent);margin-bottom:var(--s3)}
+.verdict p{color:var(--t2);margin:6px 0}
+.verdict p b{color:var(--t1)}
+
+/* 章节 */
+h2.sec{font-size:var(--fs-h1);font-weight:800;margin:var(--s6) 0 var(--s4);
+  padding-bottom:var(--s2);border-bottom:1px solid var(--line);letter-spacing:.5px}
+h2.sec .no{color:var(--accent);margin-right:8px}
+h3.sub{font-size:var(--fs-h2);font-weight:700;margin:var(--s5) 0 var(--s3);color:var(--t1)}
+h3.sub .no{color:var(--info);margin-right:6px;font-weight:400;font-size:var(--fs-cap)}
+p.body{color:var(--t2);margin:var(--s2) 0}
+p.body b{color:var(--t1)}
+ul.body{color:var(--t2);margin:var(--s2) 0 var(--s2) var(--s5)}
+ul.body li{margin:4px 0}
+ul.body b{color:var(--t1)}
+
+/* 面板 */
+.panel{background:var(--grad-panel);border:1px solid var(--line);border-radius:var(--r-panel);
+  padding:var(--s4);margin:var(--s3) 0;box-shadow:var(--inlay-top)}
+.panel h4{font-size:var(--fs-h2);font-weight:700;margin-bottom:var(--s2);color:var(--t1)}
+
+/* 表格 */
+.tbl-wrap{overflow-x:auto;margin:var(--s3) 0}
+table.tb{width:100%;border-collapse:collapse;font-size:var(--fs-body);min-width:640px}
+.tb th,.tb td{border:1px solid var(--line);padding:6px 10px;text-align:left;vertical-align:top}
+.tb th{background:var(--raised);font-weight:700;color:var(--t1);white-space:nowrap}
+.tb td{color:var(--t2);line-height:1.6}
+.tb td b{color:var(--t1)}
+.tb tr:nth-child(even) td{background:rgba(255,255,255,.015)}
+.tb .src{font-size:var(--fs-cap);color:var(--t3);word-break:break-all}
+
+/* 徽章 */
+.badge{display:inline-flex;align-items:center;font-size:var(--fs-cap);font-weight:700;
+  padding:2px 9px;border-radius:var(--r-pill);border:1px solid;white-space:nowrap}
+.b-g{color:var(--ok);border-color:var(--ok);background:rgba(74,158,92,.08)}
+.b-y{color:var(--warn);border-color:var(--warn);background:rgba(201,154,46,.08)}
+.b-r{color:var(--danger);border-color:var(--danger);background:rgba(217,83,79,.08)}
+.b-i{color:var(--info);border-color:var(--info);background:rgba(107,147,184,.08)}
+
+/* 高亮框 */
+.callout{border-left:3px solid var(--info);background:rgba(107,147,184,.06);
+  padding:var(--s3) var(--s4);margin:var(--s3) 0;border-radius:0 var(--r-ctrl) var(--r-ctrl) 0;
+  font-size:var(--fs-body);color:var(--t2)}
+.callout.warn{border-left-color:var(--warn);background:rgba(201,154,46,.05)}
+.callout.danger{border-left-color:var(--danger);background:rgba(217,83,79,.05)}
+.callout.ok{border-left-color:var(--ok);background:rgba(74,158,92,.05)}
+.callout b{color:var(--t1)}
+
+/* 根因鱼骨 */
+.fishbone{display:grid;grid-template-columns:1fr 1fr;gap:var(--s3);margin:var(--s4) 0}
+.fish-card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-panel);
+  padding:var(--s3) var(--s4)}
+.fish-card .fc-t{font-weight:700;color:var(--danger);font-size:var(--fs-body);margin-bottom:4px}
+.fish-card .fc-b{font-size:var(--fs-body);color:var(--t2);line-height:1.65}
+.fish-card .fc-b b{color:var(--t1)}
+.fish-card .fc-ev{font-size:var(--fs-cap);color:var(--t3);margin-top:6px;border-top:1px dashed var(--line);padding-top:4px}
+
+/* 时间轴 */
+.timeline{position:relative;margin:var(--s4) 0;padding-left:28px}
+.timeline::before{content:"";position:absolute;left:8px;top:0;bottom:0;width:2px;background:var(--line)}
+.tl-item{position:relative;margin-bottom:var(--s4)}
+.tl-item::before{content:"";position:absolute;left:-26px;top:6px;width:12px;height:12px;
+  border-radius:50%;border:2px solid var(--accent);background:var(--bg)}
+.tl-item.p1::before{border-color:var(--ok)}
+.tl-item.p2::before{border-color:var(--warn)}
+.tl-item.p3::before{border-color:var(--accent)}
+.tl-item .tl-h{font-weight:700;color:var(--t1);font-size:var(--fs-h2)}
+.tl-item .tl-h .ph{color:var(--accent);margin-right:6px}
+.tl-item.p1 .tl-h .ph{color:var(--ok)} .tl-item.p2 .tl-h .ph{color:var(--warn)}
+.tl-item .tl-t{font-size:var(--fs-cap);color:var(--t3);margin:2px 0 6px}
+.tl-item .tl-b{color:var(--t2);font-size:var(--fs-body);line-height:1.7}
+.tl-item .tl-b b{color:var(--t1)}
+
+/* 能力卡 */
+.cap-grid{display:grid;grid-template-columns:1fr 1fr;gap:var(--s3);margin:var(--s3) 0}
+.cap-card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-panel);
+  padding:var(--s3) var(--s4)}
+.cap-card .cc-t{font-weight:700;color:var(--accent);font-size:var(--fs-body);margin-bottom:4px}
+.cap-card .cc-b{font-size:var(--fs-body);color:var(--t2);line-height:1.65}
+.cap-card .cc-b b{color:var(--t1)}
+
+/* 对话示例 */
+.chat{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-panel);
+  padding:var(--s3) var(--s4);margin:var(--s3) 0;font-size:var(--fs-body)}
+.chat .msg{margin:8px 0;display:flex;gap:8px}
+.chat .msg .who{flex:0 0 52px;font-weight:700;font-size:var(--fs-cap);padding-top:2px}
+.chat .msg.user .who{color:var(--info)}
+.chat .msg.agent .who{color:var(--accent)}
+.chat .msg .txt{color:var(--t2);line-height:1.65}
+.chat .msg .txt b{color:var(--t1)}
+.chat .msg .txt code{background:var(--raised);padding:1px 6px;border-radius:3px;font-size:var(--fs-cap);color:var(--info)}
+
+/* 架构框图 */
+.arch{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-panel);
+  padding:var(--s4);margin:var(--s3) 0;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;
+  font-size:var(--fs-cap);color:var(--t2);line-height:1.8;white-space:pre;overflow-x:auto}
+.arch b{color:var(--accent)} .arch i{color:var(--info);font-style:normal}
+.arch u{color:var(--ok);text-decoration:none}
+
+/* 指标 */
+.kpi-row{display:grid;grid-template-columns:repeat(3,1fr);gap:var(--s3);margin:var(--s3) 0}
+.kpi{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-panel);
+  padding:var(--s3) var(--s4);text-align:center}
+.kpi .kv{font-size:var(--fs-kpi);font-weight:800;color:var(--accent);font-variant-numeric:tabular-nums}
+.kpi .kl{font-size:var(--fs-cap);color:var(--t2);margin-top:2px}
+
+footer{margin-top:var(--s6);padding-top:var(--s4);border-top:1px solid var(--line);
+  font-size:var(--fs-cap);color:var(--t3)}
+
+@media(max-width:800px){
+  .scqa{grid-template-columns:1fr 1fr}
+  .fishbone,.cap-grid{grid-template-columns:1fr}
+  .kpi-row{grid-template-columns:1fr}
+  .wrap{padding:var(--s3) var(--s3) 40px}
+}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<!-- ======================== 页头 ======================== -->
+<div class="hero">
+  <h1>提钒冶炼软件智能体（Agent）化改造规划报告</h1>
+  <div class="sub">从「工程师的工具」到「操作工的伙伴」—— 国内外工业软件调研 × VAgent 项目盘点 × 分阶段实施路径</div>
+  <div class="meta">
+    <span>2026-09-27</span><span>版本 v1.0</span><span>调研范围：国内外 20+ 工业软件系统 · VAgent 代码库全量</span>
+    <span>机密等级：内部</span>
+  </div>
+</div>
+
+<!-- ======================== SCQA ======================== -->
+<div class="scqa">
+  <div class="scqa-card s"><div class="tag">S · 情境</div><div class="txt">全球与中国均<b>不存在「钒冶炼专用软件」品类</b>。钒厂复用钢铁通用 L2/MES 栈，或依赖企业自研。钒冶炼数字化正处于从「零」到「有」的窗口期。</div></div>
+  <div class="scqa-card c"><div class="tag">C · 冲突</div><div class="txt">现有钢铁工业软件按<b>工程师视角</b>设计：操作繁琐、术语门槛高、多系统孤岛、手工录入负担重。合格操作工需<b>五六年</b>培养，老师傅经验随退休流失。</div></div>
+  <div class="scqa-card q"><div class="tag">Q · 问题</div><div class="txt">能否用<b>智能体（Agent）形态</b>重构提钒软件，让一线操作工通过自然语言交互获得工艺推荐、异常预警和决策辅助，大幅降低使用门槛？</div></div>
+  <div class="scqa-card a"><div class="tag">A · 答案</div><div class="txt">VERO 已具备行业唯一的<b>机理引擎+知识包+分角色界面</b>资产。三阶段路径：对话层叠加 → 感知闭环 → 自主辅助，18 个月内完成从「工具」到「伙伴」的进化。</div></div>
+</div>
+
+<!-- ======================== 核心结论 ======================== -->
+<div class="verdict">
+  <h2>核心结论</h2>
+  <p><b>1. 市场空白真实存在且被官方证实。</b>国内外均无钒冶炼专用工业软件。国内钒钛产线 2018 年前全流程数字化为零，鞍钢 2024 年仍承认「自动化基础较差」；国外 Largo、Bushveld 等钒企的过程控制选型完全不公开——钒厂软件栈是「不公开宣传的同质化基础设施」。</p>
+  <p><b>2. 界面繁琐的根因不是设计水平，而是设计立场。</b>现有系统按「工程师/管理者」视角设计（让操作工选 Pattern 配方、跨屏核对数据、7 步报工），而 ISA-101 高性能 HMI 运动 20 年的量化研究证明：不良 HMI 使操作员响应时间延长 <b>40%</b>、误操作率提高 <b>300%</b>。问题不在屏幕，在「系统回答的是画图工程师的问题，不是操作员的问题」。</p>
+  <p><b>3. 对话式交互已被国际巨头验证，且位置明确。</b>Siemens Industrial Copilot（200+ 客户，号称效率提升最高 50%）、ABB Genix Copilot、AVEVA AI Assistant 均在 2024-2026 落地——共同模式是 <b>LLM 坐在 L2/L3 之上做「翻译器+检索器+建议器」，不直接控回路</b>。这与 VERO「只决策不执行」的定位完全一致。</p>
+  <p><b>4. VERO 的独特优势在于「机理引擎已产品级」。</b>攀钢四大平衡引擎 75/75 黄金回归、三层知识包 CF-001~008 口径全部登记仲裁、v0.8 界面已具备炉次号/枪位推荐/外部接口预留——底盘比所有竞品都扎实。差距在模型层（无 LLM、无 RAG、无自学习闭环），恰好是可用 18 个月追赶的部分。</p>
+</div>
+
+<!-- ======================== 1. 项目资产盘点 ======================== -->
+<h2 class="sec"><span class="no">01</span>VAgent 项目资产盘点</h2>
+
+<p class="body">对 <b>~/Documents/VAgent</b> 目录全量调研后的资产清单：</p>
+
+<h3 class="sub"><span class="no">1.1</span>核心引擎（产品级）</h3>
+<div class="tbl-wrap"><table class="tb">
+  <tr><th>模块</th><th>职责</th><th>成熟度</th><th>关键验证</th></tr>
+  <tr><td><b>pangang_reference.py</b></td><td>攀钢四大平衡机理引擎（物料/热量/冷料/钒平衡）</td><td><span class="badge b-g">产品级</span></td><td>黄金回归 75/75（Python）· 11/11（JS 移植）</td></tr>
+  <tr><td><b>initial_charge.py</b></td><td>L1 静态模型：开吹配料 + 冷却剂查表 + 氧量 + 渣量</td><td><span class="badge b-g">产品级</span></td><td>建龙查表口径锁定，测试覆盖</td></tr>
+  <tr><td><b>lance_profile.py</b></td><td>枪位推荐：低-高-低 / 高Si全程低枪位</td><td><span class="badge b-g">产品级</span></td><td>CF-006 定案，行业通用+厂级覆盖</td></tr>
+  <tr><td><b>kinetics_simulator.py</b></td><td>动力学仿真：Tc=1361℃ 碳钒转化 + 冷却剂系数</td><td><span class="badge b-g">产品级</span></td><td>CF-007 定案，口径统一</td></tr>
+  <tr><td><b>diagnose_process_quality.py</b></td><td>过程质量诊断：V/(Si+Ti) 判据 + 异常检测</td><td><span class="badge b-g">产品级</span></td><td>CF-008 定案，阈值统一 1.0</td></tr>
+  <tr><td><b>pangang_pack.py</b></td><td>知识包加载器：行业基线 → 厂级覆盖合并</td><td><span class="badge b-g">产品级</span></td><td>resolve_parameters() 分层解析</td></tr>
+</table></div>
+
+<h3 class="sub"><span class="no">1.2</span>知识包体系（行业唯一）</h3>
+<p class="body">三层 scope 分层：<b>industry（行业基线）→ plant（厂级覆盖：建龙/攀钢）→ workshop/furnace（预留）</b>。口径冲突 CF-001~CF-008 全部登记在案并有仲裁结论（Tc=1361℃、V/(Si+Ti)=1.0、枪位低-高-低+高Si保下限等），构成VERO最核心的<b>不可复制资产</b>。</p>
+
+<h3 class="sub"><span class="no">1.3</span>前端界面（v0.3 → v0.8 六轮迭代）</h3>
+<div class="tbl-wrap"><table class="tb">
+  <tr><th>版本</th><th>主题</th><th>关键变化</th></tr>
+  <tr><td>v0.3</td><td>分角色三层视图确立</td><td>炉长/工艺/数据三角色分离，暖色风</td></tr>
+  <tr><td>v0.5</td><td>炉长信任锚 + 黄灯判例</td><td>炉长删 07 表、信任锚刻度尺、黄灯态判例前置</td></tr>
+  <tr><td>v0.6</td><td>深色工业金属风 + 全屏</td><td>深炭底+熔融橙、全屏切换、LED 状态灯</td></tr>
+  <tr><td>v0.7</td><td>克制仪表派重构</td><td>删 glow/角标/emoji、色板 9 色封顶、量规化、投屏档、可访问性</td></tr>
+  <tr><td><b>v0.8</b></td><td><b>枪位推荐 + 炉次号 + 外部接口</b></td><td>LC 面板时间轴、VERO_API 预留、炉次唯一标识+留痕追溯</td></tr>
+</table></div>
+
+<h3 class="sub"><span class="no">1.4</span>数据接口（已预留）</h3>
+<p class="body"><b>window.VERO_API</b> 前端适配器（applyHeat/getState）已预留外部系统对接路径；DATA_INTERFACE_SPEC.md §3.1-3.6 覆盖化验室/PLC/副枪/烟气/台账五类数据源 + 前端适配器规范。POST /api/pangang/charge 服务化已打通（bridged 版）。</p>
+
+<h3 class="sub"><span class="no">1.5</span>「智能体」要素：已有 vs 纯规划</h3>
+<div class="tbl-wrap"><table class="tb">
+  <tr><th>要素</th><th>状态</th><th>说明</th></tr>
+  <tr><td>LangGraph 六角色 Agent 图</td><td><span class="badge b-y">骨架可跑</span></td><td>有图结构和人工审批中断，但无 LLM 驱动</td></tr>
+  <tr><td>MCP 工具服务</td><td><span class="badge b-y">骨架可跑</span></td><td>tools_server.py 已注册配料/仿真/诊断工具，但未挂载运行</td></tr>
+  <tr><td>自然语言交互</td><td><span class="badge b-r">纯规划</span></td><td>无任何 LLM 调用、无对话界面、无 RAG</td></tr>
+  <tr><td>自学习闭环</td><td><span class="badge b-r">纯规划</span></td><td>RLS/PINN 为 mock，无真实误差回流</td></tr>
+  <tr><td>知识包 RAG</td><td><span class="badge b-r">纯规划</span></td><td>知识包已结构化（YAML），但未向量化、无检索</td></tr>
+</table></div>
+
+<div class="callout warn"><b>关键判断：</b>VERO 当前本质是「规则引擎拼装的专家系统」——机理引擎产品级、知识包行业唯一、界面六轮迭代，但<b>智能体要素几乎全为骨架</b>。升级为真智能体的最大缺口在<b>模型层（LLM 接入 + RAG + 学习闭环）</b>，而非引擎或界面。</div>
+
+<!-- ======================== 2. 国内外调研 ======================== -->
+<h2 class="sec"><span class="no">02</span>国内外钒冶炼工业软件现状调研</h2>
+
+<h3 class="sub"><span class="no">2.1</span>总体格局判断</h3>
+
+<div class="callout"><b>全球共识：不存在「钒冶炼专用软件」品类。</b>全球钒供给高度集中（中国 ~70,000t、俄罗斯 ~21,000t、南非 ~8,000t、巴西 ~5,000t），约 90% 钒消费用于钢铁合金。钒厂的信息化建设本质是「钢铁-有色冶金通用软件栈」在焙烧、浸出、沉淀、煅烧等工序上的套用。国内钒钛产线 2018 年前全流程数字化为零，至今「自动化基础较差」（鞍钢集团 2024 年官方口径）。</div>
+
+<h3 class="sub"><span class="no">2.2</span>国内代表系统</h3>
+<div class="tbl-wrap"><table class="tb">
+  <tr><th>系统/厂商</th><th>核心功能模块</th><th>技术架构</th><th>界面特点</th><th>公开痛点</th></tr>
+  <tr><td><b>宝信 MES（BM2→4.0）</b><br>宝信软件</td><td>工厂建模、合同/质量管理、作业计划、物料跟踪、能源、工序成本</td><td>C/S 三层+中间件，私有部署，MMS+PES 双层架构</td><td>面向「全体系质量业务人员」的专业化界面</td><td>单产线架构→接口复杂、信息传递效率低；建设维护成本高</td></tr>
+  <tr><td><b>中冶赛迪「水土云」</b><br>赛迪信息</td><td>智能炼铁、智慧集控、智慧管控</td><td>自主扁平化架构，云+IoT+大数据+AI</td><td>平台化 App 应用</td><td>官方口径反证：传统 L1-L4 架构存在纵向数据衰减、横向孤岛</td></tr>
+  <tr><td><b>海星 XYZLink</b><br>星云智联（攀钢子公司）</td><td>L2 模型定制、集控中心、设备诊断、MOM/能源/安全环保</td><td>数据集成+工业大数据+AI 四类平台，兼容 224 种工业协议</td><td>操作室集控+可视化大屏，建有 2629 个模型+5835 个工业 APP</td><td>钒钛产线「工序界面断点多」「操作靠机旁手动」「数据自动采集度不高」</td></tr>
+  <tr><td><b>承德钒钛提钒全自动系统</b><br>河钢（企业自研，2024-11 投运）</td><td>静态模型（热力学+专家经验）、动态模型（烟气终点判断）、冷料自动配加、自动出钢</td><td>L2 过程控制级，150t 转炉</td><td>岗位人员按「自动出钢启动」按钮完成整炉；语音播报替代盯屏</td><td>立项原因即「人工经验操作导致半钢条件波动大」</td></tr>
+  <tr><td><b>攀钢×阿里 ET 工业大脑</b><br>阿里云（2018 起）</td><td>提钒/脱硫/转炉/精炼/连铸五工序建模、冷轧表检 AI</td><td>阿里云工业大数据平台，模型推荐回嵌现有系统</td><td>AI 辅助人工判定，不改变原 L2 界面</td><td>质检员 5-10 分钟识别几百个缺陷、判定不稳定；老师傅经验碎片化</td></tr>
+  <tr><td><b>南钢×华为「元冶」大模型</b><br>华为（2025-06 发布）</td><td>高炉炉温预测（90%+）、智能配矿、排产智能体、200+ AI 模型</td><td>「左脑机理+右脑 AI」群智能架构，42 米管控屏+数字孪生</td><td><b>明确以自然语言交互为卖点</b>：「新手通过自然语言提问就能获得 AI 操作建议」</td><td>立项痛点：「合格高炉操作员要培养五六年」「老师傅经验难复制传承」</td></tr>
+  <tr><td><b>转炉 L2 通用范式</b><br>（以湛江 350t 为例）</td><td>静态模型（装入→氧量/副原料）、动态模型（副枪→终点修正）、自学习</td><td>L1(PLC)—L2(过程机)—L3/L4 四层</td><td>操作工在 HMI 上<b>人工选 5 种流量 Pattern + 5 种枪位 Pattern</b></td><td>模式/配方选择依赖操作工对 Pattern 表的理解——工艺知识门槛转嫁操作工</td></tr>
+</table></div>
+
+<h3 class="sub"><span class="no">2.3</span>国外代表系统</h3>
+<div class="tbl-wrap"><table class="tb">
+  <tr><th>系统/厂商</th><th>核心功能模块</th><th>技术架构</th><th>HMI 特点</th><th>公开痛点</th></tr>
+  <tr><td><b>PSImetals</b><br>PSI Software（德国）</td><td>SCM/APS/MES 一体：Planning/Production/Quality/Logistics + 脱碳与能源</td><td>Service Platform 平台化；标准适配器对接市面几乎所有 L2</td><td>面向计划员/调度/质量/冶金的多角色工作站</td><td>实施周期长（以季度计）、配置模型重</td></tr>
+  <tr><td><b>Primetals L2</b><br>普锐特（西门子奥钢联）</td><td>BOF/LF/VD/EAF/AOD/RH/CC Optimizer 系列、Ladle Tracker、TPQC</td><td>统一 Level 2 数字骨干；订阅制交付（Outokumpu 7 年案例）</td><td>操作员与冶金师共用界面、跨机组标准化</td><td>Kardemir 改造前官方陈述：「多系统并存→优化受限+数据不一致」</td></tr>
+  <tr><td><b>ABB System 800xA + Genix</b><br>ABB（瑞士/瑞典）</td><td>DCS+安全+熔炼车间跟踪+MOM+过程测量+Genix IIoT/AI</td><td>800xA 集成控制 + Genix 数据编织（云/边/本地混合）</td><td>统一操作员环境；Genix Copilot 引入自然语言对话</td><td>OT/IT/ET 数据碎片化、非计划停机月均一次、损失约 $12.5 万/小时</td></tr>
+  <tr><td><b>Metso PROSCON + Process Advisor</b><br>Metso（芬兰）</td><td>矿山冶金 DCS、闪速熔炼/电炉专家控制、焙烧优化（Roaster Optimizer）</td><td>动态质量-热平衡模型；Geminex 冶金数字孪生</td><td>Web 化界面；以「标准化班次间操作」为卖点</td><td>直接针对「班次间操作不一致、渣损高、异常冶况依赖个人经验」</td></tr>
+  <tr><td><b>Danieli Automation</b><br>达涅利（意大利）</td><td>Q-Melt、Q-Robot、Q3 整线 L1-L2-L3</td><td>设备商捆绑的 Level 2，各带自有过程模型</td><td>与自家设备深度耦合的专用界面</td><td>「各家 L2 只覆盖自家设备范围」——跨供应商产线出现缝合问题</td></tr>
+  <tr><td><b>AVEVA + PI System</b><br>施耐德（英国）</td><td>HMI/SCADA、实时库、报表；Operations Control 订阅制</td><td>CONNECT 工业云 + PI Data Infrastructure</td><td>Web 原生 HMI（HTML5/SVG）；2024 起内置 AI Assistant</td><td>Web 化带来 OT/IT 边界安全压力；用户对「2000 年代风格界面」容忍度下降</td></tr>
+</table></div>
+
+<h3 class="sub"><span class="no">2.4</span>功能模块覆盖矩阵</h3>
+<div class="tbl-wrap"><table class="tb">
+  <tr><th>功能域</th><th>宝信 MES</th><th>赛迪水土云</th><th>承德自研</th><th>PSImetals</th><th>Primetals L2</th><th>ABB Genix</th><th>VERO v0.8</th></tr>
+  <tr><td>工艺监控</td><td>●</td><td>●</td><td>●</td><td>●</td><td>●</td><td>●</td><td>●</td></tr>
+  <tr><td>配料计算</td><td>○</td><td>○</td><td><b>●</b></td><td>○</td><td><b>●</b></td><td>○</td><td><b>●</b></td></tr>
+  <tr><td>能耗管理</td><td>●</td><td>●</td><td>—</td><td>●</td><td>○</td><td>●</td><td>—</td></tr>
+  <tr><td>质量追溯</td><td><b>●</b></td><td>○</td><td>○</td><td><b>●</b></td><td>●</td><td>○</td><td><b>●</b>（炉次留痕）</td></tr>
+  <tr><td>枪位/供氧控制</td><td>—</td><td>—</td><td><b>●</b></td><td>—</td><td><b>●</b></td><td>○</td><td><b>●</b></td></tr>
+  <tr><td>异常预警</td><td>○</td><td>●</td><td><b>●</b>（语音播报）</td><td>○</td><td>○</td><td><b>●</b></td><td><b>●</b>（黄灯态）</td></tr>
+  <tr><td>自然语言交互</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td><b>●</b>（Genix Copilot）</td><td>—</td></tr>
+  <tr><td>知识包/口径管理</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td><b>●（行业唯一）</b></td></tr>
+</table></div>
+<p class="body">● = 核心能力　○ = 部分覆盖　— = 未覆盖。<b>VERO 在配料计算、枪位推荐、质量追溯（炉次留痕）、异常预警（黄灯态）四个功能域已具竞争力，知识包管理为行业独有；最大空白在自然语言交互。</b></p>
+
+<!-- ======================== 3. 易用性根因 ======================== -->
+<h2 class="sec"><span class="no">03</span>界面繁琐、易用性差的根因分析</h2>
+
+<p class="body">基于 ISA-101 高性能 HMI 运动 20 年研究 + 国内外公开痛点证据，界面繁琐的根因可归结为五层：</p>
+
+<div class="fishbone">
+  <div class="fish-card">
+    <div class="fc-t">根因一：设计立场错位——为「工程师」而非「操作工」设计</div>
+    <div class="fc-b">现有系统的信息架构围绕<b>工艺工程师的推理路径</b>（参数→公式→模型→趋势）组织，而非操作工的决策路径（我该做什么→现在做还是等→做完怎么确认）。转炉 L2 让操作工从 5 种流量 Pattern × 5 种枪位 Pattern 中人工选择组合——<b>工艺知识门槛完全转嫁给一线</b>。</div>
+    <div class="fc-ev">证据：湛江转炉 HMI 操作模式（plcjs.com）；宝信 MES 面向「全体系质量业务人员」；ASM 结论「系统回答的是画图工程师的问题，不是操作员的问题」</div>
+  </div>
+  <div class="fish-card">
+    <div class="fc-t">根因二：视觉噪音淹没关键信号</div>
+    <div class="fc-b">满屏饱和色+拟物化 3D 设备图+无层次的数据堆砌，使异常工况下真正重要的偏差信号被淹没。ISA-101 量化研究：不良 HMI 使响应时间延长 <b>40%</b>、误操作率提高 <b>300%</b>。颜色被滥用为「设备身份标识」而非「偏差指示器」。</div>
+    <div class="fc-ev">证据：ASM Consortium 异常工况管理研究；ISA-101.01-2015 标准；EEMUA 191 报警基准（稳态 150 条/天 vs 现实 5-20 倍超标）</div>
+  </div>
+  <div class="fish-card">
+    <div class="fc-t">根因三：多系统孤岛 → 人工跨屏核对</div>
+    <div class="fc-b">L1/L2/L3/L4 分层架构天然产生数据断点。操作工需在 MES、L2 HMI、Excel、纸质台账之间反复切换，手工抄录、跨屏比对。排产员「灵活切换电脑屏幕的两个系统比对数据」是常态而非例外。</div>
+    <div class="fc-ev">证据：承德钒钛排产员跨屏核对（csteelnews.com）；Kardemir「多系统并存→数据不一致」（Primetals 官方）；社科院工经所「数据孤岛严重、单点应用阶段」</div>
+  </div>
+  <div class="fish-card">
+    <div class="fc-t">根因四：手工录入负担重 → 数据质量恶性循环</div>
+    <div class="fc-b">攀钢钒钛「每天化检验数据上百个」靠人工跑腿送样；报工需 7 步点击导致「先纸质记录、下班补录」；钒钛产线「数据自动采集度不高」。录入负担 → 数据延迟/缺失 → 模型不准 → 操作工不信任系统 → 更依赖手工经验 → 恶性循环。</div>
+    <div class="fc-ev">证据：攀钢钒钛远程检化验系统改造前（gtjia.com）；星云智联钒钛产线五大问题（csteelnews.cn）；MES 报工 7 步点击（toutiao.com）</div>
+  </div>
+  <div class="fish-card">
+    <div class="fc-t">根因五：报警「被积累」而非「被设计」</div>
+    <div class="fc-b">报警是多年间由「当班的人」逐条添加的，不是被系统设计的。多数存量工厂首次自测即发现超出 EEMUA 191 基准 <b>5-20 倍</b>；大扰动时 10 分钟内超过 300 条，操作员只能机械确认甚至放弃确认。报警洪水 → 告警疲劳 → 真正关键的异常被忽略。</div>
+    <div class="fc-ev">证据：EEMUA 191 基准（hmilibrary.com）；ISA-18.2 报警管理标准；ASM「异常工况中操作员响应延迟是工业事故的首要贡献因素之一」</div>
+  </div>
+  <div class="fish-card">
+    <div class="fc-t">根因六（深层）：经验不可复制 → 系统只服务老师傅</div>
+    <div class="fc-b">「合格高炉操作员要培养五六年」（南钢官方）；承德钒钛需「把老一辈炉前技师数十年实操体感转化为标准化算法」。界面设计的隐含假设是「用户已经懂工艺」，导致新手无法独立操作系统——<b>系统没有承载知识，知识只在老师傅脑子里</b>。</div>
+    <div class="fc-ev">证据：南钢×华为立项痛点（news.cn）；承德钒钛「人工经验操作带来的一系列问题」（worldmetals.com.cn）；ABB Genix「捕捉操作员知识」设计目标</div>
+  </div>
+</div>
+
+<div class="callout danger"><b>根因总结：</b>界面繁琐不是「设计得不好」，而是「设计给了错误的人」。系统围绕工程师的建模思维组织，而一线操作工需要的是「告诉我现在该做什么」。这五层根因环环相扣——立场错位导致视觉噪音，孤岛导致手工录入，手工录入导致数据差，数据差导致报警泛滥，报警泛滥+经验不可复制导致系统只服务老师傅。<b>解药不是更好的屏幕，而是换掉交互范式。</b></div>
+
+<!-- ======================== 4. 智能体化方案 ======================== -->
+<h2 class="sec"><span class="no">04</span>智能体（Agent）化改造方案</h2>
+
+<h3 class="sub"><span class="no">4.1</span>目标形态定义</h3>
+
+<div class="panel">
+  <h4>VERO Agent 不是什么 / 是什么</h4>
+  <div class="tbl-wrap"><table class="tb">
+    <tr><th>不是</th><th>是</th></tr>
+    <tr><td>不是另一个 HMI/SCADA 画面</td><td>是坐在现有系统之上的<b>认知层</b>——把数据翻译为行动建议</td></tr>
+    <tr><td>不是直接控制回路的自动驾驶</td><td>是<b>决策辅助</b>——推荐、解释、预警，最终动作由人确认</td></tr>
+    <tr><td>不是通用聊天机器人</td><td>是<b>领域专家</b>——锚定提钒知识包、操作规程、历史炉次的 RAG</td></tr>
+    <tr><td>不是替代操作工</td><td>是<b>放大操作工</b>——让新手拥有老师傅的判断力</td></tr>
+    <tr><td>不是推倒重来</td><td>是<b>渐进叠加</b>——在现有引擎/知识包/界面上生长</td></tr>
+  </table></div>
+</div>
+
+<h3 class="sub"><span class="no">4.2</span>核心能力地图（六大能力）</h3>
+
+<div class="cap-grid">
+  <div class="cap-card">
+    <div class="cc-t">① 自然语言交互（NLP Interface）</div>
+    <div class="cc-b">操作工用自然语言提问/下指令：<b>「这炉 Si 0.26，怎么吹？」</b>→ Agent 调用机理引擎计算并返回行动建议。语音输入+文字输出（车间噪音环境），支持方言识别。对标：Siemens Copilot for Operations（报错翻译→处置建议）、ABB Genix APM Copilot（自然语言查工况）。</div>
+  </div>
+  <div class="cap-card">
+    <div class="cc-t">② 工艺参数智能推荐（Recommendation Engine）</div>
+    <div class="cc-b">已有：配吃量+品位预测+枪位推荐（v0.8）。扩展：<b>氧量/供氧时间/冷却剂配比/终点温度</b>的全参数推荐链，每次推荐附带「为什么」（知识包溯源+相似炉次判例+置信度）。推荐逻辑=机理引擎（确定性）+ 历史数据回归（统计修正），不依赖 LLM 幻觉。</div>
+  </div>
+  <div class="cap-card">
+    <div class="cc-t">③ 异常预警与根因分析（Anomaly Detection & RCA）</div>
+    <div class="cc-b">已有：黄灯态（Si>0.25/V<0.27）。扩展：多维度异常检测（温度偏差/氧量异常/渣量波动/品位偏离），按 ISA-18.2 设计报警合理化——<b>每条报警必须回答「操作员该做什么、时限多少」</b>。根因分析锚定知识包 CF 冲突登记与历史判例。对标：ABB Genix「哪条线最接近突破限值」。</div>
+  </div>
+  <div class="cap-card">
+    <div class="cc-t">④ 自主决策辅助（Decision Support）</div>
+    <div class="cc-b">在人工确认前提下执行复合决策：<b>「本炉例外，按高硅预案走」</b>→ Agent 自动完成：切换枪位模式 + 调整配吃 + 记录留痕 + 通知工艺台。每一步可解释、可回溯、可撤销。红线：不直接下发设定值到 PLC，动作须经人确认并落审计日志。</div>
+  </div>
+  <div class="cap-card">
+    <div class="cc-t">⑤ 知识固化与传承（Knowledge Capture）</div>
+    <div class="cc-b">老师傅经验（看火焰、看渣、看料）通过<b>语音随手记录 → 结构化 → 可检索</b>的通道沉淀到知识包。交接班时 Agent 自动生成<b>班报摘要</b>（本班炉次/异常/处置/待跟进）。对标：Siemens Erlangen「交接班效率提升」、ABB Genix「捕捉操作员知识」。</div>
+  </div>
+  <div class="cap-card">
+    <div class="cc-t">⑥ 持续学习与漂移检测（Learning Loop）</div>
+    <div class="cc-b">每炉实绩回流：<b>预测品位 vs 实际品位 → 误差 → RLS/梯度下降修正</b>。漂移检测：连续 N 炉 pred_err 超 3σ → 触发口径复审。这是 P3 学习闭环的核心，也是 VERO 从「静态专家系统」进化为「活智能体」的关键。</div>
+  </div>
+</div>
+
+<h3 class="sub"><span class="no">4.3</span>对话式交互替代传统操作的设计</h3>
+
+<p class="body">核心原则：<b>不是用对话框替换所有界面，而是用对话替代「找功能、填表单、翻菜单」的高摩擦操作，保留仪表盘用于「持续监控」的低摩擦场景。</b></p>
+
+<div class="tbl-wrap"><table class="tb">
+  <tr><th>传统操作（高摩擦）</th><th>对话式替代（低摩擦）</th><th>底层调用</th><th>降门槛效果</th></tr>
+  <tr><td>在 HMI 上从 5×5 Pattern 矩阵中选择枪位/流量配方</td><td>「这炉 Si 0.26，枪位怎么走？」→「高硅全程 900mm，已标记例外」</td><td>lance_profile.py + 知识包</td><td>消除工艺知识门槛</td></tr>
+  <tr><td>跨 3 个系统查上炉实绩 + 手工计算配吃量</td><td>「上炉精渣多少？这炉该配多少球团？」→「上炉 14.59%，本炉建议 3.53t」</td><td>runModel + 相似炉次判例</td><td>消除跨屏核对</td></tr>
+  <tr><td>在 MES 中 7 步点击完成报工</td><td>「确认照单执行」→ 一键/语音确认，自动留痕</td><td>confirmBtn + registerHeat</td><td>7 步→1 步</td></tr>
+  <tr><td>翻阅操作规程 PDF 找高硅预案</td><td>「Si 超了怎么办？」→「按高硅预案：全程低枪位，已为你标记例外流程」</td><td>RAG 锚定操作规程</td><td>消除文档检索负担</td></tr>
+  <tr><td>交接班时口头/纸质交接，信息丢失</td><td>「生成本班摘要」→ 自动汇总炉次/异常/处置/待跟进</td><td>opLog + LLM 摘要</td><td>交接零遗漏</td></tr>
+  <tr><td>异常时满屏报警，不知先处理哪个</td><td>「现在什么情况？」→「品位预测 13.2% 破限，原因是 Si 0.28% 超标，建议…」</td><td>异常检测 + 根因分析</td><td>报警→行动指南</td></tr>
+</table></div>
+
+<h3 class="sub"><span class="no">4.4</span>对话式交互示例（炉长视角）</h3>
+
+<div class="chat">
+  <div class="msg user"><div class="who">炉长</div><div class="txt">这炉化验单出来了，Si 0.215，V 0.284，温度 1300，80 吨。</div></div>
+  <div class="msg agent"><div class="who">VERO</div><div class="txt">收到，炉次 <b>H20260927-003</b>。Si 0.215% 超过高硅阈值 0.20%，属于<b>高硅炉</b>。<br>建议：配吃 <b>3.53 t</b> 球团，预测品位 <b>13.30%</b>。<br>枪位：<b>全程低枪位 900mm</b>（高硅保钒），供氧 5.5 min。<br>品位低于预算目标 14.0%，建议对照相似炉次（第 2/5/12 日实绩 13.21–13.64%）确认是否按例外流程处理。要我标记例外吗？</div></div>
+  <div class="msg user"><div class="who">炉长</div><div class="txt">标例外吧，按高硅预案走。</div></div>
+  <div class="msg agent"><div class="who">VERO</div><div class="txt">已标记。炉次 <b>H20260927-003</b> 例外流程已记录：<br>· 枪位模式：全程 900mm<br>· 配吃：3.53t 球团<br>· 留痕已写入，工艺台可查<br>· 品位预警已通知工艺专家<br>确认照单执行？</div></div>
+  <div class="msg user"><div class="who">炉长</div><div class="txt">确认。</div></div>
+  <div class="msg agent"><div class="who">VERO</div><div class="txt">已确认留痕。本炉数据将用于模型自学习。下班前我会生成本班摘要。</div></div>
+</div>
+
+<p class="body">对比传统操作：同一炉次的配吃决策需要在 L2 HMI 上查 Pattern 表 → 在 MES 中录入炉次 → 在 Excel 中算配吃 → 翻 PDF 找预案 → 电话通知工艺 → 纸质记录例外。<b>对话式交互将 6 步跨系统操作压缩为 4 轮自然语言对话。</b></p>
+
+<h3 class="sub"><span class="no">4.5</span>分阶段实施路径（18 个月）</h3>
+
+<div class="timeline">
+  <div class="tl-item p1">
+    <div class="tl-h"><span class="ph">P1</span>对话层叠加（0–6 个月）——「能听懂」</div>
+    <div class="tl-t">目标：在现有 v0.8 界面上叠加对话入口，不动引擎和知识包</div>
+    <div class="tl-b">
+      <b>技术方案</b>：接入 DeepSeek API（已在 mcp.json 配置）作为 NLU/NLG 层；前端加对话面板（chat widget）；意图识别路由到已有函数（readInput/runModel/lanceProfile/pushLog）；RAG 锚定知识包 YAML + 操作规程 PDF（向量检索）。<br>
+      <b>交付物</b>：①对话式开吹条件录入（「Si 0.215, V 0.284, 80 吨, 1300 度」→ 自动填充）②对话式配吃/枪位查询（「怎么吹？」→ 调引擎返回建议）③对话式确认留痕（「确认」→ 一键执行）④交接班摘要自动生成<br>
+      <b>验收标准</b>：炉长用对话完成一炉完整操作（录入→查询→确认），步骤数 ≤传统操作的 50%；意图识别准确率 ≥90%（20 条预定义意图）
+    </div>
+  </div>
+  <div class="tl-item p2">
+    <div class="tl-h"><span class="ph">P2</span>感知闭环（6–12 个月）——「能看懂」</div>
+    <div class="tl-t">目标：接入外部数据源（VERO_API 已预留），实现异常预警与根因分析</div>
+    <div class="tl-b">
+      <b>技术方案</b>：①MES/L2/化验室数据经 VERO_API.applyHeat 自动推送（替代手动录入）②多维度异常检测（温度/氧量/渣量/品位偏差）③报警合理化（按 ISA-18.2 设计，每条报警附「做什么+时限」）④根因分析 RAG（锚定 CF 冲突登记+历史判例+操作规程）⑤炉后台账批量导入（判例库扩充至全量炉次）<br>
+      <b>交付物</b>：①外部数据自动录入链路（数据源徽标自动切换）②黄灯态升级为多维度预警（含根因+建议动作）③报警自查仪表盘（150 条/天基准自检）④判例库扩充至 100+ 炉次<br>
+      <b>验收标准</b>：数据自动采集率 ≥80%；报警量降至基准 2 倍以内；异常响应时间（从发生到操作工收到建议）≤30 秒
+    </div>
+  </div>
+  <div class="tl-item p3">
+    <div class="tl-h"><span class="ph">P3</span>自主辅助（12–18 个月）——「能帮忙」</div>
+    <div class="tl-t">目标：自学习闭环 + 复合决策辅助，从「被动回答」到「主动建议」</div>
+    <div class="tl-b">
+      <b>技术方案</b>：①RLS/梯度下降误差回流（每炉实绩 vs 预测 → 自动修正）②漂移检测（连续 N 炉 pred_err 超 3σ → 触发口径复审）③复合决策（「按高硅预案走」→ 自动完成多步操作）④知识固化（语音随手记录 → 结构化 → 可检索）⑤工艺台 Agent 化（仲裁建议自动生成+证据链）<br>
+      <b>交付物</b>：①自学习闭环上线（模型参数自动标定）②漂移预警（口径复审触发器）③复合决策辅助（一键执行多步预案）④经验库（≥50 条结构化经验）<br>
+      <b>验收标准</b>：品位预测 RMSE 较 P1 基线降低 ≥15%；例外率（黄灯触发频次）环比下降；新手操作工独立完成整炉操作（无需老师傅指导）
+    </div>
+  </div>
+</div>
+
+<h3 class="sub"><span class="no">4.6</span>智能体技术架构</h3>
+
+<div class="arch">┌─────────────────────────────────────────────────────────┐
+│                    <b>对话层（NLU/NLG）</b>                   │
+│   DeepSeek API · 意图识别 · 语音输入 · 摘要生成          │
+│   <i>「这炉怎么吹？」「确认照单执行」「生成本班摘要」</i>          │
+├─────────────────────────────────────────────────────────┤
+│                    <b>认知层（RAG + 推理）</b>                │
+│   知识包向量检索（industry/jianlong/pangang YAML）       │
+│   操作规程 PDF 检索 · 历史炉次判例检索                   │
+│   根因分析（CF 冲突登记 + 相似炉次 + 机理推导）           │
+├─────────────────────────────────────────────────────────┤
+│                    <b>引擎层（确定性计算）</b>                │
+│   runModel（四大平衡）· initial_charge（L1 查表）        │
+│   lance_profile（枪位推荐）· kinetics（动力学仿真）       │
+│   diagnose（质量诊断）· 自学习（RLS/漂移检测）            │
+├─────────────────────────────────────────────────────────┤
+│                    <b>数据层（采集 + 留痕）</b>                │
+│   VERO_API.applyHeat（外部推送）· localStorage（炉次台账） │
+│   opLog（操作留痕）· heatReg（炉次登记）· 判例库（HEATS）  │
+├─────────────────────────────────────────────────────────┤
+│                    <b>界面层（保留仪表盘）</b>                │
+│   v0.8 炉长驾驶舱 · 工艺工作台 · 数据治理台              │
+│   <u>对话面板叠加（新）</u> · 量规/时间轴/表格（保留）         │
+└─────────────────────────────────────────────────────────┘
+  <i>数据流向：现场 → 数据层 → 引擎层 → 认知层 → 对话层 → 操作工</i>
+  <i>红线：对话层/认知层 不直接下发设定值到 PLC（只决策不执行）</i></div>
+
+<div class="callout ok"><b>架构核心原则：</b>LLM 坐在引擎之上做「翻译器+检索器+建议器」，引擎做确定性计算，知识包做口径锚定。LLM 不做数值计算（防幻觉），所有推荐值由机理引擎产出、LLM 只做自然语言包装。这与 Siemens/ABB/AVEVA 的工业 Copilot 架构完全一致，且与 VERO「只决策不执行」的红线天然兼容。</div>
+
+<h3 class="sub"><span class="no">4.7</span>风险与红线</h3>
+
+<div class="tbl-wrap"><table class="tb">
+  <tr><th>风险</th><th>等级</th><th>缓解措施</th></tr>
+  <tr><td>LLM 幻觉导致错误推荐</td><td><span class="badge b-r">高</span></td><td>所有数值由机理引擎产出，LLM 只做包装；推荐值附带置信度+溯源；关键推荐需人工确认</td></tr>
+  <tr><td>对话误解意图 → 错误操作</td><td><span class="badge b-r">高</span></td><td>意图识别限 20 条预定义意图（非开放式）；关键操作（确认/例外）需二次确认；审计日志全量留痕</td></tr>
+  <tr><td>OT/IT 边界安全</td><td><span class="badge b-y">中</span></td><td>按 IEC 62443 分区；DMZ 隔离；外部数据只进不出；DeepSeek API 走代理不暴露内网</td></tr>
+  <tr><td>操作工抵触「被 AI 替代」</td><td><span class="badge b-y">中</span></td><td>定位为「放大操作工」而非替代；保留仪表盘作为后备；知识固化让老师傅经验被尊重而非被取代</td></tr>
+  <tr><td>数据质量不足 → 自学习退化</td><td><span class="badge b-y">中</span></td><td>P2 先做数据采集率 ≥80% 再上 P3 自学习；漂移检测 3σ 门限防止错误数据污染模型</td></tr>
+  <tr><td>数据主权（化验/工艺机密）</td><td><span class="badge b-y">中</span></td><td>LLM 调用脱敏（不传原始化验值，只传分档标签）；或参照 Siemens Erlangen 模式全本地边缘部署</td></tr>
+</table></div>
+
+<!-- ======================== 5. 验证指标 ======================== -->
+<h2 class="sec"><span class="no">05</span>验证指标与验收标准</h2>
+
+<div class="kpi-row">
+  <div class="kpi"><div class="kv">≤50%</div><div class="kl">对话完成一炉操作的步骤数 vs 传统操作</div></div>
+  <div class="kpi"><div class="kv">≥90%</div><div class="kl">意图识别准确率（20 条预定义意图）</div></div>
+  <div class="kpi"><div class="kv">≥80%</div><div class="kl">数据自动采集率（P2 目标）</div></div>
+  <div class="kpi"><div class="kv">≤30s</div><div class="kl">异常发生 → 操作工收到建议的响应时间</div></div>
+  <div class="kpi"><div class="kv">≥15%</div><div class="kl">品位预测 RMSE 降低（P3 自学习效果）</div></div>
+  <div class="kpi"><div class="kv">0</div><div class="kl">LLM 直接下发设定值到 PLC 的次数（红线）</div></div>
+</div>
+
+<!-- ======================== 6. 参考来源 ======================== -->
+<h2 class="sec"><span class="no">06</span>主要参考来源</h2>
+
+<h3 class="sub"><span class="no">6.1</span>国内来源</h3>
+<ul class="body">
+  <li>星云智联钒钛产线五大问题：csteelnews.cn/xwzx/znzz/202207/t20220728_65717.html</li>
+  <li>承德钒钛提钒全自动系统：worldmetals.com.cn/viscms/xingyeyaowen3686/265831.jhtml；thj.mysteel.com/a/24111409</li>
+  <li>南钢×华为「元冶」大模型：news.cn/20260625/0bf0e1eca4b34fc0934fa08cbb02681b/c.html</li>
+  <li>攀钢×阿里 ET 工业大脑：developer.aliyun.com/article/780659</li>
+  <li>承德钒钛排产员跨屏核对：csteelnews.com/xwzx/znzz/202502/t20250219_97284.html</li>
+  <li>社科院工经所钢铁数智化：gjs.cass.cn/kydt/kydt_kycg/202609/t20260907_6066229.shtml</li>
+  <li>宝信 MES：ruanfujia.com/post/11696776/；中冶赛迪水土云：cisdiinfo.com</li>
+  <li>德胜钒钛全员信息化：aciml.org.cn/nd.jsp?id=1324</li>
+  <li>湛江转炉 L2 操作模式：bbs.plcjs.com/thread-604337-1-1.html</li>
+</ul>
+
+<h3 class="sub"><span class="no">6.2</span>国外来源</h3>
+<ul class="body">
+  <li>Primetals Kardemir 统一 L2：steelradar.com/en/haber/primetals-technologies-to-modernize-kardemirs-melting-plant/</li>
+  <li>ABB Genix Copilot：abb.com/global/en/company/innovation/news/generative-ai-in-apm</li>
+  <li>Siemens Industrial Copilot（thyssenkrupp）：automationworld.com/factory/digital-transformation/news/55248289</li>
+  <li>AVEVA Industrial AI Assistant：aveva.com/en/about/news/press-releases/2024</li>
+  <li>Metso Process Advisor/Roaster Optimizer：metso.com/portfolio/process-advisor/</li>
+  <li>PSImetals：psimetals.com</li>
+  <li>ISA-101 高性能 HMI：processcontrolguide.com/isa-101-hmi-design；plcprogramming.io/blog/high-performance-hmi-isa-101</li>
+  <li>EEMUA 191 报警基准：hmilibrary.com/learn/alarm-management</li>
+  <li>Outokumpu 订阅制 L2：gulfoilandgas.com/webpro1/main/mainnews.asp?id=1064012</li>
+  <li>EVRAZ 数字转型：mining-media.ru/en/newsen/15971</li>
+  <li>全球钒产量分布：investingnews.com/vanadium-investing/vanadium-producing-countries/</li>
+</ul>
+
+<footer>
+  <div>VERO 智能体化改造规划报告 v1.0 · 2026-09-27 · 基于 VAgent 代码库全量调研 + 国内外 20+ 工业软件系统调研</div>
+  <div style="margin-top:4px">内部资料 · 请勿外传 · 数据来源均标注于文末</div>
+</footer>
+
+</div>
+</body>
+</html>

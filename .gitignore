@@ -1,0 +1,22 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+
+# 运行时数据库 / 日志
+*.db
+*.sqlite3
+*.log
+
+# Node
+node_modules/
+.next/
+out/
+
+# 工作区会话数据
+.workbuddy/
+
+# macOS
+.DS_Store

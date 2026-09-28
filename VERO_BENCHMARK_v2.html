@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>中铝数为「数字班组」借鉴评估 · VERO 多角色头脑风暴 v2</title>
+<style>
+:root{
+  --bg:#0d1117; --panel:#161b22; --panel2:#1c2430; --line:#2b3440;
+  --tx:#e6edf3; --tx2:#9aa7b4; --tx3:#6e7c8c;
+  --acc:#4a9eff; --ok:#3fb950; --warn:#d29922; --bad:#f85149; --pur:#bc8cff; --cy:#39c5cf;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--tx);
+ font:15px/1.75 -apple-system,"PingFang SC","Microsoft YaHei",sans-serif;}
+.wrap{max-width:1180px;margin:0 auto;padding:40px 28px 80px}
+h1{font-size:27px;margin:0 0 6px;letter-spacing:.5px}
+h2{font-size:20px;margin:44px 0 14px;padding-left:12px;border-left:4px solid var(--acc)}
+h3{font-size:16px;margin:26px 0 10px;color:var(--cy)}
+.meta{color:var(--tx3);font-size:13px;margin-bottom:26px;line-height:1.9}
+.lead{background:var(--panel);border:1px solid var(--line);border-left:4px solid var(--acc);
+ border-radius:8px;padding:18px 22px;margin:18px 0 8px}
+.lead b{color:var(--acc)}
+table{width:100%;border-collapse:collapse;margin:12px 0 18px;font-size:14px}
+th,td{border:1px solid var(--line);padding:9px 12px;text-align:left;vertical-align:top}
+th{background:var(--panel2);color:var(--tx2);font-weight:600;white-space:nowrap}
+tr:nth-child(even) td{background:#131920}
+.tag{display:inline-block;padding:1px 8px;border-radius:10px;font-size:12px;
+ border:1px solid currentColor;white-space:nowrap}
+.t-ok{color:var(--ok)} .t-warn{color:var(--warn)} .t-bad{color:var(--bad)}
+.t-acc{color:var(--acc)} .t-pur{color:var(--pur)}
+.role{border:1px solid var(--line);border-radius:8px;padding:14px 18px;margin:12px 0;background:var(--panel)}
+.role .hd{font-weight:700;font-size:15px;margin-bottom:4px}
+.role .sub{color:var(--tx3);font-size:12.5px;margin-bottom:8px}
+.role .score{float:right;font-size:13px}
+.clash{border:1px solid var(--line);border-radius:8px;margin:14px 0;overflow:hidden}
+.clash .ch{background:var(--panel2);padding:10px 16px;font-weight:700;font-size:15px}
+.clash .cb{padding:12px 18px;font-size:14px}
+.vs{color:var(--warn);font-weight:600}
+.conv{background:#12261a;border-left:3px solid var(--ok);padding:10px 14px;margin-top:10px;border-radius:0 6px 6px 0}
+.conv b{color:var(--ok)}
+ul{margin:8px 0 8px 20px;padding:0} li{margin:5px 0}
+code{background:#1f2733;padding:1px 6px;border-radius:4px;font-size:13px;color:var(--cy)}
+.foot{margin-top:50px;padding-top:16px;border-top:1px solid var(--line);color:var(--tx3);font-size:12.5px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media(max-width:820px){.grid{grid-template-columns:1fr}}
+.box{border:1px solid var(--line);border-radius:8px;padding:14px 18px;background:var(--panel)}
+.kv{color:var(--tx2)}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<h1>中铝数为「数字班组」借鉴评估 · VERO 多角色头脑风暴 v2</h1>
+<div class="meta">
+对标文献：《工业级数字员工上岗，跑出配料熔炼生产"加速度"！》（公众号：中铝数为，2026-09-27，铜冶炼）<br>
+评审方式：7 角色独立评审 → 观点碰撞 → 收敛汇总 ｜ 证据基准：本仓库代码与文档实跑核查（非转述）<br>
+生成日期：2026-09-28
+</div>
+
+<div class="lead">
+<b>结论先行：</b>中铝数的文章<b>方法论骨架值得借鉴，但 VERO 已吸收了其中八成</b>——真正剩下的价值不在"学什么"，而在"学的时候留下了什么内伤"。本轮实跑核查发现一个此前未被记录的结构性问题：VERO 借鉴中铝「岗位能力包 / Skill 技能化」时，<b>把包装做完了，把内核漏了</b>——技能注册表 <code>SKILL_REGISTRY</code> 已注册 9 个技能，但被 <code>docs/ENGINE_SINGLE_SOURCE.md</code> 定为"唯一计算权威"的 <code>pangang_reference.py</code>（四大平衡，75/75 黄金回归）<b>根本不在注册表内</b>，导致系统实际并行存在三条互不一致的计算路径。文章全文最危险的一句"联动更新全部控制参数"，VERO 用代码级红线挡住了（<code>ProductionControlWriter</code> 三个写方法全部 <code>raise NotImplementedError("SAFETY LOCK")</code>）——这是 VERO 对这篇文章最强的差异化，应当写进所有对外材料。
+</div>
+
+<h2>01 · 文章核心内容解析</h2>
+<table>
+<tr><th style="width:15%">维度</th><th>文章主张</th><th style="width:32%">本次核查判断</th></tr>
+<tr><td>痛点定义</td><td>配料/熔炼/化验系统割裂（库存、配料、DCS、化验各管一段），系统不主动理解生产正在发生什么；人在多系统间切换；经验固化为系统功能需走完整开发流程</td><td>真实，且 VERO 同构。但"切换"是皮，<b>"数据对不上"才是骨</b></td></tr>
+<tr><td>产品形态</td><td>「配料熔炼数字班组」= 配料技术员 + 熔炼主控 + 化验员等<b>多位数字员工</b>协同，非单一计算工具</td><td><span class="tag t-warn">人格化包装</span> 销售友好，工程上不应进入计算链路</td></tr>
+<tr><td>方法论</td><td>四层架构；岗位能力拆成可复用 <b>Skill 技能 + 知识库资产</b>；岗位职责/计算工具/工艺边界封装为可迭代「岗位能力包」，<b>"先拆后组"</b></td><td><span class="tag t-ok">全文最有价值部分</span> VERO 已落地 <code>SKILL_REGISTRY</code>，但存在内核缺失（见 §02）</td></tr>
+<tr><td>任务链</td><td>配料方案→自动校核物料/配比/成分偏差→<b>完整上下文交接</b>熔炼主控→炉料平衡/工艺氧量全套计算→输出控制方案交现场确认</td><td>"上下文交接"技术实现未披露——多智能体失败的第一大原因藏在这里。VERO 已用 <code>HandoffEnvelope</code> 结构化解决</td></tr>
+<tr><td>化验闭环</td><td>化验员数字员工抓取冰铜/炉渣化验结果→比对目标分析偏差→推送结论→主控生成调参方案并<b>重新核算整套工艺参数</b></td><td><span class="tag t-bad">伪闭环风险</span> 化验滞后 40min–2h + 取样代表性问题，只能做炉次间低频校准</td></tr>
+<tr><td>异常联动</td><td>库存不足→自动剔除受限物料→重新测算最优配料→<b>同步联动更新熔炼全部控制参数</b></td><td><span class="tag t-ok">真亮点</span>事件驱动重算技术含量最高；<span class="tag t-bad">但"更新控制参数"是事故种子</span></td></tr>
+<tr><td>人机边界</td><td>数据读取、专业运算、跨岗位交接、反复核算交数字员工；关键决策、最终确认在现场人员手中</td><td>原则正确，但"确认前给人看什么证据"未展示——流于形式风险大</td></tr>
+<tr><td>迭代模式</td><td>「Skill 经验小飞轮 + 工业系统大飞轮」双飞轮</td><td><span class="tag t-warn">无四件套即口号</span> 缺评测集/回放/留痕/影子模式支撑时不成立</td></tr>
+<tr><td>愿景</td><td>AI 不替代控制系统；「确定性内环 + 智能协同外环」</td><td>与 VERO 红线同构；但 VERO 是<b>可审计的工程契约</b>，此文是架构愿景</td></tr>
+<tr><td>证据强度</td><td colspan="2">全文<b>无量化指标、无界面证据、无验收标准</b>，属纯叙事稿；配演示视频但未展示界面细节</td></tr>
+</table>
+
+<h2>02 · VERO 现状对照：哪些已吸收，哪些是空档（实跑核查）</h2>
+<p class="kv">说明：本节结论来自对本仓库代码与文档的实际运行与检索，非转述既有报告。</p>
+
+<table>
+<tr><th style="width:22%">文章的借鉴点</th><th style="width:12%">VERO 落地状态</th><th>证据</th></tr>
+<tr><td>岗位能力包 / Skill 技能化</td><td><span class="tag t-warn">部分落地·有内伤</span></td><td><code>backend/app/tools/__init__.py</code> 已建 <code>SKILL_REGISTRY</code>，注册 9 个技能；<b>但 <code>pangang_reference</code> 零引用，权威引擎未入包</b></td></tr>
+<tr><td>结构化上下文交接</td><td><span class="tag t-warn">已定义·未接入</span></td><td><code>schemas.py:217 HandoffEnvelope</code> 字段完备；<code>core.py:97 append_handoff()</code> 已封装，但<b>全项目零调用点</b>——节点仍回自由 dict，信封是"空转的漂亮契约"</td></tr>
+<tr><td>事件驱动重算</td><td><span class="tag t-warn">已写·未接线</span></td><td><code>events.py</code> 8 个事件枚举 + <code>recompute_on_constraint_change()</code>，实测返回 <code>requires_human_confirm=True</code>、<code>control_write=forbidden</code>；<b>但全项目零 import，属孤儿模块</b></td></tr>
+<tr><td>不碰控制回路</td><td><span class="tag t-ok">代码级红线</span></td><td><code>mode_control.py:125 ProductionControlWriter</code> 的 set_lance_height / set_oxygen_flow / add_coolant 全部 <code>raise NotImplementedError("SAFETY LOCK")</code></td></tr>
+<tr><td>推翻留痕与仲裁</td><td><span class="tag t-warn">前端已建·服务端断链</span></td><td><code>schemas.py:242 OverturnRecord</code> + <code>db/models.py</code> 表结构 + v0.9 推翻按钮齐备；但 <b><code>ADVICE_OVER_TURNED</code> 全项目仅被定义、从未 <code>publish()</code></b>，<code>main.py</code> 无写入端点——推翻只落在前端 localStorage，<b>未进飞轮</b></td></tr>
+<tr><td>人工确认门禁</td><td><span class="tag t-bad">有契约·UI 未落实</span></td><td>后端 <code>requires_human_confirm</code> 齐全；但 v0.9 <code>confirmBtn</code>（1380–1391 行）<b>一键即留痕</b>，无证据展开门槛，存在"橡皮图章"温床</td></tr>
+<tr><td>KPI 与验收</td><td><span class="tag t-ok">已定案</span></td><td><code>VERO_ACCEPTANCE_WHITEBOOK.html</code> §04 明确<b>采纳率从 KPI 永久删除</b>；双轨 KPI + 4 周基线期</td></tr>
+<tr><td>经验确权（默会知识）</td><td><span class="tag t-ok">已落地</span></td><td><code>docs/EXPERIENCE_CAPTURE.md</code>：四类默会知识、三通道采集、署名+采纳记账+月度光荣榜、五步制入包与"对赌"校验</td></tr>
+<tr><td>引擎单一真相源</td><td><span class="tag t-ok">已定案</span></td><td><code>docs/ENGINE_SINGLE_SOURCE.md</code>；<code>golden_cases.json</code> + <code>test_engine_parity.py</code> <b>实跑 4 passed</b></td></tr>
+<tr><td>"双飞轮"话术</td><td><span class="tag t-bad">空档</span></td><td><code>VERO_NARRATIVE_KIT.html</code> 中「双飞轮」命中 <b>0</b>，「确定性内环 / 协同外环」命中 <b>0</b></td></tr>
+<tr><td>回放（飞轮要件）</td><td><span class="tag t-bad">空档</span></td><td>验收白皮书中「回放」命中 <b>0</b>；回放能力目前只存在于 MVP 前端 JS 与 <code>arbitration_demo.py</code>，<b>无服务端 API</b></td></tr>
+<tr><td>工具 schema 一致性</td><td><span class="tag t-bad">三处分裂</span></td><td>实测：<code>SKILL_REGISTRY</code> <b>9</b> 个 / <code>mcp.tools_server._tool_schemas()</code> <b>6</b> 个 / <code>router.fallback_tool_schemas()</code> <b>6</b> 个 —— 新增技能需同步改三处，漏一处即静默降级</td></tr>
+<tr><td>DH_V 仲裁入参</td><td><span class="tag t-warn">潜伏缺陷</span></td><td><code>main.py:358 _run_pangang_case</code> 通过<b>覆写模块全局 <code>DH_V</code></b> 实现 2777/15000 双案。当前端点内无 <code>await</code>、同步调用阻塞事件循环，<b>暂不会串值</b>；但一旦端点内出现任一 <code>await</code> 或改线程池执行，并发请求即互相污染（本项目自建，须修）</td></tr>
+<tr><td>会话持久化</td><td><span class="tag t-bad">内存态</span></td><td><code>agents/core.py</code> 用 <code>MemorySaver</code>：重启即丢全部会话与待确认 interrupt，炉次链路不可恢复</td></tr>
+<tr><td>数据库迁移</td><td><span class="tag t-warn">手写 ALTER</span></td><td><code>db/models.py:12–47</code> 手写 ALTER SQL，无迁移工具保障，多环境部署易结构漂移</td></tr>
+</table>
+
+<div class="lead" style="border-left-color:var(--bad)">
+<b>本轮最重要的新发现 —— 三条计算路径并存，单一真相源在技能层被架空：</b><br>
+① <code>/api/pangang/charge</code> → <code>pangang_reference.run_pangang_model</code>（权威，黄金用例球团 3529.6 kg、V₂O₅ 13.299%）<br>
+② <code>SKILL_REGISTRY.calculate_initial_charge</code>（事件重算走此路）→ 实测输出 <code>{钒渣铁 1.56, 氧化铁皮 0.47, 球返/球团 1.09}</code>，与 ① <b>口径不同、结果不同</b><br>
+③ MVP v0.9 前端 <code>runModel()</code>（已声明冻结，<b>但页面至今仍在调用</b>，第 1385 行）<br>
+而 <code>main.py:326</code> 直接 <code>from app.tools.pangang_reference import ...</code>，<b>绕开了技能注册表</b>。结论：借鉴中铝"Skill 化"时包装完成度 100%，但唯一权威引擎未入包——这正是"抄其形、未守其神"的具体部位。
+</div>
+
+<h2>03 · 七角色独立评审</h2>
+
+<div class="role">
+<div class="hd">行业专家（铜/钒冶炼 25 年，现任总工）<span class="score"><span class="tag t-warn">可行性 5.5/10</span></span></div>
+<div class="sub">立场：任务链骨架对，生产细节空心化</div>
+<ul>
+<li><b>化验闭环是伪闭环</b>：取样滞后 40min–2h、取样代表性存疑，"炉子里的物料早就不是那批物料了"，属 garbage in, gospel out。</li>
+<li><b>"联动更新全部控制参数"最危险</b>：跨设备分布式写无事务，写一半失败则炉子处于未定义参数组合，故障半径最大化。</li>
+<li>对提钒场景：<b>能搬的是任务链与岗位拆分，必须改的是化验闭环（降格为炉次间低频校准），是陷阱的是"实时闭环"叙事</b>。</li>
+<li><b>VERO 最该优先做的一件事</b>：停止对拍 Excel，转向"命中实绩"。16 炉回放实测——粗渣 RMSE 1.466（2777）vs 0.999（15000），偏差 +1.147pp / +0.554pp；精渣 RMSE 2.178 vs 1.679，偏差 +1.700pp / +1.101pp。<b>两套假设均系统性偏高</b>，说明 75/75 黄金回归证明的是"复现专家表"，<b>不是"命中实绩"</b>。</li>
+</ul>
+</div>
+
+<div class="role">
+<div class="hd">AI 专家（LLM / 多智能体系统）<span class="score"><span class="tag t-acc">技术 7/10</span></span></div>
+<div class="sub">立场：数字班组本质是带 LLM 壳的工作流引擎——而这恰恰是对的</div>
+<ul>
+<li><b>把"多数字员工"拆成多个自主 Agent 做序列化交接是工业反模式（4/10）</b>：单步失败率 p=2% 时，6 步链端到端失败 <b>11.4%</b>；p=5% 时达 <b>26.5%</b>。每次自然语言交接 = 一次有损压缩 + 一次幻觉注入点。<b>单编排器 + 确定性工具集（8/10）</b>才是工业形态。</li>
+<li>失败模式集中在三类：<b>交接有损</b>（自然语言摘要掉关键约束）、<b>错误级联</b>（上游错值被下游当事实）、<b>责任不可归属</b>（链条上无人对最终结果负责）。</li>
+<li><b>VERO 现状打脸</b>：<code>HandoffEnvelope</code> 定义完备，但 <code>append_handoff()</code> <b>零调用</b>——契约存在却没接进链路，等于没有。</li>
+<li><b>已发现的具体缺陷</b>：<code>main.py:358</code> 用覆写模块全局 <code>DH_V</code> 做双案仲裁（并发下会串值）；<code>agents/team.py:306</code> 硬编码"安全"数值兜底，属<b>失败关闭</b>式降级，会把错误伪装成正常输出。</li>
+<li><b>双飞轮成立的工程前提</b>：评测集 + 回放 + 留痕 + 影子模式四件套；缺一件飞轮即空转。飞轮唯一真燃料是<b>留痕中的人工 diff（推翻记录）</b>——而它目前没进服务端。</li>
+</ul>
+</div>
+
+<div class="role">
+<div class="hd">产品经理（冶金 B 端 10 年）<span class="score"><span class="tag t-warn">中铝叙事 7.5 / VERO 叙事 4</span></span></div>
+<div class="sub">立场：叙事是生死题，但要分层使用</div>
+<ul>
+<li><b>最大错配</b>：对外是"行业级提钒产品"叙事，界面却是"单炉计算工具"，中间没有任何过渡。国资客户听不懂"行业级产品"的技术逻辑，只认工位价值。</li>
+<li><b>"数字员工"叙事必须跟进但只用于对外</b>——它花的是厂长的人工替代预算，工具定位抢的是信息化科逐年萎缩的钱包。</li>
+<li><b>定位语</b>：不做黑箱自动驾驶，做总工的机理副驾。</li>
+<li><b>30/90 天三件事</b>：①《数字员工可验收标准》白皮书抢验收定义权；②补齐"双飞轮/确定性内环"话术（当前叙事包命中 0）；③演示视频补"验收 KPI"收尾，不留纯演示印象。</li>
+</ul>
+</div>
+
+<div class="role">
+<div class="hd">架构师（工业软件架构 15 年）<span class="score"><span class="tag t-warn">零件 8 / 整车 4</span></span></div>
+<div class="sub">立场：零件齐全，但整车没跑起来——"联动"没有可运行底座</div>
+<ul>
+<li><b>致命问题</b>：<code>events.py</code> 是<b>孤儿模块</b>（全项目零 import），前端未桥接后端（v0.9 中 <code>fetch</code> 命中 0）。所谓"联动更新全部控制参数"在 VERO 侧<b>没有任何可运行底座</b>——写过了，但没接线。</li>
+<li><b>"联动更新控制参数"是事故种子</b>：一条脏库存数据获得改变工艺设定的权限。VERO 必须写死红线：<code>IControlSignalWriter</code> 永不提供真实 DCS 实现（现状符合），写路径上必须有带电的人类。</li>
+<li><b>必须补的两块</b>：① 服务端<b>回放 API</b>（当前回放只在前端 JS，无法进评测集与飞轮）；② <b>影子模式</b>（只读真实数据、不触达操作）。</li>
+<li>交接协议需补<b>事件枚举 + 幂等键 + 事务边界</b>，否则"重算"无法保证可回放。</li>
+</ul>
+</div>
+
+<div class="role">
+<div class="hd">开发工程师（VERO 全栈主力）<span class="score"><span class="tag t-acc">落地难度 7/10</span></span></div>
+<div class="sub">立场：工具层是半成品，先接线再谈智能</div>
+<ul>
+<li><b>工具 schema 三处分裂（实测）</b>：<code>SKILL_REGISTRY</code> 9 / <code>mcp.tools_server</code> 6 / <code>router.FALLBACK</code> 6。新增技能要改三处，漏一处静默降级——<b>应改为单一注册表派生</b>（最小实现 3–4 人日）。</li>
+<li><b>推翻留痕是断的</b>：<code>OverturnRecord</code> 表结构与 v0.9 按钮都有，但 <code>main.py</code> 无写入端点、<code>ADVICE_OVER_TURNED</code> 从未 publish，推翻只落 localStorage——<b>飞轮没有燃料</b>。补通约 5 人日。</li>
+<li><b>好消息</b>：v0.9 桥接后端<b>只需 0.5 人日</b>——直接复用 <code>v0.8_bridged.html:1210–1290</code> 的 IIFE 追加即可，不必重写。</li>
+<li><b>P1 顺序（约 34.5 人日）</b>：LLM 网关 → 意图路由 → 工具执行器 → 校验适配 → CF 口径注入 → 公式外置 → 留痕扩展。前置项：MemorySaver 换 SQLite（<code>core.py:322</code>）、手写 ALTER 换迁移工具。</li>
+<li><b>最大工程风险</b>：v0.9 仍调用已冻结的 <code>runModel</code>；<code>frontend/node_modules</code> 未安装，React 线未启动。</li>
+</ul>
+</div>
+
+<div class="role">
+<div class="hd">用户体验设计师（工业 HMI 专家）<span class="score"><span class="tag t-pur">交互先进性 6/10</span></span></div>
+<div class="sub">立场：拟人化是信任负债，但 v0.9 已有真实的"橡皮图章"缺陷</div>
+<ul>
+<li><b>硬伤（实测）</b>：v0.9 的 <code>confirmBtn</code>（1380–1391 行）点击即 <code>registerHeat()</code> + <code>pushLog()</code>，<b>一键完成留痕且按钮禁用</b>；信任锚 <code>trustAnchor</code> 埋在折叠区。<b>确认动作与证据阅读之间没有强制关系</b>——这正是"橡皮图章"的机制性成因。</li>
+<li><b>改进</b>：确认前把信任锚上移为<b>必经信息块</b>（配吃量 / 品位 / 三元徽标 / 相似炉次 / 规则版本），而非可折叠项。</li>
+<li>三元徽标（来源+时效+完整度）方向正确，需保证<b>存疑沿任务链传染</b>而非只标源头。</li>
+<li><b>永不引入</b>：炉前主对话流（90dB、戴手套、10 秒决策窗口）；拟人化进留痕（"是数字员工建议的"会成为责任稀释标准句式）。</li>
+</ul>
+</div>
+
+<div class="role">
+<div class="hd">一线生产代表（炉长 15 年）<span class="score"><span class="tag t-warn">实用度 6.5/10</span></span></div>
+<div class="sub">立场：名字可以让，责任必须写死</div>
+<ul>
+<li>"数字员工听着像数字监工，它不干活它造活儿"——但<b>名字可以让（立项需要），责任书必须写死"辅助计算工具"</b>。</li>
+<li><b>三条硬要求</b>：① 减动作（不新增录入）；② 真数据（晚到就标晚到，宁要标注过的烂数据，不要假装精确的假数据）；③ 责任写清楚（建议/确认/执行三方留痕不可删）。</li>
+<li><b>不追求奖金，追求"被推翻的权利"制度化 + 数据当裁判</b>：推翻判定由机理引擎自动回溯，不由专家拍板。</li>
+<li><b>六条启用条件</b>：定位写死辅助工具 / 不考核采纳率 / 推翻不设门槛 / 数据徽标可见 / 责任三方留痕 / 一页纸操作卡。</li>
+</ul>
+</div>
+
+<h2>04 · 观点碰撞与收敛</h2>
+
+<div class="clash">
+<div class="ch">冲突 ①　化验闭环：伪闭环 vs 真亮点</div>
+<div class="cb">
+<span class="vs">行业专家</span>：化验闭环是伪闭环——滞后 40min–2h + 取样代表性缺失，"闭环越快错得越快，比不算更危险"。<br>
+<span class="vs">架构师 / AI 专家</span>：但「库存不足→剔除受限物料→事件驱动重算」是全文技术含量最高的一句，<b>事件驱动架构高一个段位</b>，是真闭环。
+<div class="conv"><b>收敛</b>：<b>两条通道分开定价</b>。事件驱动重算（前馈通道）= 真闭环，值得主打；化验闭环（反馈通道）= <b>低频校准环</b>，只做炉次间趋势校核与模型参数慢更新，严禁包装成实时调节。在线判断交给多源信号，化验只做慢变量校正。</div>
+</div>
+</div>
+
+<div class="clash">
+<div class="ch">冲突 ②　拓扑之争：多数字员工 vs 单编排器</div>
+<div class="cb">
+<span class="vs">AI 专家</span>：多角色拆进计算链路 = 三次序列化交接 + 三次幻觉注入点，端到端正确率降到 81%。<br>
+<span class="vs">产品经理</span>：数字员工叙事是生死题——它花的是厂长的人工替代预算，工具定位抢的是信息化科的钱。
+<div class="conv"><b>收敛</b>：<b>叙事归叙事，拓扑归拓扑</b>。人格化只活在交互层/销售层（头像、工牌、演示视频）；计算拓扑保持单编排器 + 确定性工具集。反守为攻：白皮书主动写明"VERO 采用单引擎多视角架构，角色是视图而非独立智能体，<b>不存在交接幻觉链</b>"——把对手的叙事承诺变成自己的差异化弹药。约束：叙事文案必须从结构化 <code>HandoffEnvelope</code> 字段渲染，人格不进 state、不进交接协议。</div>
+</div>
+</div>
+
+<div class="clash">
+<div class="ch">冲突 ③　KPI 之争：采纳率 vs 推翻率</div>
+<div class="cb">
+<span class="vs">产品经理（第一轮）</span>：建议采纳率 ≥70% 写进合同。<br>
+<span class="vs">一线代表</span>：采纳率崇拜是数字化最大的谎言——KPI 是采纳率，终点就是逼人点确认；应该统计"推翻后证明人对的比例"。
+<div class="conv"><b>收敛</b>：<b>双轨 KPI</b>。结果指标（终点命中率、钒回收率）进合同对厂长负责；决策质量指标（推翻率趋势 + 推翻后命中率）进运营对一线负责；<b>采纳率从 KPI 永久删除</b>（白皮书 §04 已执行）。推翻事件入留痕管道 → 机理引擎自动回溯判定（不靠专家仲裁，"炉子的终点数据自己说话"）→ 正确推翻进评测集、错误推翻进培训案例。奖励适配国企：不发钱，发"免责 + 面子"（月度会公开念名）。设 4 周基线期只统计不考核。</div>
+</div>
+</div>
+
+<div class="clash">
+<div class="ch">冲突 ④　确认门禁：加弹窗 vs 不加（本轮新增）</div>
+<div class="cb">
+<span class="vs">开发工程师</span>：推翻建议应加二次确认弹窗，防止误触。<br>
+<span class="vs">UX 设计师</span>：反对——v0.9 已按"系统只推荐不操作"实现无弹窗推翻，这是<b>降低推翻门槛</b>的正确设计（推翻被设门槛 = 变相鼓励照做）。真正的病不在推翻，<b>在确认：确认键一键即留痕</b>。
+<div class="conv"><b>收敛</b>：<b>推翻不加弹窗（维持现状），确认加证据门槛</b>。把 <code>trustAnchor</code> 从折叠区上移为确认前必经信息块；确认键在证据区未展开前不可用。两侧诉求其实一致——<b>让推翻容易、让确认不容易</b>。</div>
+</div>
+</div>
+
+<div class="clash">
+<div class="ch">冲突 ⑤　权威引擎：直接调用 vs 走技能注册表（本轮新增·最高优先级）</div>
+<div class="cb">
+<span class="vs">架构师</span>：<code>main.py</code> 直接 import <code>pangang_reference</code>，绕开 <code>SKILL_REGISTRY</code>——技能层与权威层是两套。事件重算走 <code>calculate_initial_charge</code>，与权威口径不一致。<br>
+<span class="vs">开发工程师</span>：注册进去即可，改动小；但需保证 75/75 回归不破，且 <code>events.py</code> 目前没人调用，接线优先级高于重构。
+<div class="conv"><b>收敛</b>：<b>先补注册，再谈接线</b>。① 把 <code>run_pangang_model</code> 注册为 <code>pangang_charge</code> 技能（标注 <code>authoritative: true</code>），事件重算与 HTTP 端点统一改调它；② 明确 <code>calculate_initial_charge</code> 降级为通用/非攀钢口径路径，禁止与权威口径混用；③ 三条路径收敛为一条权威 + 一条通用，且 UI 明示当前走的是哪条。</div>
+</div>
+</div>
+
+<div class="clash">
+<div class="ch">冲突 ⑥　"契约已落地"是真的落地，还是只写了类型？（本轮新增）</div>
+<div class="cb">
+<span class="vs">架构师 / 产品经理</span>：VERO 已有 <code>HandoffEnvelope</code>、<code>OverturnRecord</code>、<code>HeatStatus</code>、事件枚举——对标中铝那套"结构化交接 + 闭环学习"，我们<b>不缺设计</b>。<br>
+<span class="vs">AI 专家 / 开发工程师</span>：缺的是接线。<code>append_handoff()</code> 零调用、<code>ADVICE_OVER_TURNED</code> 零 publish、<code>events.py</code> 零 import、<code>main.py</code> 无推翻写入端点。<b>四个"已具备"全部处于"定义了但没人用"状态。</b>
+<div class="conv"><b>收敛</b>：<b>建立"契约≠落地"的验收判据</b>——任何契约类产出必须有<b>至少一个真实调用点</b>才可标记为"已落地"，否则一律标"已定义·未接入"。据此，本轮把 4 项从"已落地"降级为"已定义·未接入 / 断链"。修复排序：<b>推翻写入端点（飞轮燃料）＞ 权威引擎入包（口径一致）＞ 事件总线接线（联动能力）＞ Handoff 接入（可审计交接）</b>。</div>
+</div>
+</div>
+
+<h2>05 · 结论清单</h2>
+
+<h3>A · 值得借鉴的核心要点（按优先级）</h3>
+<table>
+<tr><th style="width:5%">#</th><th style="width:24%">借鉴点</th><th>对 VERO 的落地方式</th><th style="width:12%">优先级</th></tr>
+<tr><td>A1</td><td>岗位能力包方法论（Skill + 知识库资产化，"先拆后组"）</td><td>已落地但缺内核 → <b>把 <code>pangang_reference</code> 注册为权威技能</b>，统一三条计算路径；知识包对外称"提钒岗位能力包"</td><td><span class="tag t-bad">P0·立即</span></td></tr>
+<tr><td>A2</td><td>事件驱动重算（约束变化→剔除受限项→全链路重算→生成建议）</td><td>已写好 <code>events.py</code>（8 事件、<code>requires_human_confirm=True</code>、<code>control_write=forbidden</code>）→ <b>接线</b>：在 <code>main.py</code> 安装 handler 并暴露端点</td><td><span class="tag t-bad">P0·立即</span></td></tr>
+<tr><td>A3</td><td>人机边界清单化（机做读取/运算/交接/核算，人做决策确认）</td><td>写进白皮书与合同附件；技术用 LangGraph interrupt 硬保证——影响工艺参数的建议节点后必须挂确认门，CI 静态检查拒绝跳过路径</td><td><span class="tag t-bad">P0·立即</span></td></tr>
+<tr><td>A4</td><td>分层人格化叙事</td><td>投标/演示视频全人格化；一线界面与留痕零人格化，证据链永远非人化（"化验系统·L2接口·09:41"，永不写"数字化验员小张"）</td><td><span class="tag t-bad">P0·立即</span></td></tr>
+<tr><td>A5</td><td>「双飞轮 / 确定性内环 + 智能协同外环」话术</td><td><b>当前叙事包命中 0</b>，补齐并工程化改写：飞轮燃料 = 留痕人工 diff，四件套为验收定义</td><td><span class="tag t-warn">P1·30天</span></td></tr>
+<tr><td>A6</td><td>任务链交接可视化 = 交接单</td><td>v0.9 流程条/交接单已具备；补工艺台"待办收件箱"（当前命中 0）汇聚黄灯例外炉</td><td><span class="tag t-warn">P1·30天</span></td></tr>
+<tr><td>A7</td><td>"AI 同事"生态位话术（不替代控制系统）</td><td>化解集成政治阻力；VERO 表述保持工程契约式（"LLM 直接下发设定值次数 = 0"可审计），更有杀伤力</td><td><span class="tag t-bad">P0·立即</span></td></tr>
+</table>
+
+<h3>B · 需要规避的问题</h3>
+<table>
+<tr><th style="width:5%">#</th><th style="width:22%">陷阱</th><th>危害</th><th style="width:30%">规避动作</th></tr>
+<tr><td>B1</td><td>"联动更新全部控制参数"直写控制回路</td><td>脏数据获得改工艺设定权限；分布式写无事务，写一半失败 = 炉子处于未定义参数组合</td><td>VERO 红线已用代码守住（<code>SAFETY LOCK</code>）；此文当<b>反面教材</b>写进架构红线文档</td></tr>
+<tr><td>B2</td><td>权威引擎未入技能包（<b>VERO 现存</b>）</td><td>三条计算路径并存，事件重算与 HTTP 端点口径不一致；单一真相源在技能层被架空</td><td>注册 <code>pangang_charge</code> 为权威技能并统一入口；通用路径显式标注口径</td></tr>
+<tr><td>B3</td><td>Live 演示页仍跑已冻结的 JS 引擎（<b>VERO 现存</b>）</td><td>页面标注"精度以服务端为准"却本地计算，自相矛盾；演示数字不可信</td><td>v0.9 改为后端取数，或强制加"模型快照·仅供演示"显著角标并禁用导出</td></tr>
+<tr><td>B4</td><td>确认键一键即留痕（<b>VERO 现存</b>）</td><td>确认与证据阅读无强制关系 → 操作工被训练成橡皮图章，AI 错误被洗白成人决策</td><td>信任锚上移为确认前必经信息块；证据区未展开时确认键不可用</td></tr>
+<tr><td>B5</td><td>化验闭环包装成实时闭环</td><td>滞后 40min–2h + 取样代表性缺失，闭环越快错得越快</td><td>降格为低频校准环；在线判断交给多源信号</td></tr>
+<tr><td>B6</td><td>多角色拆进计算链路</td><td>N 步链每步 95% 正确，端到端 81%；每次自然语言交接 = 有损压缩 + 幻觉注入</td><td>单编排器 + 确定性工具集；交接用结构化 <code>HandoffEnvelope</code></td></tr>
+<tr><td>B7</td><td>采纳率 KPI</td><td>系统自我保守化；操作工被逼成橡皮图章，责任链断裂且不可逆</td><td>已采纳率永久删除；双轨 KPI + 4 周基线期</td></tr>
+<tr><td>B8</td><td>无量化验收的叙事</td><td>首期靠声量签单，二期死在"它到底干成了什么"</td><td>反向打"可验收"牌：输出《数字员工验收白皮书》，<b>谁定义验收标准谁定义赛道</b></td></tr>
+<tr><td>B9</td><td>黄金回归 ≠ 命中实绩（<b>VERO 现存</b>）</td><td>75/75 证明的是复现专家表；16 炉回放显示两套 ΔH_V 均系统性偏高 0.55–1.70pp</td><td>CF-001 驱动专家终审；并行建立"命中实绩"评测集，不再以对拍 Excel 为验收口径</td></tr>
+<tr><td>B10</td><td>双飞轮空转 / 经验 Skill 化无确权</td><td>沉淀下来的全是规程文件，默会知识一丝进不来；飞轮两周就停</td><td>飞轮四件套（评测集/回放/留痕/影子模式）作验收定义；经验确权走 <code>docs/EXPERIENCE_CAPTURE.md</code>；采集率 ≥80% 才开自学习</td></tr>
+<tr><td>B11</td><td>版本治理漂移（<b>VERO 现存</b>）</td><td>9/27 深夜大批产物（v0.9、白皮书、叙事包、经验沉淀、引擎单一源、events.py、llm/、golden_cases）全部未入库；仓库最新提交仍为 <code>5d087f6</code></td><td>立即分逻辑提交锁定；<code>.workbuddy/</code> 与 <code>vagent.db</code> 加入 .gitignore</td></tr>
+<tr><td>B12</td><td>"定义了就算落地"（<b>VERO 现存</b>）</td><td><code>append_handoff</code> 零调用、<code>ADVICE_OVER_TURNED</code> 零 publish、<code>events.py</code> 零 import —— 四份漂亮契约同时空转，审计时会被当成已完成</td><td>立判据：<b>无真实调用点即不得标记"已落地"</b>；CI 增加"契约调用点存在性"检查</td></tr>
+<tr><td>B13</td><td>工具 schema 三处分裂（<b>VERO 现存</b>）</td><td>9 / 6 / 6 三份并存，新增技能漏改即静默降级，且 MCP 与 LLM 路由看到的工具集不一致</td><td>改为单一注册表派生 MCP schema 与 function-calling schema（3–4 人日）</td></tr>
+<tr><td>B14</td><td>全局常量覆写做参数化（<b>VERO 现存·本项目引入</b>）</td><td><code>main.py:358</code> 覆写模块全局 <code>DH_V</code>；当前因无 await 暂不串值，但属潜伏缺陷，接口一异步化即污染并发请求</td><td>改为 <code>run_pangang_model(..., dh_v=)</code> 显式入参，或加 <code>asyncio.Lock</code> 串行化（0.5 人日）</td></tr>
+<tr><td>B15</td><td>内存态会话 + 手写 ALTER（<b>VERO 现存</b>）</td><td>重启丢全部会话与待确认 interrupt；多环境结构漂移</td><td>MemorySaver → SQLite checkpointer；引入迁移工具替代手写 ALTER</td></tr>
+<tr><td>B16</td><td>"失败关闭"式兜底</td><td><code>agents/team.py:306</code> 硬编码"安全"数值兜底，把错误伪装成正常输出，比显式报错更危险</td><td>工具失败必须显式抛出并标"建议不完整，请勿采纳"（<code>events.py</code> 已做对，需推广）</td></tr>
+</table>
+
+<h3>C · 推荐的下一步行动</h3>
+<table>
+<tr><th style="width:10%">时间窗</th><th style="width:8%">#</th><th>行动</th><th style="width:14%">责任侧</th></tr>
+<tr><td rowspan="6">立即<br>（本周）</td><td>1</td><td><b>提交锁定现场</b>：分 3 个逻辑提交（①引擎单一源+parity；②技能注册表+事件总线+HandoffEnvelope/OverturnRecord；③v0.9+白皮书+叙事包+经验沉淀），排除 <code>.workbuddy/</code>、<code>vagent.db</code>、<code>__pycache__</code></td><td>开发</td></tr>
+<tr><td>2</td><td><b>权威引擎入包</b>：把 <code>run_pangang_model</code> 注册为 <code>pangang_charge</code> 技能（authoritative），事件重算与 HTTP 端点统一改调它，跑 75/75 回归确认不破</td><td>开发/架构</td></tr>
+<tr><td>3</td><td><b>事件总线接线</b>：<code>main.py</code> 调用 <code>install_default_handlers()</code> 并暴露 <code>POST /api/events/constraint-change</code>，让"联动"从孤儿模块变可运行能力</td><td>开发</td></tr>
+<tr><td>4</td><td><b>v0.9 确认门禁整改</b>：<code>trustAnchor</code> 上移为必经信息块，证据未展开时确认键禁用；推翻维持无弹窗</td><td>UX/开发</td></tr>
+<tr><td>5</td><td><b>补推翻写入端点</b>（约 5 人日）：<code>POST /api/advice/{id}/overturn</code> 落库 + <code>publish(ADVICE_OVER_TURNED)</code>，让推翻从 localStorage 进飞轮</td><td>开发</td></tr>
+<tr><td>6</td><td><b>修 DH_V 全局覆写</b>（0.5 人日）：改为显式入参或加锁；同时把 v0.9 桥接后端（0.5 人日，复用 v0.8_bridged 的 IIFE）</td><td>开发</td></tr>
+<tr><td rowspan="4">30 天</td><td>7</td><td><b>服务端回放 API</b>：把 16 炉回放从前端 JS 与 <code>arbitration_demo.py</code> 提升到 API，使回放可进评测集与飞轮（当前白皮书"回放"命中 0）</td><td>架构/开发</td></tr>
+<tr><td>8</td><td><b>schema 单一源</b>（3–4 人日）：MCP 与 LLM 路由的 schema 全部由 <code>SKILL_REGISTRY</code> 派生</td><td>开发</td></tr>
+<tr><td>9</td><td><b>补齐双飞轮话术</b>：叙事包增加"确定性内环 + 智能协同外环""Skill 小飞轮/系统大飞轮"，并工程化改写为四件套验收定义</td><td>产品</td></tr>
+<tr><td>10</td><td><b>CF-001 终审推进</b>：以 16 炉双案残差表为证据包组织专家终审；同步建立"命中实绩"评测集，替换对拍 Excel 口径</td><td>行业专家/工艺</td></tr>
+<tr><td rowspan="4">90 天</td><td>11</td><td><b>P1 对话层落地</b>（约 34.5 人日）：LLM 网关 → 意图路由（复用 <code>tools_as_openai_tools()</code>）→ 工具执行 → 校验适配 → CF 口径注入 → 公式外置</td><td>开发</td></tr>
+<tr><td>12</td><td><b>影子模式 + 评测集</b>：只读真实数据、不触达操作；与留痕、回放共同构成飞轮四件套</td><td>架构/开发</td></tr>
+<tr><td>13</td><td><b>推翻仲裁 → 评测集管道贯通</b>，跑完 4 周基线期后上线双轨 KPI</td><td>开发/工艺</td></tr>
+<tr><td>14</td><td><b>《数字员工验收白皮书》对外输出</b>，配合大额项目与数字工匠共创节点投放，抢验收定义权</td><td>产品/商务</td></tr>
+</table>
+
+<div class="lead">
+<b>一句话总账：</b>中铝数为这篇文章对 VERO 是<b>利好而非威胁</b>——央企团队替行业付了"数字员工"的市场教育费，留下的三个空档（无量化验收、无确定性底座表述、无口径治理）正是 VERO 的弹药库。但本轮实跑核查给出了一个更刺眼的结论：<b>VERO 的差距不在"没学到"，而在"学到了却没接上"</b>——四份漂亮契约（<code>HandoffEnvelope</code> / <code>OverturnRecord</code>+事件 / <code>events.py</code> / 推翻写入）全部处于<b>"已定义·零调用"</b>状态，唯一权威引擎还被挡在技能包门外。<br><br>
+按修复价值排序（合计约 <b>10 人日</b>即可闭合主体）：<b>① 推翻写入端点（飞轮燃料，5 人日）＞ ② 权威引擎入包（口径一致）＞ ③ 事件总线接线（联动能力）＞ ④ Handoff 接入（可审计交接）＞ ⑤ DH_V 覆写修复 + v0.9 桥接（1 人日）</b>。<br><br>
+<b>叙事可以抄形，架构必须守神——而"神"现在的缺口不在设计图纸上，在接线端子排上。</b>
+</div>
+
+<div class="foot">
+评审阵容：行业专家 / AI 专家 / 产品经理 / 架构师 / 开发工程师 / UX 设计师 / 一线生产代表（7 角色）<br>
+证据来源：backend/app/tools/__init__.py（SKILL_REGISTRY 实列）、backend/app/events.py（实跑重算）、backend/app/core/mode_control.py（红线取证）、backend/app/schemas.py（HandoffEnvelope / OverturnRecord）、backend/tests/test_engine_parity.py（实跑 4 passed）、backend/app/tools/v_heat_calibration.py（16 炉回放实跑）、VERO_MVP_v0.9.html（1380–1391 行确认键取证）、VERO_ACCEPTANCE_WHITEBOOK.html、VERO_NARRATIVE_KIT.html、docs/ENGINE_SINGLE_SOURCE.md、docs/EXPERIENCE_CAPTURE.md、docs/DATA_INTERFACE_SPEC.md<br>
+生成：2026-09-28
+</div>
+
+</div>
+</body>
+</html>

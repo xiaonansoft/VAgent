@@ -1,6 +1,6 @@
-# VEES 风格 token 规范（STYLE_TOKENS）
+# VERO 风格 token 规范（STYLE_TOKENS）
 
-> 版本 v1.0 · 2026-09-23 · 单一事实来源：本文件是 `VEES_MVP.html`、`VEES_MVP_v0.3.html` 与后续前端共用的 CSS 变量规范。
+> 版本 v1.0 · 2026-09-23 · 单一事实来源：本文件是 `VERO_MVP.html`、`VERO_MVP_v0.3.html` 与后续前端共用的 CSS 变量规范。
 > 原则：**暖色机理风**——工业纸质报告 + 熔融金属；只保留 红/黄/绿 三态工艺语义色，剔除无工艺语义的装饰色。
 
 ---
@@ -106,4 +106,4 @@ background: linear-gradient(120deg, #141d2b, #2b4a6f 55%, #7a431d);
 
 ---
 
-*对齐：`VEES_UI_SPEC.html` §04「风格 token」；`PRODUCT_DEFINITION.md` §六「品牌口径」。*
+*对齐：`VERO_UI_SPEC.html` §04「风格 token」；`PRODUCT_DEFINITION.md` §六「品牌口径」。*

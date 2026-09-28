@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>VEES 产品界面规格 v1.0 · 三层角色视图</title>
+<title>VERO 产品界面规格 v1.0 · 三层角色视图</title>
 <style>
 :root{--paper:#f5f2ec;--card:#fff;--line:#ddd8ce;--ink:#141d2b;--ink2:#3d4a5f;
 --mut:#8a94a6;--molten:#e8590c;--steel:#2b4a6f;--ok:#2b8a3e;--warn:#b54708;--blue:#1971c2;--teal:#0f766e}
@@ -69,7 +69,7 @@ footer{margin-top:26px;padding:16px 28px;background:#141d2b;color:#93a2b8;font-s
 <body>
 
 <header class="header">
-  <h1>VEES 产品界面规格 · 三层角色视图 <span style="font-weight:400;opacity:.65">v1.0</span></h1>
+  <h1>VERO 产品界面规格 · 三层角色视图 <span style="font-weight:400;opacity:.65">v1.0</span></h1>
   <div class="sub">提钒配吃助手（开吹前）· 界面信息架构与风格规范 —— 改 UI 的单一事实来源</div>
   <div class="tags">
     <span class="b">一产品 · 一引擎 · 三层视图</span>
@@ -84,7 +84,7 @@ footer{margin-top:26px;padding:16px 28px;background:#141d2b;color:#93a2b8;font-s
   <div class="panel">
     <h2><span class="n" style="background:var(--molten)">结论</span>三条裁决（结论先行）</h2>
     <div class="cards" style="margin-top:12px">
-      <div class="card"><div class="t">路线收敛</div><div class="v">仓库三套界面收敛为一，以 <code>VEES_MVP.html</code> 的暖色机理风为准，废弃 <code>frontend/</code> 暗色霓虹。</div></div>
+      <div class="card"><div class="t">路线收敛</div><div class="v">仓库三套界面收敛为一，以 <code>VERO_MVP.html</code> 的暖色机理风为准，废弃 <code>frontend/</code> 暗色霓虹。</div></div>
       <div class="card"><div class="t">信息架构</div><div class="v">按「炉长 / 工艺 / 数据」三层角色视图分层，把专家级证据从炉长驾驶舱剥离。</div></div>
       <div class="card"><div class="t">风格方向</div><div class="v">从「消费级 SaaS 科技感」转向「工业 HMI 可读性 + 证据报告严谨感」，只保留 红/黄/绿 三态语义。</div></div>
     </div>
@@ -98,7 +98,7 @@ footer{margin-top:26px;padding:16px 28px;background:#141d2b;color:#93a2b8;font-s
       <tr><th style="width:16%">界面</th><th style="width:30%">定位</th><th style="width:20%">视觉</th><th>与产品定义 v1.0 的关系</th></tr>
       <tr><td><code>web/</code></td><td>最早 vanilla 原型</td><td>浅色朴素</td><td><span class="tag b-r">已淘汰</span></td></tr>
       <tr><td><code>frontend/</code>（React）</td><td>「VAgent v7.0」全程版：L1 配料 + L2 动态 + 枪位 + AI Copilot 聊天</td><td>暗色霓虹 + 多智能体卡片</td><td><span class="tag b-r">冲突</span> 产品定义已定"无聊天框、不碰事中、只开吹前"</td></tr>
-      <tr><td><code>VEES_MVP.html</code></td><td>当前交付 MVP v0.2「配吃助手（开吹前）」</td><td>暖色纸张 + 熔融橙 + 钢蓝，编号面板 + 证据卡</td><td><span class="tag b-g">完全对齐</span></td></tr>
+      <tr><td><code>VERO_MVP.html</code></td><td>当前交付 MVP v0.2「配吃助手（开吹前）」</td><td>暖色纸张 + 熔融橙 + 钢蓝，编号面板 + 证据卡</td><td><span class="tag b-g">完全对齐</span></td></tr>
     </table>
     <div class="verdict"><b>两处硬伤（frontend/ 必须处理）：</b>① 外链 Google 头像 <code>lh3.googleusercontent.com</code> 违反 A6「离线、数据不出厂」；② 「AI Copilot / 协调中枢 / 安全护栏」多智能体暗示「AI 炉长」，踩品牌禁用词红线。</div>
   </div>
@@ -213,7 +213,7 @@ footer{margin-top:26px;padding:16px 28px;background:#141d2b;color:#93a2b8;font-s
     <h2><span class="n" style="background:var(--steel)">05</span>落地路线图（三步）</h2>
     <table class="tb">
       <tr><th style="width:10%">步骤</th><th>动作</th><th>产出</th></tr>
-      <tr><td class="c">1</td><td>风格统一收口：把 <code>VEES_MVP.html</code> 的 token 提取为 CSS 变量规范，废弃 <code>frontend/</code> 霓虹主题</td><td><code>docs/STYLE_TOKENS.md</code></td></tr>
+      <tr><td class="c">1</td><td>风格统一收口：把 <code>VERO_MVP.html</code> 的 token 提取为 CSS 变量规范，废弃 <code>frontend/</code> 霓虹主题</td><td><code>docs/STYLE_TOKENS.md</code></td></tr>
       <tr><td class="c">2</td><td>按三层视图重构：炉长视图砍 03/05/06，新增角色视图切换</td><td>MVP v0.3（分角色）</td></tr>
       <tr><td class="c">3</td><td>补数据治理台 + 起草 P3 数据接口规范（TSC/TSO/烟气/氧枪 字段·频率·边界）</td><td><code>docs/DATA_INTERFACE_SPEC.md</code></td></tr>
     </table>
@@ -223,7 +223,7 @@ footer{margin-top:26px;padding:16px 28px;background:#141d2b;color:#93a2b8;font-s
 </div>
 
 <footer>
-  <span>VEES 产品界面规格 v1.0 · 对齐 PRODUCT_DEFINITION.md / MVP_SPEC.md · 2026-09-23</span>
+  <span>VERO 产品界面规格 v1.0 · 对齐 PRODUCT_DEFINITION.md / MVP_SPEC.md · 2026-09-23</span>
   <span>术语：配吃=冷料加入 · 球返=球团矿返矿 · 品位=V₂O₅ 质量分数 · 富余=热量富余 · 留痕=全量计算记录</span>
 </footer>
 

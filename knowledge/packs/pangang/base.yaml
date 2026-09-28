@@ -1,5 +1,5 @@
 # =====================================================================
-# 攀钢提钒专家知识包 (VEES Knowledge Pack)
+# 攀钢提钒专家知识包 (VERO Knowledge Pack)
 # =====================================================================
 # 来源: 攀钢专家 Excel《提钒预算测算钒品位低原因说明(1).xlsx》
 # 解码: PANGANG_EXCEL_DECODED.md · 复现: backend/app/tools/pangang_reference.py
@@ -9,7 +9,7 @@
 # 审批字段: approved_by 为空表示待攀钢专家确认, 生效前仅限 shadow 模式
 # =====================================================================
 
-schema: vees.knowledge-pack/v1
+schema: vero.knowledge-pack/v1
 pack:
   plant: pangang
   scope: plant                      # 行业基线 < 厂 < 车间 < 炉座 < 炉次

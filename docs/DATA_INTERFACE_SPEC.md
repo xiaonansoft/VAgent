@@ -1,4 +1,4 @@
-# VEES 数据接口规范（DATA_INTERFACE_SPEC）v0.2
+# VERO 数据接口规范（DATA_INTERFACE_SPEC）v0.2
 
 > 版本 v0.2 · 2026-09-27 · 在 v0.1 基础上，依据 backend 实际代码
 > （`schemas.py` / `data_server.py` / `simulator.py` / `pangang_reference.py` / `main.py`）校对并落地 MVP 服务化契约。
@@ -212,7 +212,7 @@
 
 > **⚠️ 审计修正（2026-09-27 21:15）**：此前据中文关键词判定「副枪/三要素未落地」**结论有误**——副枪实以 `TSC`/`TSO` 英文标识存在；三要素中「机理」「相似炉次」已存在，仅「规则版本」缺失。仅**置信度与软测量**确为完全缺失。此处已订正。
 
-> **桥接目标更新**：最新产物为 **`VEES_MVP_v0.8.html`**（20:50，71,972 B，检索 `fetch/localhost//api/` 均为 0），**非 v0.7**。桥接应以 v0.8 为基线，产出新副本 `VEES_MVP_v0.8_bridged.html`，不覆盖原稿。
+> **桥接目标更新**：最新产物为 **`VERO_MVP_v0.8.html`**（20:50，71,972 B，检索 `fetch/localhost//api/` 均为 0），**非 v0.7**。桥接应以 v0.8 为基线，产出新副本 `VERO_MVP_v0.8_bridged.html`，不覆盖原稿。
 
 > 下一步桥接（Task #3）：在 v0.8 的重算入口注入 `fetch('/api/pangang/charge', readInput())`，用后端返回覆盖品位/配吃，渲染器 `explainTB/arb/drawReplay` 保留；离线 JS 引擎作降级。已知风险：`file://` 的 origin 为 `null`，需先验证 CORS（后端已 `allow_origins=["*"]`，但 `allow_credentials=True` 与 `*` 并存可能被浏览器拒），必要时改由后端静态目录托管该 HTML。
 

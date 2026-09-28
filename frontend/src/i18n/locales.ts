@@ -44,7 +44,7 @@ export const translations = {
     one_ladle: "One-ladle",
     ai_copilot_title: "L3: AI CO-PILOT",
     strategy_feed: "Strategy Feed",
-    ai_welcome: "Welcome to VEES v7.0 AI Co-pilot. Current conditions are stable.",
+    ai_welcome: "Welcome to VERO v7.0 AI Co-pilot. Current conditions are stable.",
     ai_connect_fail: "Failed to connect to AI Co-pilot. Please check system status.",
     time_label: "Time",
     min_unit: "min",

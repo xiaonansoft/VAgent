@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>VEES 提钒智能体 · 分角色驾驶舱 v0.8</title>
+<title>VERO 提钒智能体 · 分角色驾驶舱 v0.9</title>
 <style>
 /* ========== 第一层：色板（raw） ========== */
 :root{
@@ -137,13 +137,6 @@ input[type=range]::-moz-range-thumb{width:26px;height:26px;background:var(--rais
   padding:11px 13px;font-size:var(--fs-body);color:var(--t1);font-weight:600;margin-top:var(--s3)}
 .say.warn{border-color:var(--warn);background:rgba(201,154,46,.07)}
 .say .act{color:var(--warn);font-weight:700}
-/* 黄灯判例内联（证据在按钮之前） */
-.warn-case{margin-top:var(--s2);border:1px solid var(--warn);border-left-width:3px;border-radius:var(--r-panel);
-  padding:10px 13px;background:rgba(201,154,46,.05);font-size:var(--fs-body)}
-.warn-case .wc-t{font-weight:700;color:var(--warn);font-size:var(--fs-cap);margin-bottom:4px}
-.warn-case .wc-b{color:var(--t2);font-size:var(--fs-body)}
-.warn-case .wc-b b{color:var(--t1)}
-
 /* 信任锚 + 刻度尺 */
 .anchor{margin-top:var(--s3);padding:10px 13px;background:var(--surface);border-radius:var(--r-panel);
   border:1px dashed var(--line);font-size:var(--fs-body);color:var(--t2)}
@@ -291,6 +284,106 @@ body.fs footer{flex:0 0 auto;margin-top:0}
   .heat-input{font-size:var(--fs-h2)}
   .lance-bar{height:42px}
 }
+
+/* ===== v0.9：流程条 / 交接单 / 三元徽标 / 推翻 ===== */
+/* 顶部模型快照声明 */
+.snap-note{margin-top:3px;font-size:var(--fs-cap);color:var(--t3);letter-spacing:.2px}
+.snap-note b{color:var(--t2);font-weight:600}
+
+/* B1 本炉流程条（三视图共享 · 同一引擎的五个环节） */
+.flowbar{background:var(--surface);border-bottom:1px solid var(--line)}
+.fb-inner{max-width:1320px;margin:0 auto;padding:var(--s2) var(--s5);display:flex;align-items:center;gap:var(--s4)}
+.fb-title{font-size:var(--fs-cap);font-weight:700;color:var(--t2);white-space:nowrap;letter-spacing:.5px}
+.fb-title span{font-weight:400;color:var(--t3)}
+.fb-list{display:flex;flex:1;min-width:0;align-items:stretch;list-style:none}
+.fb-node{position:relative;flex:1 1 0;min-width:0}
+.fb-node+.fb-node{margin-left:var(--s3)}
+.fb-node+.fb-node::before{content:"";position:absolute;left:calc(var(--s3) / -2);top:50%;
+  width:var(--s3);height:1px;background:var(--line)}
+.fb-btn{width:100%;height:100%;display:flex;align-items:center;gap:var(--s2);text-align:left;
+  background:var(--raised);border:1px solid var(--line);border-radius:var(--r-ctrl);padding:6px 10px;
+  cursor:pointer;font-family:inherit;color:var(--t1);transition:border-color .15s}
+.fb-btn:hover{border-color:var(--line-hi)}
+.fb-btn.cur{border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent);background:var(--surface)}
+.fb-i{flex:0 0 auto;width:18px;height:18px;border-radius:3px;background:var(--surface);border:1px solid var(--line);
+  color:var(--t2);font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center}
+.fb-btn.cur .fb-i{color:var(--accent);border-color:var(--accent)}
+.fb-b{min-width:0;flex:1}
+.fb-n{display:block;font-size:var(--fs-cap);font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.fb-m{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--t3);flex-wrap:wrap;margin-top:1px}
+.fb-s{font-weight:700}
+.s-done{color:var(--ok)} .s-cur{color:var(--accent)} .s-todo{color:var(--t3)} .s-ov{color:var(--danger)}
+.fb-o{color:var(--t2)}
+.fb-t{font-variant-numeric:tabular-nums}
+body.fs .flowbar{flex:0 0 auto}
+body.fs .fb-inner{max-width:none}
+@media(max-width:900px){
+  .fb-inner{padding:var(--s2) var(--s3);gap:var(--s2)}
+  .fb-list{overflow-x:auto;padding-bottom:2px}
+  .fb-node{flex:0 0 168px}
+}
+
+/* B3 三元徽标：来源 + 时效 + 完整度 */
+.d3{display:flex;gap:5px;flex-wrap:wrap;align-items:center;margin-top:2px}
+.d3-tag{font-size:11px;font-weight:600;padding:1px 7px;border-radius:var(--r-pill);
+  border:1px solid var(--line);color:var(--t3);white-space:nowrap}
+.d3-tag.src{color:var(--info);border-color:var(--line-hi)}
+.d3-tag.ok{color:var(--ok);border-color:var(--ok)}
+.d3-tag.warn{color:var(--warn);border-color:var(--warn)}
+.d3-tag.bad{color:var(--danger);border-color:var(--danger)}
+.suspect{margin-top:var(--s2);font-size:var(--fs-cap);color:var(--warn);
+  display:flex;gap:6px;align-items:baseline;flex-wrap:wrap}
+.suspect .tag{font-weight:700;border:1px solid var(--warn);border-radius:var(--r-pill);
+  padding:0 7px;white-space:nowrap}
+.suspect b{color:var(--warn)}
+
+/* B2 交接单 */
+.handover{margin-top:var(--s3);border:1px solid var(--line-hi);border-radius:var(--r-panel);
+  background:var(--surface);overflow:hidden}
+.ho-h{display:flex;align-items:center;gap:var(--s2);padding:8px 13px;border-bottom:1px solid var(--line);
+  font-size:var(--fs-cap);font-weight:800;color:var(--t1);letter-spacing:.5px}
+.ho-h .note{font-weight:400;margin-left:auto;text-align:right}
+.ho-row{display:flex;gap:var(--s2);align-items:baseline;flex-wrap:wrap;
+  padding:8px 13px;border-bottom:1px dashed var(--line);font-size:var(--fs-body);color:var(--t2)}
+.ho-row:last-of-type{border-bottom:none}
+.ho-row .k{flex:0 0 auto;min-width:48px;font-size:var(--fs-cap);font-weight:700;color:var(--t3)}
+.ho-row b{color:var(--t1)}
+.draft{display:inline-block;color:var(--warn);font-weight:700;border:1px solid var(--warn);
+  border-radius:var(--r-pill);padding:0 7px;font-size:11px}
+.ho-detail{padding:0 13px 10px}
+.ho-detail .anchor{margin-top:var(--s2)}
+
+/* B6 黄灯：证据即按钮 / B4 推翻 */
+.act-zone{margin-top:var(--s3)}
+.act-zone.split{display:flex;align-items:center;gap:var(--s3);flex-wrap:wrap}
+.act-row{display:flex;gap:var(--s2);align-items:center;flex-wrap:wrap}
+.act-row .btn-primary{margin-top:0;flex:1 1 auto}
+.act-zone.split .act-row{flex:0 0 auto}
+.act-zone.split .ev-block{display:block;flex:1 1 300px;min-width:0}
+.act-zone.split .btn-primary{width:auto;flex:0 0 auto;padding:9px 18px;font-size:var(--fs-body)}
+.ev-block{display:none}
+.ev-main{border:1px solid var(--warn);border-left-width:3px;border-radius:var(--r-panel);
+  padding:10px 13px;background:rgba(201,154,46,.05)}
+.ev-main .ev-t{font-size:var(--fs-cap);font-weight:800;color:var(--warn);margin-bottom:3px}
+.ev-main .ev-b{font-size:var(--fs-body);font-weight:700;color:var(--t1)}
+.ev-main .ev-b small{display:block;font-weight:400;font-size:var(--fs-cap);color:var(--t2);margin-top:3px}
+.btn-ghost{border:1px solid var(--line);background:var(--surface);color:var(--t2);padding:9px 14px;
+  border-radius:var(--r-ctrl);font-size:var(--fs-body);font-weight:600;cursor:pointer;font-family:inherit;transition:.15s}
+.btn-ghost:hover{border-color:var(--warn);color:var(--warn)}
+.btn-ghost.on{border-color:var(--warn);color:var(--warn)}
+.ov-form{margin-top:var(--s2);border:1px solid var(--warn);border-radius:var(--r-panel);
+  padding:var(--s3);background:var(--surface)}
+.ov-form .ov-h{font-size:var(--fs-cap);font-weight:800;color:var(--warn);margin-bottom:var(--s2)}
+.ov-form label{font-size:var(--fs-cap);color:var(--t2);margin:0 0 var(--s1)}
+.ov-sel,.ov-txt{width:100%;background:var(--raised);border:1px solid var(--line);border-radius:var(--r-ctrl);
+  color:var(--t1);font-size:var(--fs-body);padding:6px 10px;font-family:inherit;margin-bottom:var(--s2)}
+.ov-sel:focus,.ov-txt:focus{border-color:var(--accent);outline:none}
+.ov-txt::placeholder{color:var(--t3)}
+.ov-acts{display:flex;gap:var(--s2);justify-content:flex-end}
+@media(min-width:1600px){
+  .fb-i{width:22px;height:22px;font-size:var(--fs-cap)}
+  .d3-tag,.fb-m{font-size:var(--fs-cap)}
+}
 </style>
 </head>
 <body>
@@ -298,8 +391,9 @@ body.fs footer{flex:0 0 auto;margin-top:0}
 <header class="header">
   <div class="header-row">
     <div>
-      <h1>提钒冶炼智能体 · 分角色驾驶舱 <span class="v">v0.8</span></h1>
+      <h1>提钒冶炼智能体 · 分角色驾驶舱 <span class="v">v0.9</span></h1>
       <div class="sub">攀钢「四大平衡」机理引擎 · 黄金回归对照 Excel 703 公式 · 同一引擎，三层角色视图</div>
+      <div class="snap-note">模型版本快照 · 精度以服务端为准（本页机理引擎与枪位模式已冻结，全部计算在浏览器内完成）</div>
     </div>
     <div class="hdr-right">
       <span class="status"><span class="dot"></span>离线运行中</span>
@@ -315,13 +409,21 @@ body.fs footer{flex:0 0 auto;margin-top:0}
   </div>
 </header>
 
+<!-- B1 本炉流程条：三视图共享 · 同一引擎的五个环节（非多角色接力） -->
+<nav class="flowbar" id="flowbar" aria-label="本炉流程">
+  <div class="fb-inner">
+    <div class="fb-title">本炉流程<span> · 同一引擎的五个环节</span></div>
+    <ol class="fb-list" id="fbList"></ol>
+  </div>
+</nav>
+
 <div class="wrap">
 
 <!-- ================= 炉长驾驶舱（两栏：左输入 / 右决策） ================= -->
 <div class="view on" id="view-furnace">
   <div class="grid-furnace">
     <!-- 01 输入 -->
-    <div class="panel">
+    <div class="panel" id="p-in">
       <h2><span class="num">01</span>开吹条件 <span class="hint">按化验单填写 · 点击数值可直接输入</span></h2>
       <label for="inHeat"><b>炉次号</b><span class="note" style="float:right;font-weight:400">唯一标识 · 全程留痕追溯</span></label>
       <div class="heat-row">
@@ -330,6 +432,7 @@ body.fs footer{flex:0 0 auto;margin-top:0}
       </div>
       <div id="heatDup" class="note" style="display:none;color:var(--info);margin-top:2px">该炉次号已有留痕记录，后续记录将关联同一炉次</div>
       <div class="src-line" id="heatSrc"></div>
+      <div class="d3" id="heatD3"></div>
       <label for="inW"><b>铁水装入量</b><span class="val" id="vW" aria-live="polite"></span></label>
       <input type="range" id="inW" min="60000" max="120000" step="1000" value="80000" aria-label="铁水装入量（吨）">
       <div class="scale"><span>60t</span><span>90t</span><span>120t</span></div>
@@ -343,12 +446,12 @@ body.fs footer{flex:0 0 auto;margin-top:0}
       <input type="range" id="inT" min="1250" max="1350" step="5" value="1300" aria-label="铁水温度（摄氏度）">
       <div class="scale"><span>1250</span><span>1300</span><span>1350</span></div>
       <div class="dh-line">计算口径：<b id="dhLine">攀钢经验口径 2777 kJ/kg</b>（专家审定中 · 切换权限在工艺工作台）<span id="arbEcho"></span></div>
-      <button class="btn-mini" id="mockPush" style="margin-top:var(--s2)" title="通过预留接口 VEES_API.applyHeat 推送一炉模拟开吹条件，验证外部系统对接链路">⇪ 模拟外部推送（走预留接口）</button>
+      <button class="btn-mini" id="mockPush" style="margin-top:var(--s2)" title="通过预留接口 VERO_API.applyHeat 推送一炉模拟开吹条件，验证外部系统对接链路">⇪ 模拟外部推送（走预留接口）</button>
     </div>
 
     <!-- 02 决策卡 -->
     <div class="col-stack">
-      <div class="panel">
+      <div class="panel" id="p-dec">
         <h2><span class="num m">02</span>本炉配吃建议
           <span class="hint">依据：pangang/base.yaml v1.0.0（试用）</span>
           <span class="badge b-g" id="confBadge"><span class="sq"></span>绿灯</span></h2>
@@ -357,6 +460,7 @@ body.fs footer{flex:0 0 auto;margin-top:0}
           <div class="gauge main" id="gPel">
             <div class="l">冷却剂配吃量 · 球团（t）<span class="tip"> 现场称「球返」</span></div>
             <div class="v" id="kPel">--</div>
+            <div class="d3" id="d3Pel"></div>
             <div class="gauge-track"><div class="gauge-needle" id="ndPel" style="left:0%"></div></div>
             <div class="gauge-scale"><span>0</span><span>2</span><span>4</span><span>6</span><span>8</span></div>
             <div class="u">配吃量 = 富余热量 ÷ 单位吸热</div>
@@ -364,16 +468,53 @@ body.fs footer{flex:0 0 auto;margin-top:0}
           <div class="gauge" id="gGr">
             <div class="l">预测精钒渣 V₂O₅ 品位（%）</div>
             <div class="v" id="kGr">--</div>
+            <div class="d3" id="d3Gr"></div>
             <div class="gauge-track"><div class="gauge-th" style="left:50%"></div><div class="gauge-needle" id="ndGr" style="left:0%"></div></div>
             <div class="gauge-scale"><span>12.5</span><span>13.5</span><span style="color:var(--danger)">14.0 目标</span><span>14.5</span><span>15.5</span></div>
             <div class="u" id="grState">预算目标 ≥ 14.0</div>
           </div>
         </div>
+        <div class="suspect" id="suspectLine" style="display:none"></div>
 
         <div class="say" id="confOne"></div>
-        <div id="warnCase" style="display:none"></div>
-        <div class="anchor" id="trustAnchor"></div>
-        <button class="btn-primary" id="confirmBtn">确认照单执行 · 留痕</button>
+
+        <!-- B2 交接单：上一步谁、几点、给了什么 · 证据平铺 -->
+        <div class="handover" id="hoCard">
+          <div class="ho-h">交接单 <span class="note">上一步 → 本步：谁、几点、给了什么</span></div>
+          <div class="ho-row"><span class="k">来源</span><span id="hoTop">—</span><div class="d3" id="hoD3" style="flex:1 1 100%"></div></div>
+          <div class="ho-row"><span class="k">口径</span><span id="hoMid">—</span></div>
+          <div class="ho-row"><span class="k">确认后</span><span id="hoBot">—</span></div>
+          <details class="ho-detail">
+            <summary>依据明细（信任锚 · 判例 · 字段完整度）</summary>
+            <div class="anchor" id="trustAnchor"></div>
+            <div id="caseDetail"></div>
+          </details>
+        </div>
+
+        <!-- B6 黄灯：证据即按钮（证据在左、确认键内嵌右侧）；B4 推翻 -->
+        <div class="act-zone" id="actZone">
+          <div class="ev-block" id="evBlock"><div class="ev-main" id="warnCase"></div></div>
+          <div class="act-row">
+            <button class="btn-primary" id="confirmBtn">确认照单执行 · 留痕</button>
+            <button class="btn-ghost" id="overrideBtn">推翻</button>
+          </div>
+        </div>
+        <div class="ov-form" id="ovForm" hidden>
+          <div class="ov-h">推翻建议 · 记录理由（记入留痕，不可删）</div>
+          <label for="ovSel">理由类型</label>
+          <select class="ov-sel" id="ovSel">
+            <option value="与实绩不符">与实绩不符</option>
+            <option value="工况异常">工况异常</option>
+            <option value="经验判断">经验判断</option>
+            <option value="数据存疑">数据存疑</option>
+          </select>
+          <label for="ovTxt">补充说明（可选）</label>
+          <input type="text" class="ov-txt" id="ovTxt" maxlength="120" placeholder="如：本炉铁水带渣多，按经验下调配吃">
+          <div class="ov-acts">
+            <button class="btn-mini s" id="ovSubmit">提交推翻</button>
+            <button class="btn-mini" id="ovCancel">取消</button>
+          </div>
+        </div>
 
         <details id="engDetail">
           <summary>工程详情（热量富余 / 渣量 / 半钢量 / 收支校验）</summary>
@@ -386,7 +527,7 @@ body.fs footer{flex:0 0 auto;margin-top:0}
         </details>
       </div>
 
-      <div class="panel">
+      <div class="panel" id="p-lance">
         <h2><span class="num">LC</span>氧枪枪位推荐 <span class="hint">行业通用模式 · 厂级参数 900/1200mm</span>
           <span class="badge b-g" id="lanceBadge"><span class="sq"></span>低-高-低</span></h2>
         <div id="lanceBody"></div>
@@ -398,7 +539,8 @@ body.fs footer{flex:0 0 auto;margin-top:0}
         <div class="explain">
           <div>1. 核对<b>炉次号</b>（每炉唯一，留痕追溯用），按化验单拨动四个滑杆，或等外部系统经预留接口自动带入。</div>
           <div>2. 看右侧<b>两个大数字</b>：配吃量 + 品位预测（刻度尺上红线为 14.0 目标），并核对<b>氧枪枪位推荐</b>时间轴。</div>
-          <div>3. 看<b>状态灯</b>：绿灯照做；黄灯按判例行提示的预案动作执行，并记例外。</div>
+          <div>3. 看<b>状态灯</b>：绿灯照做；黄灯先看判例证据行（确认键在证据右侧），按预案动作执行并记例外。</div>
+          <div>4. 不认可点<b>推翻</b>，选理由提交，同样记入留痕；顶部<b>流程条</b>可看本炉五环节的责任方与时刻，点击可跳转。</div>
           <div class="note" style="margin-top:6px">双口径仲裁、敏感性曲线、黄金回归等专家级信息在「工艺工作台 / 数据治理台」。</div>
         </div>
       </div>
@@ -473,8 +615,8 @@ body.fs footer{flex:0 0 auto;margin-top:0}
       </div>
     </div>
     <div class="col-stack">
-      <div class="panel">
-        <h2><span class="num">B</span>计算留痕 <span class="hint">本地无网络请求 · localStorage 持久化 · 按炉次号追溯</span></h2>
+      <div class="panel" id="p-log">
+        <h2><span class="num">B</span>计算留痕 <span class="hint">本地无网络请求 · localStorage 持久化 · 确认/推翻均记入，不可删</span></h2>
         <div class="explain" id="trace"></div>
         <input type="text" id="logFilter" class="log-filter" placeholder="按炉次号 / 关键词筛选留痕…" aria-label="留痕筛选" style="margin-top:var(--s2)">
         <div class="explain" id="opLog" style="border-color:rgba(74,158,92,.35);background:rgba(74,158,92,.04)" aria-live="polite">
@@ -483,7 +625,7 @@ body.fs footer{flex:0 0 auto;margin-top:0}
       </div>
       <div class="gov">
         <h3>数据接口规范 <span class="badge b-g"><span class="sq"></span>开吹条件适配器已预留</span></h3>
-        <div class="mono">开吹条件推送（外部系统 → 本页）：window.VEES_API.applyHeat({heat_no, iron_weight_t, si_pct, v_pct, temp_c, source})<br>状态查询（本页 → 外部系统）：window.VEES_API.getState() → 炉次号/输入/配吃建议/枪位推荐 JSON<br>字段校验范围对齐 DATA_INTERFACE_SPEC.md §3.1/§3.6 · 炉前页「模拟外部推送」按钮走同一接口验证链路</div>
+        <div class="mono">开吹条件推送（外部系统 → 本页）：window.VERO_API.applyHeat({heat_no, iron_weight_t, si_pct, v_pct, temp_c, source, sampled_at})<br>状态查询（本页 → 外部系统）：window.VERO_API.getState() → 炉次号/输入/配吃建议/枪位推荐/数据徽标/流程条 JSON<br>sampled_at = 化验采样时刻（可选），三元徽标的「时效」档位以它起算；缺省取到达时刻<br>字段校验范围对齐 DATA_INTERFACE_SPEC.md §3.1/§3.6 · 炉前页「模拟外部推送」按钮走同一接口验证链路</div>
       </div>
       <div class="gov">
         <h3>P3 实时数据接口 <span class="badge b-y">待建 · HANDOVER D6</span></h3>
@@ -496,7 +638,7 @@ body.fs footer{flex:0 0 auto;margin-top:0}
 </div>
 
 <footer>
-  <span>VEES 分角色驾驶舱 v0.8 · 炉次留痕追溯 · 氧枪枪位推荐 · 外部对接已预留 · 黄金回归 11/11</span>
+  <span>VERO 分角色驾驶舱 v0.9 · 本炉流程条 · 交接单证据 · 数据三元徽标 · 推翻留痕 · 黄金回归 11/11</span>
   <span>术语：配吃=冷料加入 · 球返=球团矿返矿 · 品位=V₂O₅ 质量分数 · 富余=热量富余 · 留痕=全量计算记录</span>
 </footer>
 
@@ -661,8 +803,91 @@ function renderLance(inp){
 /* ============ 炉次号 + 数据来源 ============ */
 let heatNo="";
 let heatReg={};
-try{heatReg=JSON.parse(localStorage.getItem("vees_heats")||"{}");}catch(e){heatReg={};}
-let dataSource={mode:"manual",label:"手动录入",detail:"按化验单填写"};
+try{heatReg=JSON.parse(localStorage.getItem("vero_heats")||"{}");}catch(e){heatReg={};}
+let dataSource={mode:"manual",label:"手动录入",detail:"按化验单填写",ts:new Date(),edited:false,editedAt:null};
+let _applying=false;   /* 外部接口推送期间：滑杆 input 事件不算人工修改 */
+
+/* ============ B3 数据三元徽标：来源 + 时效 + 完整度 ============
+   时效分级（化验数据到达时刻起算）：≤15min 准时 / ≤30min 晚到（仅供参考）/ >30min 晚到（仅供参考）
+   完整度：开吹条件 4 项 + 炉次号；缺项或时效异常 → 标记「依据存疑」并沿链路传染到配吃量/品位 */
+const FRESH={ok:15,warn:30};
+function hhmm(d){const x=new Date(d);
+  return String(x.getHours()).padStart(2,"0")+":"+String(x.getMinutes()).padStart(2,"0");}
+function dataMeta(){
+  const now=new Date();
+  const ts=dataSource.ts?new Date(dataSource.ts):null;
+  const age=ts?Math.max(0,(now-ts)/60000):null;
+  let tlKey="na",tlTxt="—",tlCls="";
+  if(ts){
+    const m=Math.round(age);
+    const late=dataSource.mode==="auto"?("晚到 "+m+" 分钟"):("录入 "+m+" 分钟前");
+    if(m<=FRESH.ok){tlKey="ontime";tlTxt=hhmm(ts)+" · 准时";tlCls="ok";}
+    else if(m<=FRESH.warn){tlKey="late";tlTxt=hhmm(ts)+" · "+late+" · 仅供参考";tlCls="warn";}
+    else{tlKey="bad";tlTxt=hhmm(ts)+" · "+late+" · 仅供参考";tlCls="bad";}
+  }
+  const missing=[]; if(!heatNo)missing.push("炉次号");
+  const compTxt=missing.length?("缺"+missing.join("/")+" · 3/4"):"4/4 齐备";
+  const compCls=missing.length?"warn":"ok";
+  const suspect=(tlKey==="late"||tlKey==="bad"||missing.length>0);
+  return {ts:ts,age:age,tlKey:tlKey,tlTxt:tlTxt,tlCls:tlCls,compTxt:compTxt,compCls:compCls,suspect:suspect};
+}
+function d3HTML(m){
+  return "<span class='d3-tag src'>"+esc(dataSource.label)+"</span>"+
+         "<span class='d3-tag "+m.tlCls+"'>"+esc(m.tlTxt)+"</span>"+
+         "<span class='d3-tag "+m.compCls+"'>完整度 "+esc(m.compTxt)+"</span>";
+}
+
+/* ============ B1 本炉流程条：同一引擎的五个环节（非多角色接力） ============ */
+const FLOW=[
+ {k:"in",     n:1,name:"开吹条件",owner:"炉长",      note:"化验数据带入与核对"},
+ {k:"calc",   n:2,name:"配吃计算",owner:"系统/工艺专家",note:"系统计算；口径待工艺专家审定"},
+ {k:"lance",  n:3,name:"枪位推荐",owner:"系统",      note:"行业基线 + 厂级参数"},
+ {k:"confirm",n:4,name:"确认执行",owner:"炉长",      note:"确认或推翻，责任在炉长"},
+ {k:"log",    n:5,name:"留痕归档",owner:"系统",      note:"记入留痕，不可删"}];
+const ST_TXT={done:"完成",cur:"进行中",todo:"待办",ov:"已推翻"};
+const ST_CLS={done:"s-done",cur:"s-cur",todo:"s-todo",ov:"s-ov"};
+const FLOW_JUMP={in:["furnace","p-in"],calc:["furnace","p-dec"],lance:["furnace","p-lance"],
+                 confirm:["furnace","p-dec"],log:["data","p-log"]};
+let overrides={};
+try{overrides=JSON.parse(localStorage.getItem("vero_overrides")||"{}");}catch(e){overrides={};}
+function resetFlow(ts){
+  const t=ts?new Date(ts):null;
+  flowState={in:{st:"done",ts:t},calc:{st:"done",ts:t},lance:{st:"done",ts:t},
+             confirm:{st:"cur",ts:null},log:{st:"todo",ts:null}};
+}
+let flowState={};
+resetFlow(dataSource.ts);   /* 首次 update() 之前完成初始化 */
+function renderFlow(){
+  const el=$("fbList"); if(!el)return;
+  const m=dataMeta();
+  const base=(heatNo&&m.ts)?"done":"todo";
+  flowState.in={st:base,ts:m.ts};
+  flowState.calc={st:base==="done"?"done":"todo",ts:m.ts};
+  flowState.lance={st:base==="done"?"done":"todo",ts:m.ts};
+  if(flowState.confirm.st!=="done"&&overrides[heatNo]){
+    flowState.confirm={st:"ov",ts:overrides[heatNo].t?new Date(overrides[heatNo].t):null};
+  }
+  const curKey=FLOW.map(f=>f.k).find(k=>flowState[k]&&flowState[k].st==="cur");
+  el.innerHTML=FLOW.map(f=>{
+    const s=flowState[f.k]||{st:"todo",ts:null};
+    return "<li class='fb-node'><button class='fb-btn"+((f.k===curKey)?" cur":"")+"' data-go='"+f.k+"'"+
+      " aria-label='流程环节 "+f.n+"："+f.name+" · 状态 "+ST_TXT[s.st]+" · 责任方 "+f.owner+
+      " · 时间戳 "+(s.ts?hhmm(s.ts):"待办")+"'>"+
+      "<span class='fb-i'>"+f.n+"</span><span class='fb-b'>"+
+      "<span class='fb-n'>"+f.name+"</span><span class='fb-m'>"+
+      "<span class='fb-s "+ST_CLS[s.st]+"'>"+ST_TXT[s.st]+"</span>"+
+      "<span class='fb-o'>"+f.owner+"</span>"+
+      "<span class='fb-t'>"+(s.ts?hhmm(s.ts):"—")+"</span>"+
+      "</span></span></button></li>";
+  }).join("");
+  el.querySelectorAll(".fb-btn").forEach(b=>{b.onclick=()=>flowJump(b.dataset.go);});
+}
+function flowJump(k){
+  const t=FLOW_JUMP[k]; if(!t)return;
+  if(activeView!==t[0])switchView(t[0]);
+  const el=$(t[1]);
+  if(el){el.scrollIntoView({block:"start"});el.setAttribute("tabindex","-1");el.focus({preventScroll:true});}
+}
 function todayStr(){const d=new Date();return d.getFullYear()+String(d.getMonth()+1).padStart(2,"0")+String(d.getDate()).padStart(2,"0");}
 function nextHeatNo(){
   const day=todayStr();let n=0;
@@ -677,14 +902,14 @@ function setHeatNo(v){
 function registerHeat(){
   if(!heatNo)setHeatNo(nextHeatNo());
   heatReg[heatNo]={t:new Date().toISOString(),source:dataSource.label};
-  try{localStorage.setItem("vees_heats",JSON.stringify(heatReg));}catch(e){}
+  try{localStorage.setItem("vero_heats",JSON.stringify(heatReg));}catch(e){}
   const dup=$("heatDup"); if(dup)dup.style.display="";
 }
 function renderHeatLine(){
   const el=$("heatSrc"); if(!el)return;
   el.innerHTML="数据来源：<span class='src-badge"+(dataSource.mode==="auto"?" auto":"")+"'>"+esc(dataSource.label)+"</span>"+
     (dataSource.detail?"<span>"+esc(dataSource.detail)+"</span>":"")+
-    "<span style='margin-left:auto'>外部对接已预留：VEES_API.applyHeat</span>";
+    "<span style='margin-left:auto'>外部对接已预留：VERO_API.applyHeat</span>";
 }
 
 /* ============ 性能缓存：分层失效（拖 Si 只移游标；拖 V/W/T 重建曲线；dhV 切换全量重建） ============ */
@@ -721,8 +946,8 @@ function ensureCache(inp){
 
 /* 操作留痕 — localStorage 持久化（纯文本存储，渲染时转义；每条绑定炉次号） */
 let opLog=[];
-try{opLog=JSON.parse(localStorage.getItem("vees_oplog")||"[]");}catch(e){opLog=[];}
-function saveOpLog(){try{localStorage.setItem("vees_oplog",JSON.stringify(opLog));}catch(e){}}
+try{opLog=JSON.parse(localStorage.getItem("vero_oplog")||"[]");}catch(e){opLog=[];}
+function saveOpLog(){try{localStorage.setItem("vero_oplog",JSON.stringify(opLog));}catch(e){}}
 function pushLog(msg){
   opLog.unshift({t:new Date().toLocaleString("zh-CN",{hour12:false}),heat:heatNo||"",msg:String(msg)});
   if(opLog.length>50)opLog.pop();
@@ -743,7 +968,7 @@ function renderOpLog(){
 
 /* 仲裁终态（localStorage） */
 let arbChoice=null;
-try{arbChoice=localStorage.getItem("vees_arb")||null;}catch(e){}
+try{arbChoice=localStorage.getItem("vero_arb")||null;}catch(e){}
 function renderArbState(){
   const el=$("arbState");
   if(!el)return;
@@ -763,6 +988,13 @@ let activeView="furnace";
 function renderFurnace(inp,r){
   renderHeatLine();
   renderLance(inp);
+  /* B3 三元徽标（紧邻大数字）+ 流程条状态 */
+  const m=dataMeta();
+  $("heatD3").innerHTML=d3HTML(m);
+  $("d3Pel").innerHTML=d3HTML(m);
+  $("d3Gr").innerHTML=d3HTML(m);
+  $("hoD3").innerHTML=d3HTML(m);
+  renderFlow();
   $("vW").textContent=fmt(inp.W/1000,1)+" t";
   $("vSi").textContent=inp.Si.toFixed(3)+" %";
   $("vV").textContent=inp.V.toFixed(3)+" %";
@@ -782,6 +1014,15 @@ function renderFurnace(inp,r){
   if(g<13.8){gGr.classList.add("grade-bad");st="预算目标 ≥ 14.0 · 破限（低于 13.8）";}
   else if(g<14.0){gGr.classList.add("grade-near");st="预算目标 ≥ 14.0 · 临近门限";}
   $("grState").textContent=st;
+
+  /* B3 可信度沿链路传染：输入存疑 → 配吃量 / 品位预测同标「依据存疑」 */
+  const sl=$("suspectLine");
+  if(m.suspect){
+    const why=(m.tlKey==="ontime")?("输入字段不完整（"+m.compTxt+"）"):m.tlTxt;
+    sl.style.display="flex";
+    sl.innerHTML="<span class='tag'>依据存疑</span><span>"+esc(why)+
+      " → 配吃 <b>"+fmt(plT,2)+" t</b> / 品位 <b>"+fmtGrade(g)+"%</b> 仅供参考，建议核对化验数据后再执行</span>";
+  }else{sl.style.display="none";sl.innerHTML="";}
 
   /* 工程详情（折叠区内，瞬时更新） */
   $("kSur").innerHTML=fmt(r.surplus/1e6,1)+"<small> GJ</small>";
@@ -803,19 +1044,44 @@ function renderFurnace(inp,r){
     say.innerHTML="建议配吃 <b>"+fmt(plT,2)+" t</b> 球团，预测品位 <b>"+fmtGrade(g)+"%</b>，落在常用区间，照单执行。";
   }
 
-  /* 黄灯判例内联（证据在按钮之前） */
-  const wc=$("warnCase");
-  if(risky){
-    const top=nearH(inp.Si,inp.V);
-    if(top.length){
-      const c=top[0];
-      wc.style.display="block";
-      wc.innerHTML="<div class='wc-t'>参数逼近边界 · 最相似判例</div>"+
-        "<div class='wc-b'>第 <b>"+c.h.day+"</b> 日：Si "+c.h.si.toFixed(2)+"% / V "+c.h.v.toFixed(2)+"% → 实绩精钒渣 <b>"+c.h.fine+"%</b>（相似距离 "+c.d.toFixed(3)+"）"+
-        " <button class='btn-mini' id='planBtn' style='margin-left:6px'>查看高硅预案</button></div>";
-      const pb=$("planBtn"); if(pb)pb.onclick=()=>pushLog("炉长查看高硅预案（参数逼近边界）");
-    }else{wc.style.display="none";wc.innerHTML="";}
-  }else{wc.style.display="none";wc.innerHTML="";}
+  /* B6 黄灯「证据即按钮」：判例证据占据视觉重心，确认键内嵌其右侧；绿灯不拆行、无摩擦 */
+  const wc=$("warnCase"), zone=$("actZone");
+  const top=nearH(inp.Si,inp.V);
+  if(risky&&top.length){
+    const c=top[0], dev=r.grade-c.h.fine;
+    wc.innerHTML="<div class='ev-t'>黄灯 · 唯一例外判例</div>"+
+      "<div class='ev-b'>相似炉 #"+c.h.day+" 实绩偏差 "+(dev>=0?"+":"")+fmt(dev,2)+"%"+
+      "<small>第 "+c.h.day+" 日 Si "+c.h.si.toFixed(2)+"% / V "+c.h.v.toFixed(2)+"% → 实绩精钒渣 "+
+      c.h.fine+"%；本炉预测 "+fmtGrade(r.grade)+"%，相似距离 "+c.d.toFixed(3)+"</small></div>";
+    zone.classList.add("split");
+  }else{
+    wc.innerHTML="";
+    zone.classList.remove("split");
+  }
+
+  /* B2 交接单：来源 / 口径 / 确认后会发生什么 */
+  const srcTxt=dataSource.mode==="auto"?"接口推送":"化验单人工录入";
+  $("hoTop").innerHTML="<b>"+esc(dataSource.label)+"</b> · "+srcTxt+" · "+(m.ts?hhmm(m.ts)+" 带入":"未带入")+
+    "（"+(dataSource.edited
+        ?"<span style='color:var(--warn);font-weight:700'>"+hhmm(dataSource.editedAt)+" 经人工修改</span>"
+        :"未经人工修改")+"）";
+  $("hoMid").innerHTML="pangang/base.yaml v1.0.0 · 状态 <span class='draft'>draft 未审定</span> · 氧化热口径 <b>"+
+    inp.dhV+" kJ/kg</b> · 31 类参数溯源至攀钢 Excel 单元格";
+  const lp0=lanceProfile(inp.Si);
+  $("hoBot").innerHTML="按 <b>"+fmt(plT,2)+" t</b> 球团配吃 · 枪位曲线 <b>"+lp0.label+"</b>（"+
+    lp0.steps.map(s=>s.h+"mm").join("→")+"）· 记入留痕 <b>不可删</b>";
+  /* 依据明细（折叠）：判例 + 字段完整度 */
+  const fields=[["铁水装入量",fmt(inp.W/1000,1)+" t"],["Si",inp.Si.toFixed(3)+" %"],
+                ["V",inp.V.toFixed(3)+" %"],["温度",inp.T+" ℃"]];
+  $("caseDetail").innerHTML=
+    "<div class='note' style='margin-top:2px'>判例明细（相似距离 = 2×|ΔSi|+|ΔV|，越小越相似）：</div>"+
+    top.map(x=>"<div style='font-size:var(--fs-cap);color:var(--t2)'>第 <b>"+x.h.day+"</b> 日：Si "+
+      x.h.si.toFixed(2)+"% / V "+x.h.v.toFixed(2)+"% → 实绩精钒渣 <b>"+x.h.fine+"%</b>（距离 "+x.d.toFixed(3)+"）</div>").join("")+
+    "<div class='note' style='margin-top:6px'>字段完整度："+fields.map(f=>esc(f[0])+" "+esc(f[1])).join(" · ")+
+      (m.compCls==="ok"?" · 4/4 齐备":" · <span style='color:var(--warn)'>缺炉次号</span>")+
+      "　时效："+esc(m.tlTxt)+"</div>"+
+    "<button class='btn-mini' id='planBtn' style='margin-top:6px'>查看高硅预案</button>";
+  const pb=$("planBtn"); if(pb)pb.onclick=()=>pushLog("炉长查看高硅预案（参数逼近边界）");
 
   /* 信任锚：最相似 3 炉 + 刻度尺 */
   const top3=nearH(inp.Si,inp.V).slice(0,3);
@@ -974,6 +1240,7 @@ function switchView(v){
   document.querySelectorAll(".view").forEach(el=>el.classList.toggle("on",el.id==="view-"+v));
   /* 进入视图时全量渲染一次 */
   $("sweep").dataset.built=""; $("replay").dataset.built="";
+  renderFlow();
   const inp=readInput(); const r=runModel(inp); ensureCache(inp);
   if(v==="process"){drawSweep(inp,r.grade,true);explainTB(inp,r,inp.Si>0.25||inp.V<0.27);arb(inp,r);simTB(inp);drawReplay(true);}
   if(v==="data"){traceTB(inp);renderOpLog();if(!_goldCache)goldTB();}
@@ -999,6 +1266,11 @@ document.addEventListener("input",e=>{
     e.target.closest("label").classList.add("on");
   }
   if(e.target.classList&&e.target.classList.contains("val-input"))return;
+  /* B3：人工改动推送值 → 交接单「是否经人工修改」翻转；手动录入 → 刷新录入时刻 */
+  if(!_applying&&["inW","inSi","inV","inT"].indexOf(e.target.id)>=0){
+    if(dataSource.mode==="auto"){dataSource.edited=true;dataSource.editedAt=new Date();}
+    else{dataSource.ts=new Date();}
+  }
   if(!_dirty){_dirty=true;_raf=requestAnimationFrame(()=>{_dirty=false;update();});}
 });
 
@@ -1104,21 +1376,55 @@ $("resetBtn").addEventListener("click",()=>{
   update();
 });
 
-/* 炉长确认（登记炉次 + 留痕） */
+/* 炉长确认（登记炉次 + 留痕 + 流程条推进） */
 $("confirmBtn").addEventListener("click",()=>{
   const inp=readInput();const r=runModel(inp);
   const risky=inp.Si>0.25||inp.V<0.27;
   registerHeat();
-  pushLog("炉长确认照单执行｜配吃 "+fmt(r.pl/1000,2)+"t · 品位 "+fmtGrade(r.grade)+"% · "+(risky?"黄灯·例外流程":"绿灯·照做"));
+  const now=new Date();
+  flowState.confirm={st:"done",ts:now};
+  flowState.log={st:"done",ts:now};
+  pushLog("炉长确认照单执行｜"+(heatNo||"未编号")+" · 配吃 "+fmt(r.pl/1000,2)+"t · 品位 "+fmtGrade(r.grade)+"% · "+(risky?"黄灯·例外流程":"绿灯·照做"));
+  renderFlow();
   const b=$("confirmBtn");b.textContent="✓ 已留痕（数据治理台可查）";b.disabled=true;b.classList.add("done");
   setTimeout(()=>{b.textContent="确认照单执行 · 留痕";b.disabled=false;b.classList.remove("done");},1400);
+});
+
+/* B4 推翻：理由下拉 + 自由文本 → 记入留痕，流程条标「已推翻」（系统只推荐不操作，无二次确认弹窗） */
+function closeOv(){
+  $("ovForm").hidden=true;
+  $("ovTxt").value="";
+  $("overrideBtn").classList.remove("on");
+}
+$("overrideBtn").addEventListener("click",()=>{
+  const f=$("ovForm"), open=f.hidden;
+  f.hidden=!open;
+  $("overrideBtn").classList.toggle("on",open);
+  if(open)$("ovSel").focus();
+});
+$("ovCancel").addEventListener("click",closeOv);
+$("ovSubmit").addEventListener("click",()=>{
+  const inp=readInput();const r=runModel(inp);
+  const sel=String($("ovSel").value||"未分类");
+  const extra=String($("ovTxt").value||"").trim().slice(0,120);
+  const reason=sel+(extra?"："+extra:"");
+  if(!heatNo)setHeatNo(nextHeatNo());
+  registerHeat();
+  const now=new Date();
+  overrides[heatNo]={t:now.toISOString(),reason:reason,pl:+(r.pl/1000).toFixed(2),grade:+r.grade.toFixed(3)};
+  try{localStorage.setItem("vero_overrides",JSON.stringify(overrides));}catch(e){}
+  flowState.confirm={st:"ov",ts:now};
+  flowState.log={st:"done",ts:now};
+  pushLog("【推翻】"+(heatNo||"未编号")+" · 原建议 "+fmt(r.pl/1000,2)+" t · 理由 "+reason);
+  closeOv();
+  update();   /* update → renderFlow：流程条确认节点标「已推翻」 */
 });
 
 /* 工艺仲裁按钮（终态锁定 + 全视图回写） */
 $("arbBtns").addEventListener("click",e=>{
   const b=e.target.closest(".btn-mini");if(!b)return;
   arbChoice=b.dataset.d;
-  try{localStorage.setItem("vees_arb",arbChoice);}catch(err){}
+  try{localStorage.setItem("vero_arb",arbChoice);}catch(err){}
   const inp=readInput();
   pushLog("工艺仲裁｜"+arbChoice+"（当前口径 "+(inp.dhV===2777?"经验 2777":"文献 15000")+" kJ/kg）");
   renderArbState();
@@ -1134,17 +1440,17 @@ $("recheckBtn").addEventListener("click",()=>{
 function setGuide(hide){
   $("guideCard").style.display=hide?"none":"";
   $("guideShow").style.display=hide?"":"none";
-  try{localStorage.setItem("vees_guide_hide",hide?"1":"");}catch(e){}
+  try{localStorage.setItem("vero_guide_hide",hide?"1":"");}catch(e){}
 }
 $("guideHide").addEventListener("click",()=>setGuide(true));
 $("guideShowBtn").addEventListener("click",()=>setGuide(false));
-try{if(localStorage.getItem("vees_guide_hide")==="1")setGuide(true);}catch(e){}
+try{if(localStorage.getItem("vero_guide_hide")==="1")setGuide(true);}catch(e){}
 
 /* ============ 外部系统对接适配器（预留接口，详见 docs/DATA_INTERFACE_SPEC.md §3.6） ============
-   外部系统（MES/L2/化验室）通过 window.VEES_API.applyHeat(payload) 推送开吹条件，
+   外部系统（MES/L2/化验室）通过 window.VERO_API.applyHeat(payload) 推送开吹条件，
    与手动录入共用同一渲染与留痕链路；推送后数据来源徽标自动切换。 */
-window.VEES_API={
-  version:"0.8.0",
+window.VERO_API={
+  version:"0.9.0",
   applyHeat(p){
     if(!p||typeof p!=="object")return {ok:false,err:"payload 必须为对象"};
     const W=+p.iron_weight_t, Si=+p.si_pct, V=+p.v_pct, T=+p.temp_c;
@@ -1159,16 +1465,25 @@ window.VEES_API={
     $("inSi").value=Math.min(Math.max(Si,0.10),0.30);
     $("inV").value=Math.min(Math.max(V,0.20),0.36);
     $("inT").value=Math.min(Math.max(T,1250),1350);
+    /* sampled_at：化验采样时刻（可选，缺省取到达时刻）；时效徽标以它起算 */
+    let samp=new Date(p.sampled_at!=null?p.sampled_at:Date.now());
+    if(!isFinite(samp.getTime()))samp=new Date();
     dataSource={mode:"auto",label:String(p.source||"外部系统").slice(0,20),
-      detail:"接口推送 · "+new Date().toLocaleTimeString("zh-CN",{hour12:false})};
+      detail:"接口推送 · "+hhmm(samp),ts:samp,edited:false,editedAt:null};
+    resetFlow(samp);
+    _applying=true;
     ["inW","inSi","inV","inT"].forEach(id=>$(id).dispatchEvent(new Event("input",{bubbles:true})));
-    pushLog("外部数据接入｜"+(p.source||"外部系统")+" 推送开吹条件（Si "+Si+"% / V "+V+"% / "+T+"℃ / "+W+"t）");
+    _applying=false;
+    pushLog("外部数据接入｜"+(p.source||"外部系统")+" 推送开吹条件（Si "+Si+"% / V "+V+"% / "+T+"℃ / "+W+"t · 采样 "+hhmm(samp)+"）");
     update();
     return {ok:true,heat_no:heatNo};
   },
   getState(){
-    const inp=readInput();const r=runModel(inp);const lp=lanceProfile(inp.Si);
-    return {heat_no:heatNo||null,source:dataSource.label,api_version:"0.8.0",
+    const inp=readInput();const r=runModel(inp);const lp=lanceProfile(inp.Si);const m=dataMeta();
+    return {heat_no:heatNo||null,source:dataSource.label,api_version:"0.9.0",
+      data:{sampled_at:m.ts?m.ts.toISOString():null,timeliness:m.tlKey,completeness:m.compTxt,
+            suspect:m.suspect,manually_edited:!!dataSource.edited},
+      flow:FLOW.map(f=>({step:f.n,name:f.name,owner:f.owner,state:ST_TXT[(flowState[f.k]||{}).st||"todo"]})),
       input:{iron_weight_t:inp.W/1000,si_pct:inp.Si,v_pct:inp.V,temp_c:inp.T,dh_kj_kg:inp.dhV},
       recommendation:{coolant_pellet_t:+(r.pl/1000).toFixed(3),grade_v2o5_pct:+r.grade.toFixed(4),
         heat_surplus_gj:+(r.surplus/1e6).toFixed(2),risky:inp.Si>0.25||inp.V<0.27},
@@ -1179,33 +1494,44 @@ window.VEES_API={
 $("inHeat").addEventListener("input",e=>{
   heatNo=e.target.value.trim().slice(0,24);
   const dup=$("heatDup"); if(dup)dup.style.display=(heatNo&&heatReg[heatNo])?"":"none";
+  resetFlow(dataSource.ts);   /* 换炉次 → 确认/归档回到初始态（该炉次历史推翻记录仍生效） */
+  renderFlow();
 });
 $("inHeat").addEventListener("blur",()=>{setHeatNo(heatNo||nextHeatNo());});
 $("newHeatBtn").addEventListener("click",()=>{
   setHeatNo(nextHeatNo());
-  dataSource={mode:"manual",label:"手动录入",detail:"按化验单填写"};
+  const now=new Date();
+  dataSource={mode:"manual",label:"手动录入",detail:"按化验单填写",ts:now,edited:false,editedAt:null};
+  resetFlow(now);
   pushLog("新建炉次 "+heatNo);
   renderHeatLine();
+  update();
 });
-/* 模拟外部推送（走 VEES_API.applyHeat 同一链路，验证对接路径） */
+/* 模拟外部推送（走 VERO_API.applyHeat 同一链路，验证对接路径）
+   采样时刻按 0 / 18 / 40 分钟前轮换，用于验证三元徽标的准时 / 晚到 / 存疑三档分级 */
+let _mockN=0; const _mockLag=[0,18,40];
 $("mockPush").addEventListener("click",()=>{
   const h=HEATS[Math.floor(Math.random()*HEATS.length)];
-  const res=window.VEES_API.applyHeat({
+  const lag=_mockLag[_mockN++%_mockLag.length];
+  const res=window.VERO_API.applyHeat({
     heat_no:nextHeatNo(),
     iron_weight_t:+(78+Math.random()*8).toFixed(1),
     si_pct:+Math.min(0.30,Math.max(0.10,h.si+(Math.random()*0.02-0.01))).toFixed(3),
     v_pct:h.v,
     temp_c:1290+Math.floor(Math.random()*20),
+    sampled_at:new Date(Date.now()-lag*60000).toISOString(),
     source:"L2 模拟推送"});
   if(!res.ok)pushLog("模拟推送被拒｜"+res.err);
 });
 /* 留痕筛选 */
 $("logFilter").addEventListener("input",()=>renderOpLog());
 
+setHeatNo(nextHeatNo());   /* 先编号再首渲：避免首帧误判「缺炉次号」 */
+resetFlow(dataSource.ts);
 update();
 goldTB();
 renderArbState();
-setHeatNo(nextHeatNo());
+renderFlow();
 </script>
 </body>
 </html>

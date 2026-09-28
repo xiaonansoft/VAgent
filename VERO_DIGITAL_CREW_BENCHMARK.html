@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>数字班组对标分析 · 中铝数为 vs VERO — 多角色智能体头脑风暴报告</title>
+<style>
+:root{
+  --bg:#0d1117; --panel:#161b22; --panel2:#1c2128; --line:#30363d; --line2:#21262d;
+  --ink:#e6edf3; --ink2:#9da7b3; --ink3:#6e7681;
+  --molten:#e8620f; --steel:#6b93b8; --ok:#4a9e5c; --warn:#b98a2e; --danger:#c94f42; --purple:#9e7cc9;
+  --mono:"SF Mono",Consolas,"Courier New",monospace;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font:15px/1.75 -apple-system,"PingFang SC","Microsoft YaHei",sans-serif;padding:32px 22px}
+.wrap{max-width:1120px;margin:0 auto}
+h1{font-size:24px;letter-spacing:.5px}
+.sub{color:var(--ink3);font-size:13px;margin-top:6px}
+h2{font-size:18px;margin:34px 0 14px;padding:9px 14px;background:var(--panel2);border-left:3px solid var(--molten);border-radius:4px}
+h3{font-size:15.5px;margin:22px 0 8px;color:var(--molten)}
+p{margin:9px 0;color:var(--ink2)}
+p b,li b{color:var(--ink)}
+ul,ol{margin:8px 0 8px 22px;color:var(--ink2)}
+li{margin:5px 0}
+table{width:100%;border-collapse:collapse;margin:14px 0;font-size:13.5px;background:var(--panel)}
+th{background:var(--panel2);color:var(--ink);text-align:left;padding:8px 10px;border:1px solid var(--line);font-weight:600}
+td{padding:8px 10px;border:1px solid var(--line2);color:var(--ink2);vertical-align:top}
+td b{color:var(--ink)}
+.box{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:16px 18px;margin:16px 0}
+.box-warn{border-color:rgba(185,138,46,.5);background:rgba(185,138,46,.06)}
+.box-danger{border-color:rgba(201,79,66,.5);background:rgba(201,79,66,.06)}
+.box-ok{border-color:rgba(74,158,92,.45);background:rgba(74,158,92,.05)}
+.box-steel{border-color:rgba(107,147,184,.45);background:rgba(107,147,184,.05)}
+.tag{display:inline-block;padding:1px 8px;border-radius:999px;font-size:11.5px;border:1px solid var(--line);color:var(--ink2);margin-right:5px}
+.tag-o{border-color:rgba(232,98,15,.5);color:var(--molten)}
+.tag-g{border-color:rgba(74,158,92,.5);color:var(--ok)}
+.tag-r{border-color:rgba(201,79,66,.5);color:var(--danger)}
+.tag-b{border-color:rgba(107,147,184,.5);color:var(--steel)}
+.tag-y{border-color:rgba(185,138,46,.55);color:var(--warn)}
+.mono{font-family:var(--mono);font-size:12.5px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media(max-width:860px){.grid2{grid-template-columns:1fr}}
+.role{border-left:3px solid var(--steel);padding:4px 0 4px 14px;margin:18px 0}
+.role h4{font-size:14.5px;color:var(--ink);margin-bottom:4px}
+.role .verdict{font-size:13.5px;color:var(--ink2);margin-bottom:6px}
+.vs{background:var(--panel2);border:1px dashed var(--line);border-radius:6px;padding:10px 14px;margin:8px 0;font-size:13.5px;color:var(--ink2)}
+.vs b{color:var(--ink)}
+.arrow{color:var(--molten);font-weight:700}
+footer{margin-top:40px;padding-top:14px;border-top:1px solid var(--line);color:var(--ink3);font-size:12.5px}
+.big{font-size:17px;color:var(--ink);font-weight:600}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<h1>「数字班组」对标分析与七角色头脑风暴报告</h1>
+<div class="sub">对标文献：《工业级数字员工上岗，跑出配料熔炼生产"加速度"！》（公众号：中铝数为，2026-09-27）｜评审方式：7 角色智能体两轮辩论（独立评审 → 观点碰撞）｜输出日期：2026-09-27</div>
+
+<div class="box box-steel">
+<div class="big">总体判断（结论先行）</div>
+<p style="margin-top:8px">中铝数为「配料熔炼数字班组」是<strong>同一赛道的央企团队首次公开规模化叙事</strong>，其方法论骨架（岗位能力包拆解、任务链交接、人机边界、双飞轮）与 VERO 智能体化规划高度同构，<strong>等于为 VERO P2-P3 路线提供了免费的同行背书与市场教育</strong>。但文章通篇无量化指标、无界面证据、无验收标准，核心卖点中混有一句最危险的表述（"联动更新全部控制参数"）。对 VERO 的正确姿势是：<b>叙事抄其形（分层人格化）、架构守我神（单引擎+确定性工具集）、商务打其软肋（可验收 KPI）</b>。</p>
+</div>
+
+<h2>01 · 文章核心内容解析</h2>
+
+<table>
+<tr><th style="width:22%">要点</th><th>内容</th><th style="width:30%">解读</th></tr>
+<tr><td><b>痛点定义</b></td><td>配料/熔炼/化验系统割裂（库存、配料、DCS、化验各管一段），岗位人员耗在多系统切换；经验固化为系统功能要走完整开发流程，沉淀周期长</td><td>痛点真实，与 ISA-101 调研结论一致；但"切换"是皮，"数据对不上"才是骨（一线代表补充）</td></tr>
+<tr><td><b>产品形态</b></td><td>「配料熔炼数字班组」= 配料技术员 + 熔炼主控 + 化验员等多位数字员工协同，非单一计算工具</td><td>多角色人格化包装，对标组织图，销售友好</td></tr>
+<tr><td><b>方法论</b></td><td>四层架构：岗位能力拆成可复用 Skill 技能+知识库资产，岗位职责/计算工具/工艺边界封装为可迭代「岗位能力包」，「先拆后组」</td><td>与 VERO 三层知识包+CF 登记同构，是全文最有方法论价值的部分</td></tr>
+<tr><td><b>任务链</b></td><td>配料方案→数字员工自动校核物料/配比/成分偏差→完整上下文交接熔炼主控→炉料平衡/工艺氧量全套计算→输出控制方案交现场确认</td><td>「上下文交接」技术实现未披露（schema 还是自然语言？）——多智能体失败的第一大原因藏在这里</td></tr>
+<tr><td><b>化验闭环</b></td><td>化验员数字员工抓取冰铜/炉渣化验结果→比对目标分析偏差→推送结论→主控生成调参方案重新核算</td><td><span class="tag tag-r">硬伤</span>铜冶炼化验滞后 40min–2h + 取样代表性问题，只能做炉次间低频校准，不能包装成实时闭环</td></tr>
+<tr><td><b>异常联动</b></td><td>库存不足→自动剔除受限物料→重新测算最优配料→联动更新全部控制参数</td><td><span class="tag tag-g">真亮点</span>事件驱动重算是全文技术含量最高的一句；<span class="tag tag-r">但"联动更新全部控制参数"若指直写控制回路，则是事故种子</span></td></tr>
+<tr><td><b>人机边界</b></td><td>数据读取/专业运算/跨岗位交接/反复核算交数字员工；关键决策、最终确认在现场人员手中</td><td>原则正确，但"确认前给人看什么证据"未展示——流于形式的风险大</td></tr>
+<tr><td><b>迭代模式</b></td><td>「Skill 经验小飞轮 + 工业系统大飞轮」双飞轮</td><td>无评测集/回放/留痕/影子模式四件套支撑时，按口号处理</td></tr>
+<tr><td><b>愿景</b></td><td>AI 不替代控制系统；「确定性内环 + 智能协同外环」</td><td>与 VERO「只决策不执行」红线同构，但 VERO 红线是可审计的工程契约，此文是架构愿景</td></tr>
+</table>
+
+<h2>02 · 七角色评分汇总与核心立场</h2>
+
+<table>
+<tr><th style="width:15%">角色</th><th style="width:12%">评分</th><th>第一轮核心立场</th><th>第二轮修正后立场</th></tr>
+<tr><td><b>行业专家</b><br><span class="tag">铜/钒冶炼 25 年</span></td><td>可行性 <b>5.5/10</b></td><td>任务链骨架对、生产细节空心化；化验闭环是"伪闭环"，最可能卡在化验滞后与配料真实性</td><td>修正：化验闭环降格为"低频校准环"即成立；事件驱动重算才是真闭环，VERO P2 重心应压在线信号+事件驱动</td></tr>
+<tr><td><b>AI 专家</b><br><span class="tag">LLM/多智能体</span></td><td>技术 <b>7/10</b></td><td>数字班组本质是带 LLM 壳的工作流引擎——而这恰恰是对的；Agent 自主协商交接是工业反模式</td><td>接受人格化只进交互/销售层；裁决"联动"唯一合规形态=重算+建议+人确认；飞轮唯一真燃料是留痕人工 diff</td></tr>
+<tr><td><b>产品经理</b><br><span class="tag">冶金 B 端 10 年</span></td><td>中铝 <b>7/10</b><br>VERO <b>6/10</b></td><td>数字员工叙事是生死题（花的是人工替代预算）；VERO 应"抄其形守其神"，打"可验收"牌</td><td>KPI 改双轨制（结果指标进合同+推翻正确率进运营），采纳率永久删除；人格化分层：管理层全人格化、一线零人格化</td></tr>
+<tr><td><b>架构师</b><br><span class="tag">15 年工业架构</span></td><td>中铝 <b>6/10</b><br>VERO <b>5/10</b>（零件8/整车4）</td><td>"联动更新全部控制参数"要么是不实宣传要么是事故种子；VERO 缺 Heat 一等领域模型</td><td>JS 引擎改"单向冻结自然死亡"（触发条件=React 跑通后端闭环）；接受叙事先行但人格只活渲染层</td></tr>
+<tr><td><b>开发工程师</b><br><span class="tag">VERO 全栈主力</span></td><td>落地难度 <b>7/10</b></td><td>工具层已是半成品（7 个计算工具经 MCP 零成本即插即用）；P1 对话层 31 人日；先杀 JS 引擎再接 LLM</td><td>清单修订为 34.5 人日（+Heat 锚点 2d +parity 校验 1d +推翻留痕 1.5d）；JS 让位不让杀；推翻留痕是 P1 ROI 最高项</td></tr>
+<tr><td><b>UX 设计师</b><br><span class="tag">工业 HMI 专家</span></td><td>交互先进性 <b>6/10</b></td><td>拟人化是信任负债；炉前对话式交互是伪需求，VERO 永不引入主对话流；借任务链骨架不借拟人化表皮</td><td>接受双层人格化但证据链永远非人化；撤回 3 秒延迟方案改"证据即按钮"；数据徽标三元化且存疑沿任务链传染</td></tr>
+<tr><td><b>一线生产代表</b><br><span class="tag">炉长 15 年</span></td><td>实用度 <b>5.5/10</b></td><td>"数字员工听着像数字监工，它不干活它造活儿"；采纳率崇拜是数字化最大的谎言；三个要求：减动作、真数据、责任写清楚</td><td>名字可以让（立项需要），责任书必须写死"辅助计算工具"；不追求奖金，追求"被推翻的权利"制度化+数据当裁判</td></tr>
+</table>
+
+<h2>03 · 观点碰撞：五大冲突焦点及收敛结果</h2>
+
+<h3>冲突 ① 化验闭环：伪闭环 vs 真亮点</h3>
+<div class="vs"><b>行业专家</b>：化验闭环是伪闭环——取样滞后 40min–2h + 代表性问题，"炉子里的物料早就不是那批物料了"，garbage in, gospel out。<span class="arrow">⚡</span> <b>AI 专家</b>：「库存不足→剔除受限物料→事件驱动重算」是全文技术含量最高的一句，事件驱动架构高一个段位。</div>
+<div class="box box-ok"><b>收敛结果</b>：两条通道分开定价——<b>事件驱动重算（前馈通道）= 真闭环，值得主打</b>；化验闭环（反馈通道）= <b>低频校准环</b>，只做炉次间趋势校核与模型参数慢更新，严禁包装成实时调节。VERO P2 感知闭环的重心压在线信号+事件驱动，化验数据只做慢变量校正。</div>
+
+<h3>冲突 ② 拓扑之争：多数字员工 vs 单智能体</h3>
+<div class="vs"><b>AI 专家 + 开发工程师</b>：多角色拆进计算链路=三次序列化交接+三次幻觉注入点，工程上"一个编排器+六个函数"更优。<span class="arrow">⚡</span> <b>产品经理</b>：数字员工叙事是生死题——它花的是厂长的人工替代预算，工具定位抢的是信息化科逐年萎缩的钱包。</div>
+<div class="box box-ok"><b>收敛结果</b>：叙事归叙事，拓扑归拓扑——<b>人格化只活在交互层/销售层（头像、工牌、演示视频），计算拓扑保持单编排器+确定性工具集</b>。更进一步反守为攻：白皮书主动写明"VERO 采用单引擎多视角架构，角色是视图而非独立智能体，<b>不存在交接幻觉链</b>"——把对手的叙事承诺变成自己的差异化弹药。架构师补充约束：叙事文案必须从结构化 HandoffEnvelope 字段渲染，人格不进 state、不进交接协议。</div>
+
+<h3>冲突 ③ KPI 之争：采纳率 vs 推翻率</h3>
+<div class="vs"><b>产品经理（第一轮）</b>：建议采纳率 ≥70% 写进合同。<span class="arrow">⚡</span> <b>一线代表</b>：采纳率崇拜是数字化最大的谎言——KPI 是采纳率，终点就是逼人点确认；应该统计"推翻后证明人对的比例"，推翻得对要发奖金。</div>
+<div class="box box-ok"><b>收敛结果</b>：<b>双轨 KPI</b>——结果指标（终点命中率、钒回收率）进合同对厂长负责；决策质量指标（推翻率趋势+推翻后命中率）进运营对一线负责；<b>采纳率从 KPI 中永久删除</b>。推翻事件入留痕管道→机理引擎自动回溯判定（不靠专家仲裁，"炉子的终点数据自己说话"）→正确推翻进评测集、错误推翻进培训案例。奖励形式适配国企：不发钱，发"免责+面子"（月度会公开念名）。设 <b>4 周基线期只统计不考核</b>，防止"不推翻当目标"污染数据。</div>
+
+<h3>冲突 ④ JS 引擎存废</h3>
+<div class="vs"><b>开发工程师</b>：先杀 JS 引擎再接 LLM——双引擎在 LLM 时代不可持续，漂移是静默的。<span class="arrow">⚡</span> <b>现实约束</b>：单文件 v0.8 是当前唯一客户演示形态，React 前端未启动，刚花大力气做 75/75 对齐。</div>
+<div class="box box-ok"><b>收敛结果</b>：<b>让位不让杀，单向冻结自然死亡</b>——JS 引擎即日起冻结（只修 bug 不迭代模型），页面硬编码"模型版本快照，精度以服务端为准"；Python 侧迭代绝不回移 JS；死亡触发条件=React 前端跑通一次完整后端计算闭环。配套：75/75 用例抽成共享 golden-case JSON + parity 校验脚本（1 人日），漂移从"无感"变"红灯可见"。</div>
+
+<h3>冲突 ⑤ 数据徽标：说真话 vs 怕难看</h3>
+<div class="vs"><b>一线代表 + UX</b>：宁可给标注"晚到15分钟仅供参考"的烂数据，不给假装精确的假数据。<span class="arrow">⚡</span> <b>产品经理</b>：满屏"不可信"徽标会让厂长觉得系统不行。</div>
+<div class="box box-ok"><b>收敛结果</b>：一线代表一票定音——"让一个不用系统的人决定系统里显示什么，是数字化做不好的病根；满屏不可信徽标是体检报告不是病危通知"。徽标从二元扩展为<b>三元（来源+时效+完整度）</b>，挂在每个读数旁；"依据存疑"标记沿任务链向下传染，不只标在源头。</div>
+
+<h2>04 · 结论清单</h2>
+
+<h3>A · 值得借鉴的核心要点（按优先级）</h3>
+<table>
+<tr><th style="width:4%">#</th><th style="width:26%">借鉴点</th><th>落地方式（对 VERO）</th><th style="width:14%">优先级</th></tr>
+<tr><td>A1</td><td><b>岗位能力包方法论</b>（Skill+知识库资产化，"先拆后组"）</td><td>VERO 三层知识包对外更名为"提钒岗位能力包"；backend tools 加 SKILL_REGISTRY 注册表（name→func/version/schema/知识包依赖），定价逻辑从人天变订阅</td><td><span class="tag tag-o">P0·本月</span></td></tr>
+<tr><td>A2</td><td><b>事件驱动重算</b>（约束变化→剔除受限项→全链路重算→生成建议）</td><td>P2 增加 constraint-change recompute 触发器：炉次生命周期事件枚举化（HeatCreated/AssayArrived/ConstraintChanged），重算结果只进建议包，必须人确认</td><td><span class="tag tag-y">P1·90天</span></td></tr>
+<tr><td>A3</td><td><b>人机边界清单化</b>（机器做读取/运算/交接/核算，人做决策确认）</td><td>写进产品白皮书与合同附件；技术上用 LangGraph interrupt 机制硬保证——影响工艺参数的建议节点后必须挂确认门，CI 静态检查拒绝跳过路径</td><td><span class="tag tag-o">P0·本月</span></td></tr>
+<tr><td>A4</td><td><b>分层人格化叙事</b>（对厂长讲"编外班组"，对班组讲"助手算盘"）</td><td>投标材料/演示视频全人格化；一线界面与留痕零人格化，证据链永远非人化（"化验系统·L2接口·09:41"，永远不是"数字化验员小张"）；定位语建议："不做黑箱自动驾驶，做总工的机理副驾"</td><td><span class="tag tag-o">P0·本月</span></td></tr>
+<tr><td>A5</td><td><b>任务链交接可视化=交接单</b>（谁做的、几点、什么数据、完没完）</td><td>v0.9 顶栏加"本炉流程条"（开吹条件→配吃计算→枪位推荐→确认执行→留痕归档），节点标状态+责任方+时间戳；工艺台加"待办收件箱"汇聚黄灯例外炉；禁止头像+气泡对话框形式</td><td><span class="tag tag-y">P1·90天</span></td></tr>
+<tr><td>A6</td><td><b>双飞轮的工程化改写</b>（飞轮燃料=留痕人工 diff）</td><td>推翻留痕（AdviceLog 加 overturned/overturn_reason 字段+前端推翻按钮，1.5 人日）→ 机理引擎自动回溯仲裁 → 正确推翻进评测集；配套四件套：评测集/回放/留痕/影子模式</td><td><span class="tag tag-y">P1·90天</span></td></tr>
+<tr><td>A7</td><td><b>"AI 同事"生态位话术</b>（不替代控制系统=不抢 MES/L2 厂商饭碗）</td><td>直接化解集成政治阻力，写进所有对外材料；但 VERO 红线表述保持工程契约式（"LLM 直接下发设定值次数=0"可审计），不用概念分层式</td><td><span class="tag tag-o">P0·本月</span></td></tr>
+</table>
+
+<h3>B · 需要规避的问题</h3>
+<table>
+<tr><th style="width:4%">#</th><th style="width:26%">陷阱</th><th>危害</th><th style="width:30%">规避动作</th></tr>
+<tr><td>B1</td><td><b>"联动更新全部控制参数"直写控制回路</b></td><td>一条脏库存数据获得改变工艺设定的权限；跨设备分布式写无事务，写一半失败=炉子处于未定义参数组合；故障半径最大化</td><td>VERO 红线不可破：IControlSignalWriter 永不提供真实 DCS 实现，写路径上必须有带电的人类；此文当反面教材写进架构红线文档</td></tr>
+<tr><td>B2</td><td><b>LLM 直接做数值计算</b>（"数字员工做专业运算"表述含糊）</td><td>编造一个 Tc 值（1361 vs 1380，CF-007）就是一次事故</td><td>LLM 零自由计算权：所有数字必须来自工具调用返回，回复数值强制溯源，溯源失败拦截拒答；Prompt 注入 CF-001~008 仲裁表</td></tr>
+<tr><td>B3</td><td><b>多角色拆进计算链路</b></td><td>N 步链每步 95% 正确，端到端 81%；每次自然语言交接=一次有损压缩+幻觉注入</td><td>单编排器+确定性工具集；角色只活交互层；交接用结构化 HandoffEnvelope（heat_id/from/to/input_snapshot/conclusions/confidence/trace_id/知识包版本）</td></tr>
+<tr><td>B4</td><td><b>采纳率 KPI</b></td><td>系统为保采纳率自我保守化（只推没争议的建议）；操作工被逼成橡皮图章，AI 错误被"洗白"成人决策</td><td>采纳率永久删除；双轨 KPI + 4 周基线期保护</td></tr>
+<tr><td>B5</td><td><b>化验闭环包装成实时闭环</b></td><td>滞后 40min–2h + 取样代表性缺失，闭环越快错得越快，"比不算更危险"</td><td>定位降格为低频校准环；在线判断交给多源信号（炉气/火焰/音频），化验只做慢变量校正</td></tr>
+<tr><td>B6</td><td><b>对话式交互进炉前一线</b></td><td>90dB、戴手套、10 秒决策窗口下，"提问-等待-阅读段落"是倒退；语音基本不可用</td><td>VERO 永不引入主对话流；一线诉求"想聊天"通常是录入工具太烂的代偿——修数据自动带入，不是加聊天框</td></tr>
+<tr><td>B7</td><td><b>拟人化进一线界面与留痕</b></td><td>"是数字员工建议的"成为责任稀释标准句式；老师傅第一反应"来顶我岗的"，未用先抵触</td><td>人格化只允许存在于不产生操作后果的介质；留痕里只有来源没有时间戳化的"人"</td></tr>
+<tr><td>B8</td><td><b>无量化验收的叙事</b></td><td>首期靠声量签单，二期死在"它到底干成了什么"；验收范式若被对手定义为"看协同演示效果"，行业被拖进演示军备竞赛</td><td>VERO 反向打"可验收"牌：6 个月内向行业输出《数字员工验收白皮书》（江铜 96% 做锚点）——谁定义验收标准谁定义赛道</td></tr>
+<tr><td>B9</td><td><b>经验 Skill 化无确权机制</b></td><td>没有"经验资产确权+署名+激励"，沉淀下来的全是规程文件，值钱的默会知识一丝进不来，数字员工上限="熟读规程的新手"</td><td>贵溪项目补"师傅经验对赌式采集"：经验署名、采纳记账、效果回溯后与班组荣誉挂钩</td></tr>
+<tr><td>B10</td><td><b>双飞轮空转</b></td><td>数据源是模拟器自产自销，飞轮转的是假数据；无专职运营团队，飞轮两周就停</td><td>飞轮四件套（评测集/回放/留痕/影子模式）作为验收定义；自学习门禁：采集率≥80% 才开</td></tr>
+</table>
+
+<h3>C · 推荐下一步行动</h3>
+<table>
+<tr><th style="width:12%">时间窗</th><th>行动</th><th style="width:22%">责任侧</th></tr>
+<tr><td rowspan="5"><b>30 天</b></td><td>1. 对外话术升级：分层人格化 + 定位语"不做黑箱自动驾驶，做总工的机理副驾"；知识包更名"提钒岗位能力包"（订阅式资产叙事）</td><td>产品/商务</td></tr>
+<tr><td>2. 推翻留痕进 P1：AdviceLog 加 overturn 三字段+前端推翻按钮与理由输入（1.5 人日）</td><td>开发</td></tr>
+<tr><td>3. 数据徽标三元化（来源+时效+完整度）上炉长视图，存疑标记沿任务链传染</td><td>开发/UX</td></tr>
+<tr><td>4. JS 引擎冻结 + golden-case parity 校验脚本（1 人日），页面加"精度以服务端为准"</td><td>开发</td></tr>
+<tr><td>5. 白皮书立项：《数字员工可验收标准》——以江铜 96% 终点命中率为锚，抢验收定义权</td><td>产品/行业专家</td></tr>
+<tr><td rowspan="4"><b>90 天</b></td><td>6. P1 对话层落地（修订后 34.5 人日清单：LLM 网关→意图路由（复用 MCP _tool_schemas 零成本对接 function calling）→输出校验适配→CF 口径注入→RAG 真升级→LangGraph SQLite 持久化→Heat 锚点→前端拆分）</td><td>开发</td></tr>
+<tr><td>7. SKILL_REGISTRY 注册表 + HandoffEnvelope 结构化交接协议（schemas.py 扩展）</td><td>架构/开发</td></tr>
+<tr><td>8. v0.9 界面：本炉流程条 + 交接单样式证据区 + 工艺台待办收件箱（借任务链骨架，不借拟人化表皮）</td><td>UX/开发</td></tr>
+<tr><td>9. 演示视频脚本逐句经架构师背书："任务链自动交接"降调为"同一引擎、多角色同步可见"</td><td>产品/架构</td></tr>
+<tr><td rowspan="4"><b>180 天</b></td><td>10. P2 事件驱动重算触发器（约束变化→全链路重算→建议包→人确认），炉次事件枚举化</td><td>架构/开发</td></tr>
+<tr><td>11. 推翻仲裁→评测集管道贯通（飞轮真燃料），跑完 4 周基线期后上线双轨 KPI</td><td>开发/工艺</td></tr>
+<tr><td>12. 师傅经验对赌式采集机制在贵溪试点（署名+记账+月度光荣榜），补默会知识短板</td><td>行业专家/现场</td></tr>
+<tr><td>13. 《数字员工验收白皮书》行业输出，配合 927 万项目与数字工匠共创节点投放</td><td>产品/商务</td></tr>
+</table>
+
+<div class="box box-warn" style="margin-top:24px">
+<b>一句话总账</b>：中铝数为这篇文章对 VERO 是<b>利好而非威胁</b>——央企团队替行业付了"数字员工"的市场教育费，留下的三个空档（无量化验收、无确定性底座表述、无口径治理）正是 VERO 的弹药库。<b>叙事抄形、架构守神、验收抢先</b>，十二字方针。
+</div>
+
+<footer>
+报告生成：2026-09-27 ｜ 评审阵容：行业专家 / AI 专家 / 产品经理 / 架构师 / 开发工程师 / UX 设计师 / 一线生产代表（7 角色 × 2 轮）｜ 关联文档：VERO_AGENT_EVOLUTION_PLAN.html · VERO_UI_REDESIGN_PLAN.html · docs/DATA_INTERFACE_SPEC.md ｜ VERO MVP v0.8
+</footer>
+
+</div>
+</body>
+</html>

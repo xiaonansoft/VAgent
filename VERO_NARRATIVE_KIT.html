@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VERO 对外叙事工具箱 · Narrative Kit v1.0</title>
+<style>
+:root{
+  --bg:#0d1117; --panel:#161b22; --panel2:#1c2128; --line:#30363d; --line2:#21262d;
+  --ink:#e6edf3; --ink2:#9da7b3; --ink3:#6e7681;
+  --molten:#e8620f; --steel:#6b93b8; --ok:#4a9e5c; --warn:#b98a2e; --danger:#c94f42;
+  --mono:"SF Mono",Consolas,"Courier New",monospace;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font:15px/1.75 -apple-system,"PingFang SC","Microsoft YaHei",sans-serif;padding:32px 22px}
+.wrap{max-width:1180px;margin:0 auto}
+h1{font-size:25px;letter-spacing:.5px}
+.sub{color:var(--ink3);font-size:13px;margin-top:6px}
+h2{font-size:18px;margin:34px 0 14px;padding:9px 14px;background:var(--panel2);border-left:3px solid var(--molten);border-radius:4px}
+h3{font-size:15.5px;margin:22px 0 8px;color:var(--molten)}
+h4{font-size:14.5px;margin:14px 0 6px;color:var(--ink)}
+p{margin:9px 0;color:var(--ink2)}
+p b,li b,td b{color:var(--ink)}
+ul,ol{margin:8px 0 8px 22px;color:var(--ink2)}
+li{margin:5px 0}
+table{width:100%;border-collapse:collapse;margin:14px 0;font-size:13.5px;background:var(--panel)}
+th{background:var(--panel2);color:var(--ink);text-align:left;padding:8px 10px;border:1px solid var(--line);font-weight:600}
+td{padding:8px 10px;border:1px solid var(--line2);color:var(--ink2);vertical-align:top}
+.box{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:16px 18px;margin:16px 0}
+.box-warn{border-color:rgba(185,138,46,.5);background:rgba(185,138,46,.06)}
+.box-danger{border-color:rgba(201,79,66,.5);background:rgba(201,79,66,.06)}
+.box-ok{border-color:rgba(74,158,92,.45);background:rgba(74,158,92,.05)}
+.box-steel{border-color:rgba(107,147,184,.45);background:rgba(107,147,184,.05)}
+.tag{display:inline-block;padding:1px 8px;border-radius:999px;font-size:11.5px;border:1px solid var(--line);color:var(--ink2);margin-right:5px;white-space:nowrap}
+.tag-o{border-color:rgba(232,98,15,.5);color:var(--molten)}
+.tag-g{border-color:rgba(74,158,92,.5);color:var(--ok)}
+.tag-r{border-color:rgba(201,79,66,.5);color:var(--danger)}
+.tag-b{border-color:rgba(107,147,184,.5);color:var(--steel)}
+.tag-y{border-color:rgba(185,138,46,.55);color:var(--warn)}
+.mono{font-family:var(--mono);font-size:12.5px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+@media(max-width:900px){.grid2,.grid3{grid-template-columns:1fr}}
+.script{font-size:13px}
+.script td{line-height:1.65}
+.say{background:var(--panel2);border-left:3px solid var(--steel);border-radius:0 6px 6px 0;padding:10px 14px;margin:8px 0;color:var(--ink2);font-size:13.5px}
+.say b{color:var(--ink)}
+.say-o{border-left-color:var(--molten)}
+.say-g{border-left-color:var(--ok)}
+.kpi{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:16px 0}
+.kpi div{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:12px 14px;text-align:center}
+.kpi .v{font-size:26px;font-weight:700;color:var(--molten);font-variant-numeric:tabular-nums}
+.kpi .l{font-size:12px;color:var(--ink3);margin-top:4px}
+footer{margin-top:40px;padding-top:14px;border-top:1px solid var(--line);color:var(--ink3);font-size:12.5px}
+.big{font-size:17px;color:var(--ink);font-weight:600}
+.dim{color:var(--ink3);font-size:12.5px}
+hr{border:0;border-top:1px dashed var(--line);margin:18px 0}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<h1>VERO 对外叙事工具箱 <span class="tag tag-o">Narrative Kit v1.0</span></h1>
+<div class="sub">提钒冶炼智能体（VERO）· 产品/商务对外统一口径 ｜ 编制日期：2026-09-27 ｜ 密级：对外可控（文中标注「内部话术」「需复核」的条目发布前请删除）｜ 基准依据：七角色多智能体评审《数字班组对标分析》</div>
+
+<div class="box box-steel">
+<div class="big">十二字方针（结论先行，全公司一条嗓子）</div>
+<p style="margin-top:8px"><b>叙事抄形 · 架构守神 · 验收抢先。</b></p>
+<ul>
+<li><b>叙事抄形</b>：借鉴同行已付费的市场教育成果——"数字员工 / 数字班组 / 岗位能力包"这套语言可以讲，它打开的是厂长口袋里的<b>人工成本替代预算</b>。</li>
+<li><b>架构守神</b>：<b>人格化只活在交互层与销售层</b>（PPT、演示视频、投标封面、管理层汇报）；计算拓扑永远是<b>单编排器 + 确定性工具集</b>；一线操作界面与留痕<b>零人格化</b>。</li>
+<li><b>验收抢先</b>：同行公开叙事中<b>没有一个量化指标</b>。这是我们最大的机会——抢在别人之前定义"数字员工该怎么验收"，<b>谁定义验收，谁定义赛道</b>。</li>
+</ul>
+<p class="dim">使用纪律：本文件是口径单一事实来源。任何 PPT / 标书 / 公众号稿件中出现的新提法，若不在本文件中，须先回来登记，避免口径漂移。</p>
+</div>
+
+<h2>01 · 一句话定位与备选定位语</h2>
+
+<div class="box box-ok">
+<div class="big">首选定位语（对外默认使用）</div>
+<p style="margin-top:8px;font-size:19px;color:var(--ink);font-weight:600">「不做黑箱自动驾驶，做总工的机理副驾。」</p>
+<p><b>为什么这句最好使</b>：① 主动否定"自动驾驶"，把 AI 盲目上回路的风险先拆掉，消除甲方总工/安全口的本能抵触；② "机理"二字宣告我们有确定性底座，不是 Prompt 工程；③ "副驾"承担了责任边界——方向盘在人手里，但人不孤独；④ 主语是"总工"不是"操作工"，避免触发一线"来顶我岗的"抵触。</p>
+<p class="dim">配套一句解释（被追问时用）："它是坐在您的机理模型和知识包之上的一层认知层，负责把数据翻译成带证据的动作建议，建议怎么来的每一步都能查，最后要不要照做，您点头才算。"</p>
+</div>
+
+<table>
+<tr><th style="width:6%">编号</th><th style="width:26%">定位语</th><th style="width:18%">适用对象</th><th>使用要点与话术落点</th></tr>
+<tr>
+  <td><b>P0</b><br><span class="tag tag-o">首选</span></td>
+  <td><b>不做黑箱自动驾驶，做总工的机理副驾</b></td>
+  <td>总工 / 厂长 / 评标专家</td>
+  <td>主打场景：技术交流会、投标答辩、专家评审。<b>默认用语</b>，所有材料标题级必带。落点＝"建议可解释、可追溯、可推翻，最终决策权在现场"。</td>
+</tr>
+<tr>
+  <td><b>P1</b></td>
+  <td><b>给每一炉配一个不睡觉的编外班组</b></td>
+  <td>厂长 / 生产副厂长 / 人力资源</td>
+  <td>主打场景：立项汇报、预算沟通。落点＝"三个班、四班倒的人头压力；夜班最薄弱的那几个小时"。<b>注意：</b>这句话只用于管理层口头表达，<b>不得印在一线操作界面、不得写入操作记录</b>。</td>
+</tr>
+<tr>
+  <td><b>P2</b></td>
+  <td><b>把老师傅的经验变成可盘点、可审计、可继承的厂内资产</b></td>
+  <td>厂长 / 总工 / 信息化部门</td>
+  <td>主打场景：知识工程、数字化转型、接班人断层议题。落点＝"人员退休不带走产线能力"+"三条：经验的采集、确权、复用"（详见 <code>docs/EXPERIENCE_CAPTURE.md</code>）。</td>
+</tr>
+<tr>
+  <td><b>P3</b></td>
+  <td><b>只建议、不下发：一条叫得应、说得清、查得到的工艺建议流</b></td>
+  <td>信息化部门 / 自动化厂商 / 评标专家</td>
+  <td>主打场景：集成边界谈判、安全评审、自动化厂商协作。落点＝"不替代 MES/L2，只读 DCS/SIS，AI 直发设定值次数＝0，可审计"。<b>这是化解集成政治阻力的钥匙句。</b></td>
+</tr>
+</table>
+
+<div class="box box-warn">
+<b>红线提示（定位语使用三不）</b>
+<ul>
+<li><b>不在一线界面上用</b>：一线操作界面与留痕中出现的主语只能是"系统 / 机理引擎 / 模型 vX.X"，不能出现"数字员工""AI 同事""小张"。</li>
+<li><b>不承诺架构做不到的能力</b>：不得说"多个数字员工自主协商、自动交接、闭环执行"；正确说法见 §05 演示脚本。</li>
+<li><b>不承诺未经采集的 KPI</b>：只能引用 <code>VERO_ACCEPTANCE_WHITEBOOK.html</code> 中"已有真实数据"一栏的指标，其余一律标"（待采集）"。</li>
+</ul>
+</div>
+
+<h2>02 · 分层用词表（最重要的一张表，贴在工位）</h2>
+
+<h3>2.1 三列分层用词</h3>
+<table>
+<tr><th style="width:22%">场景（介质）</th><th style="width:39%">对上 / 对外可用词</th><th>一线界面与留痕用词（强制）</th></tr>
+<tr>
+  <td><b>投标 / 立项 / 技术交流</b><br><span class="dim">PPT、标书、答辩</span></td>
+  <td>数字班组、数字员工、岗位能力包、编外班组、<b>提钒岗位能力包</b>（知识包对外名）、Skill 订阅、 Skill 技能资产</td>
+  <td rowspan="5" style="background:rgba(201,79,66,.05)">
+    <b style="color:var(--danger)">零人格化。主语只允许：</b>
+    <ul>
+      <li><b>系统</b>（如"系统建议配吃 3.53t"）</li>
+      <li><b>机理引擎</b>（如"机理引擎回归通过 75/75"）</li>
+      <li><b>模型 vX.X</b>（如"模型 v0.8 · 枪位推荐"）</li>
+      <li><b>数据来源·接口·时间戳</b>（如"L2 接口 · 09:41"，<b>永远不是"数字化验员小张"</b>）</li>
+    </ul>
+    <p style="margin-top:10px"><b>禁用词（一线介质全线禁用）</b>：<span class="tag tag-r">数字员工</span><span class="tag tag-r">AI 同事</span><span class="tag tag-r">小张/老师傅</span><span class="tag tag-r">他/她/同事</span><span class="tag tag-r">AI 建议→改为"系统建议"</span><span class="tag tag-r">值班</span><span class="tag tag-r">上岗</span></p>
+    <p class="dim">理由：留痕要能当证据。"是数字员工建议的"会变成责任稀释标准句式；源头不人格化，责任才锁得住。</p>
+  </td>
+</tr>
+<tr>
+  <td><b>管理层汇报 / 预算沟通</b><br><span class="dim">厂长、总工、生产部</span></td>
+  <td>数字班组、编外班组、不睡觉的第三班、把老师傅留下来、人工经验资产化、按 Skill 订阅</td>
+</tr>
+<tr>
+  <td><b>演示视频 / 公众号 / 行业会议</b><br><span class="dim">市场素材</span></td>
+  <td>数字班组（限于片头包装与叙事层）、多角度/多视角协同、分角色视图、<b>同一引擎·多视角可见</b></td>
+</tr>
+<tr>
+  <td><b>一线操作界面</b><br><span class="dim">炉长驾驶舱、工艺台、留痕</span></td>
+  <td><span class="tag tag-r">禁用全部人格化词</span></td>
+</tr>
+<tr>
+  <td><b>合同 / 验收文本 / 事故调查</b><br><span class="dim">法务介质</span></td>
+  <td>辅助计算工具、建议系统、决策支持系统、"系统/机理引擎/模型 vX.X"；<b>辅助计算工具是底线表述</b></td>
+</tr>
+</table>
+
+<h3>2.2 单句替换对照（背下来，现场用）</h3>
+<table>
+<tr><th style="width:44%">❌ 不要这样说（尤其不要留给对方的纸质物）</th><th>✅ 改成这样说</th></tr>
+<tr><td>配料数字员工自动把方案<b>交接</b>给熔炼数字员工</td><td>同一引擎计算出結果后，<b>配料视图与熔炼主控视图同步更新</b>，两个岗位看的是同一份带版本号的算据</td></tr>
+<tr><td>多个数字员工自主协商、任务链自动流转</td><td><b>单引擎多视角</b>：角色是视图，不是独立智能体，<b>不存在交接幻觉链</b></td></tr>
+<tr><td>联动更新全部控制参数</td><td>约束变化时<b>全链路重算</b>，输出建议包，<b>经人确认后方可执行</b>；系统不写控制回路</td></tr>
+<tr><td>化验闭环实时调节</td><td>化验数据用于<b>炉次间低频校准</b>；实时判断依赖在线信号（温度/炉气/供氧）</td></tr>
+<tr><td>AI 同事帮你值班</td><td>系统在你不在的时段照样按同一套口径算，<b>并且每一步都在留痕里</b></td></tr>
+<tr><td>采纳率 ≥70%</td><td><b>采纳率不作为指标</b>（详见 §04 与白皮书 §04）；我们考核<b>终点命中率</b>与<b>推翻后命中率</b></td></tr>
+</table>
+
+<h2>03 · 三角色话术卡</h2>
+
+<div class="grid3">
+  <div class="box" style="margin:0">
+    <h4 style="color:var(--molten)">卡 A · 对厂长</h4>
+    <p class="dim">他关心：人头、夜班、安全、减活。预算科目＝人工成本替代 / 智能化技改。</p>
+    <div class="say say-o"><b>开场 30 秒</b><br>"厂长，我不跟您讲算法。我只讲三件事：<b>人头、夜班、安全</b>。合格的提钒操作工要五六年才养得出来，最便宜的老师傅也在退休；夜班两三点是最容易出偏差的时段；一出喷溅，损失的不是钢水，是这个月的奖金和您一年的安全分。<b>我们要做的，是给每一炉配一个不睡觉的编外班组。</b>"</div>
+    <div class="say"><b>讲钱</b><br>锚点数据（均为已有真实数据，可对账）：已部署的 PS 转炉造渣终点判断<b>准确率 96.0%</b>；单炉年化增收测算 <b>420 万元</b>；全厂推广口径年营收增收 <b>1280 万元</b>、利润 <b>460 万元</b>；在谈新合作项目规模 <b>927 万元</b>。<br><span class="dim">注：以上数字来源与口径见《可验收标准》白皮书 §03，对外必须连同计算口径一起给，不允许裸给。</span></div>
+    <div class="say"><b>讲减活</b><br>"我们不给您加活儿。原来要跨三个系统查、Excel 上算、纸质台账记，现在就一块屏一轮确认。<b>能删的步骤我们删，不能删的我们自动填。</b>"</div>
+    <div class="say say-g"><b>收尾</b><br>"我不要您相信 AI。我要您给我们一个能验收的指标——终点命中率。数据说话，达不到按合同办。"</div>
+  </div>
+
+  <div class="box" style="margin:0">
+    <h4 style="color:var(--steel)">卡 B · 对总工</h4>
+    <p class="dim">他关心：机理站不站得住、结果能不能解释、口径谁说了算、能不能沉淀成资产。</p>
+    <div class="say"><b>开场</b><br>"我们是机理优先。<b>四大平衡（物料/热量/冷料/钒）是攀钢专家模型的还原，不是拟合出来的黑箱</b>，黄金回归 <b>75/75</b>，最大误差 <b>0.0002%</b>；JS 端移植 11/11 与 Python 完全一致。<b></b>"</div>
+    <div class="say"><b>讲可解释</b><br>"任何一个数，都能追到三样东西：<b>哪条公式、哪个数据来源、哪个知识包版本</b>。LLM 不做计算，只做包装；<b>数值溯源失败就拒绝输出</b>，这是硬编码的红线，不是承诺。"</div>
+    <div class="say"><b>讲口径治理</b><br>"我们最值钱的不是模型，是<b>口径登记册</b>。跨厂规程打架的地方，比如碳钒转化温度到底是 1361 还是 1380、V/(Si+Ti) 判据阈值多少，我们全部登记成 <b>CF-001～CF-008</b>，每条有证据、有仲裁结论、有版本号。<b>吵架吵进系统里，不再吵在会上。</b>"</div>
+    <div class="say"><b>讲知识包</b><br>三层结构 <b>industry（行业通用）→ jianlong / pangang（厂级覆盖）→ 车间/炉座（预留）</b>。行业通用规则打底，厂级参数覆盖取值。<b>换一座炉，换的是覆盖层，不是重做一遍。</b></div>
+    <div class="say say-g"><b>收尾</b><br>"您不需要把它当成同事，当成副驾就行——它给建议、给依据、给历史判例，<b>方向盘始终在您手里，推翻它就是给它上课。</b>"</div>
+  </div>
+
+  <div class="box" style="margin:0">
+    <h4 style="color:var(--ok)">卡 C · 对信息化部门</h4>
+    <p class="dim">他关心：会不会取代我、网络边界、数据主权、出事谁负责、实施期多长。</p>
+    <div class="say"><b>开场（先让他放心）</b><br>"我们不替代 MES，也不碰 L2。<b>我们是坐在现有系统之上的一层建议层</b>——您原来的东西一个字不改，我们只做读取和建议。"</div>
+    <div class="say"><b>讲边界</b><br>· 接口方向：<b>只读</b>，从 DCS / SIS / 化验 / MES 取数，不回写控制回路<br>· 建议如何到现场：<b>屏幕上给建议 + 人点确认</b>；不下发设定值<br>· 可审计条款：<b>LLM 直接下发设定值次数 = 0</b>，可随时查日志验证<br>· 部署形态：<b>数据不出厂</b>，可全本地部署 / 内网私有化</div>
+    <div class="say"><b>讲集成成本</b><br>"现有 7 个确定性计算能力已通过 MCP 工具协议注册，<b>工具是接进来而不是写进来</b>；数据接口按已发布的《数据接口规范》对接，六个数据源（化验/PLC/副枪/烟气/台账/前端适配器）逐个开通，<b>没开通的部分明确标"不可用"，不假装可用</b>。"</div>
+    <div class="say say-g"><b>收尾</b><br>"我们这条红线是可以写进合同的：<b>建议必须经人确认；AI 直发设定值次数为 0</b>。真出了事，责任边界是清楚的——<b>因为我们留痕里从来没有"人"，只有系统、版本和时间戳。</b>"</div>
+  </div>
+</div>
+
+<h2>04 · 「提钒岗位能力包」叙事模板（资产化与订阅制）</h2>
+
+<h3>4.1 为什么更名</h3>
+<p>"人天交付"把产品讲成劳务：交付完就结束、报价被比价、能力沉淀归乙方看不见。<b>"提钒岗位能力包"把它讲成资产</b>：可盘点、可增值、可复购。同一个 §04 就是乙方的资产台账，也是甲方的采购清单。</p>
+
+<h3>4.2 三层能力包 × 7 个确定性能力（一句话讲法）</h3>
+<table>
+<tr><th style="width:20%">层级</th><th style="width:26%">对外名称</th><th>内容（一句话）</th><th style="width:16%">复购逻辑</th></tr>
+<tr><td rowspan="3"><b>知识层</b></td><td><b>行业通用基线包</b><br><span class="mono">industry/base.yaml</span></td><td>跨厂一致的行业通用规则：枪位控制模式（低-高-低 + 高硅保下限）、去钒保碳原理、碳钒转化温度 Tc=1361℃、终点控制目标（半钢残钒 ≤0.03%）、V/(Si+Ti) 判据</td><td>随行业修订升级，<b>一次买，持续更新</b></td></tr>
+<tr><td><b>厂级知识包 A/B</b><br><span class="mono">jianlong / pangang</span></td><td>厂级差异参数：查表值、枪位默认值、冷却剂配方、四大平衡 31 类参数（<b>全部溯源到原始 Excel 单元格</b>）</td><td><b>新增一座炉 / 一条线＝新增一份覆盖包</b>（这才是真正可规模化的收入）</td></tr>
+<tr><td><b>口径登记册 CF-001~008</b></td><td>每一处规程打架的地方：冲突双方、证据、仲裁结论、生效版本</td><td>每次口径复审＝一次版本发布</td></tr>
+<tr><td rowspan="3"><b>能力层</b><br><span class="dim">（确定性 Skill）</span></td><td><b>L1 静态配料</b><br><span class="mono">calculate_initial_charge</span></td><td>开吹前算配吃：按 Si 分档查表 + 热量平衡 + 冷却剂 + 氧量</td><td rowspan="3">按 Skill 订阅/按调用量计费；<b>新 Skill 上线＝追加席位而非重新立项</b></td></tr>
+<tr><td><b>L2 动态仿真</b><br><span class="mono">simulate_blow_path</span></td><td>吹炼路径动力学推演，含 Tc 拐点与终点预判</td></tr>
+<tr><td><b>热平衡 / 冷料推荐</b><br><span class="mono">calculate_thermal_balance</span></td><td>热平衡简版 + 冷却剂推荐</td></tr>
+<tr><td><b>枪位推荐</b><br><span class="mono">recommend_lance_profile</span></td><td>按 Si 给出低-高-低 / 全程低枪位策略（CF-006 已定案）</td></tr>
+<tr><td><b>临界温度 Tc</b><br><span class="mono">predict_critical_temp</span></td><td>碳钒转化温度与裕度（CF-007 已定案）</td></tr>
+<tr><td><b>炉后过程诊断</b><br><span class="mono">diagnose_process_quality</span></td><td>钒渣品位/收得率评估，V/(Si+Ti)=1.0 判据（CF-008 已定案）</td></tr>
+<tr><td><b>四大平衡</b><br><span class="mono">run_pangang_model（服务端）</span></td><td>攀钢四大平衡全量模型，黄金回归基准</td></tr>
+<tr><td><b>经验层</b></td><td><b>师傅默会经验包</b><br><span class="dim">贵溪试点产出</span></td><td>火焰/声音/异常前兆/例外处置的结构化经验条目，<b>每条带贡献人署名与采纳记账</b></td><td>每年新增条目分批入库，<b>知识资产年度维护费</b></td></tr>
+</table>
+<p class="dim">说明：以上 7 项确定性能力中 6 项已注册于 MCP 工具契约（tools/list 可直接取 schema），四大平衡走服务端 HTTP 端点；均为确定性函数，非 LLM 生成。发布对外材料时若引用"7 个确定性 Skill"，应附上这七个英文名，避免被误读为七个智能体角色。</p>
+
+<h3>4.3 三段式资产化话术</h3>
+<div class="say say-o"><b>① 可盘点</b>——"给您一份清单一共几行：行业基线 1 份、厂级包 1 份、口径登记 8 条、确定性 Skill 7 个、结构化经验 N 条。<b>每一行都能点到有源码、有版本号、有回归测试。</b>这就是您买到的东西，不是一场咨询。"</div>
+<div class="say say-o"><b>② 可增值</b>——"它会长大。每推翻一次系统并被证明是对的，就多一条判例；每位师傅讲的一条经验入库，经验包就厚一分。<b>用得越久，这个包越值钱，而它记在您厂名下。</b>"</div>
+<div class="say say-o"><b>③ 可复购</b>——"第二条线不需要重买一遍：行业包不动，只做一份厂级覆盖包。<b>第一次是项目费，往后是能力包订阅费。</b>"</div>
+
+<h3>4.4 定价逻辑建议（人天 → 订阅）</h3>
+<table>
+<tr><th style="width:16%">旧话术</th><th style="width:22%">新话术</th><th>为什么 / 怎么谈</th><th style="width:14%">成熟度</th></tr>
+<tr><td>按人天报价</td><td><b>能力包许可费 + 年度订阅</b></td><td>一次性许可覆盖行业包+厂级包+7 个 Skill；年度订阅含：包版本更新、CF 复审、黄金回归复核、经验包增补</td><td><span class="tag tag-y">待商务确认</span></td></tr>
+<tr><td>定制开发</td><td><b>厂级覆盖包（Plant Overlay）</b></td><td>把"定制"降格为"配置层"，可规模化复用，规避定制黑洞</td><td><span class="tag tag-g">口径已可用</span></td></tr>
+<tr><td>免费维保</td><td><b>结果指标对赌 / 延期支付</b></td><td>用终点命中率等结果指标做里程碑付款条件（详见白皮书 §03/§04），<b>敢用结果收费，本身就是最有说服力的技术背书</b></td><td><span class="tag tag-y">需合同模板</span></td></tr>
+<tr><td>后续再谈</td><td><b>第二条线 / 第二座炉 的边际报价</b></td><td>首单就把"第二条产线只收覆盖包"写进报价单格式条款，锁定复购预期</td><td><span class="tag tag-y">建议条款</span></td></tr>
+</table>
+<p class="dim">金额类数字一律标"（示例值）"，不在本文件中虚构：实际报价以商务测算为准，本表只给结构与话术。</p>
+
+<h2>05 · 演示视频脚本（3 分钟）</h2>
+
+<div class="box box-danger">
+<b>拍摄纪律（先看这个，再看分镜）</b>
+<ul>
+<li>视频里允许出现"数字班组"作为<b>片头包装</b>，但<b>旁白不得出现"多个数字员工自主协商/自动交接/闭环执行"</b>。所有涉及多角色联动的桥段，一律降调为"<b>同一引擎、多角色同步可见</b>"。</li>
+<li>每一个技术承诺句后都挂了背书标记：<span class="tag tag-g">已由架构师背书</span>＝可原样录制；<span class="tag tag-y">需架构师复核</span>＝发布前必须经架构师签字，不得先斩后奏。</li>
+<li>镜头里出现的<b>所有界面必须零人格化</b>：不出现头像、不出现"XX 数字员工说"、不出现聊天气泡；证据区显示"<b>来源 · 接口 · 时间戳</b>"。</li>
+<li>出现的所有数字，必须能在白皮书指标表中找到出处；找不到的，屏幕上打"（示例值 · 待基线采集）"。</li>
+</ul>
+</div>
+
+<table class="script">
+<tr><th style="width:8%">时间</th><th style="width:24%">画面</th><th style="width:38%">旁白（逐句）</th><th style="width:20%">架构背书备注</th></tr>
+
+<tr>
+  <td><b>0:00–0:18</b></td>
+  <td>贵溪实景：转炉炉口火焰缓慢推近 → 中控室夜班画面 → 屏幕上炉次列表滚动</td>
+  <td>"一座提钒转炉，每 40 分钟出一炉。合格的炉长要五六年才养得出来，最难盯的，是凌晨三点那一班。"</td>
+  <td><span class="tag tag-g">已背书</span><span class="dim">叙事句，无技术承诺</span></td>
+</tr>
+
+<tr>
+  <td><b>0:18–0:32</b></td>
+  <td>黑屏白字打出：<b>不做黑箱自动驾驶，做总工的机理副驾</b>，随后淡出为产品名 VERO</td>
+  <td>"VERO 提钒冶炼智能体。我们的自我定位很简单——<b>不做黑箱自动驾驶，做总工的机理副驾。</b>"</td>
+  <td><span class="tag tag-g">已背书</span><span class="dim">首选定位语，照读</span></td>
+</tr>
+
+<tr>
+  <td><b>0:32–0:58</b></td>
+  <td>屏幕：四大平衡公式面板 + 回归测试输出 75/75 PASS 滚动；右下角悬浮版本标签"模型 v0.8"</td>
+  <td>"先看底座。提钒的核心是四大平衡——物料、热量、冷料、钒。这是一套<b>机理模型</b>，不是数据拟合的黑箱。它有一套黄金回归用例：<b>75 项全部通过，最大误差 0.0002%</b>。每一次包更新，这道门都重跑一遍。"</td>
+  <td><span class="tag tag-g">已背书</span><span class="dim">75/75 为真实锚点；禁止说"我们的引擎从不犯错"，只说"有一道门"</span></td>
+</tr>
+
+<tr>
+  <td><b>0:58–1:22</b></td>
+  <td>同一套算据在三个视图间切换：炉长视图 → 工艺视图 → 数据治理视图。切换时<b>共用同一条 trace</b>，顶栏版本号不变</td>
+  <td>"配料要算的东西，炉长要看的东西，工艺和数据口要追的东西——<b>它们来自同一套引擎、同一份算据，只是视角不同。</b>所以不存在'从一个数字员工把话传给下一个数字员工'这种环节：<b>同一引擎，多角色同步可见。</b>"</td>
+  <td><span class="tag tag-g">已背书</span><b style="color:var(--danger)">（关键降调句）</b><span class="dim">原脚本"任务链自动交接"已删除；画面必须体现"同一 trace 三个视图"，不得画"传纸条"动画</span></td>
+</tr>
+
+<tr>
+  <td><b>1:22–1:50</b></td>
+  <td>一炉实数据：输入 Si/V/温度/装入量 → 输出配吃建议 + 枪位曲线；右侧证据区逐条列出：公式 / 数据来源（L2 接口 · 09:41）/ 知识包版本</td>
+  <td>"给一炉真实数据，系统给出建议：<b>配吃多少、枪位怎么走、依据是什么。</b>每一个数字都能点开看三件事——<b>哪条公式、哪个数据来源、哪个版本的知识包。</b>如果某个数据晚到了，它会被标出来，不明示不可信。<b>数据里的每个数，都来自工具调用；LLM 不做计算。</b>"</td>
+  <td><span class="tag tag-g">已背书</span><span class="dim">"晚到标注"为数据徽标三元（来源/时效/完整度），须真实实现后再拍；未实现则删该句</span></td>
+</tr>
+
+<tr>
+  <td><b>1:50–2:12</b></td>
+  <td>操作工点【推翻】→ 弹出理由选择 + 一句话说明 → 留痕区写入一条记录：建议值 / 实际值 / 推翻时间 / 操作人</td>
+  <td>"现场不认同，就推翻。<b>我们不考核采纳率——那只会逼着人点确认。</b>我们记录的是另一件事：<b>推翻之后，炉子的终点数据到底站在谁那边。</b>由数据回溯裁定，不由专家拍板。推翻对了，这条就进评测集，让引擎下次别再犯。"</td>
+  <td><span class="tag tag-g">已背书</span><span class="dim">推翻留痕需真实可用（P1 项）；若拍摄时尚未上线，此镜必须改为口播"机制说明"，不得界面演示</span></td>
+</tr>
+
+<tr>
+  <td><b>2:12–2:32</b></td>
+  <td>库存/化验约束变化 → 系统提示"约束已变更，建议已重算"→ 生成新的建议包 → 弹出<b>待人工确认</b>卡片；屏幕角落常驻一行字：<b>LLM 直发设定值次数 = 0</b></td>
+  <td>"约束变了，比如物料成分变了、化验回来了，系统会<b>全链路重算</b>，重新出一份建议包。<b>但它不会自己去动任何阀门。</b>建议到这里为止，执行权在现场手里。<b>AI 直发设定值的次数，是 0——这是一条可以查日志验证的红线。</b>"</td>
+  <td><span class="tag tag-g">已背书</span><b style="color:var(--warn)">（反守为攻句）</b><span class="dim">严禁出现"联动更新控制参数"字样</span></td>
+</tr>
+
+<tr>
+  <td><b>2:32–2:50</b></td>
+  <td>画面：师傅口述采集现场（录音/结构化访谈表）→ 经验条目卡片（贡献人：[师傅姓名/工号]，采纳 N 次，最近命中 M 次）→ 经验条目卡片（贡献人：[师傅姓名/工号]，采纳 N 次，最近命中 M 次）</td>
+  <td>"最后一个问题：经验怎么办。老师傅看火、听声的本事，过去随退休一起走。<b>现在我们把它结构化入库，写清楚是谁的贡献，采纳几次、准几次，月度会公开念名。</b>工厂里最管用的激励，往往不是钱，是面子。"</td>
+  <td><span class="tag tag-y">需架构师复核</span><span class="dim">经验包界面尚未定型；拍摄前须确认署名展示形式与个人信息合规（工号 vs 姓名）</span></td>
+</tr>
+
+<tr>
+  <td><b>2:50–3:00</b></td>
+  <td>指标卡片三连：<b>96.0%</b>（PS 转炉造渣终点判断准确率·江铜贵溪 5 号炉已部署）/ <b>75/75</b>（黄金回归）/ <b>≥80%</b>（自学习开启的数据采集门槛）→ 定位语回扣</td>
+  <td>"我们愿意被验收。<b>PS 转炉造渣终点判断准确率 96.0%</b>，已经在江铜贵溪 5 号炉跑着；我们没有在所有指标上都给你承诺——<b>没有真实数据的地方，我们写"待采集"，不瞎填。</b>这就是我们理解的：数字员工该怎么验收。"</td>
+  <td><span class="tag tag-y">需架构师复核</span><span class="dim">96.0% 的口径（分母/判据/统计区间）须由责任人出具书面说明后方可出现在对外视频</span></td>
+</tr>
+</table>
+
+<div class="box box-warn">
+<b>剪辑自查清单（导出前逐条打勾）</b>
+<ul>
+<li>[ ] 全片未出现"自动交接 / 自主协商 / 数字员工之间通信 / 闭环控制"。</li>
+<li>[ ] 全片界面无头像、无气泡、无"XX 数字员工"字样。</li>
+<li>[ ] 所有数字能在《可验收标准》白皮书指标表找到同口径出处。</li>
+<li>[ ] 标注 <span class="tag tag-y">需架构师复核</span> 的两个分镜已取得签字。</li>
+<li>[ ] 画面所用形态均为已交付版本（不得展示未上线功能的界面 mock 充真）。</li>
+</ul>
+</div>
+
+<h2>06 · 竞品应答卡（客户拿同行文章来问时的标准答案）</h2>
+
+<div class="box box-ok">
+<b>应答总原则：<u>不批评对手，只升维。</u></b><br>
+对手的存在是好事——他们替整个行业付了"数字员工"的市场教育费。<b>我们唯一的动作是把话题从"有没有"拉到"怎么验收"。</b>任何贬低同行的话语都会让客户警惕；任何一次抬高验收标准的话都会让客户记住我们。
+</div>
+
+<h3>6.1 客户原话 → 标准应答</h3>
+<table>
+<tr><th style="width:26%">客户可能怎么说</th><th>标准应答（可照读）</th><th style="width:16%">潜台词与纪律</th></tr>
+<tr>
+  <td>"人家中铝都上数字班组了，你们有没有？"</td>
+  <td>"有，而且我们在产线上跑着。<b>不过我想先把话说明白——我们对'数字班组'这四个字的理解，和大家不太一样。</b>我们认为：角色应该是<b>同一套引擎的不同视角</b>，而不是几个各自算一遍再互相传话的智能体。传一次话，就多一次信息损耗和幻觉注入的机会。<b>所以我们是单引擎、多视角——不存在交接幻觉链。</b>这也是我们敢把话写进白皮书的原因。"</td>
+  <td>不否定对手，把差异讲成<b>架构选择</b>而非能力高低</td>
+</tr>
+<tr>
+  <td>"人家的数字员工能联动更新全部控制参数。"</td>
+  <td>"这句话要看怎么理解。<b>如果是'约束变了，系统全链路重算并给出新建议'——这个我们也有，而且这是我们最看重的能力之一。如果是'系统自己去写控制参数'——这个我们不做，也建议贵厂慎重。</b>理由很简单：一条脏数据如果拿到了改工艺设定的权限，事故半径就不可控了。<b>我们的红线是可以写进合同的：AI 直发设定值次数等于 0，随时可以查。</b>"</td>
+  <td>反守为攻的核心一答。<b>语气是善意提醒，不是指控</b></td>
+</tr>
+<tr>
+  <td>"人家那套听起来更先进啊。"</td>
+  <td>"先进不好比较，<b>能不能验收好比较</b>。我们整理了一份《数字员工可验收标准》，三层模型：确定性底座、决策质量、业务结果，每层有指标、有算法口径、有验收方式、有数据门槛。<b>您拿着这份清单去比任何一家——包括我们自己</b>，谁的数是真的、谁的数是形容词，一目了然。"</td>
+  <td>把客户变成裁判，我们就赢了</td>
+</tr>
+<tr>
+  <td>"那你们凭什么说你们准？"</td>
+  <td>"三条真东西：<b>一，PS 转炉造渣终点判断准确率 96.0%，江铜贵溪 5 号炉在用；二，四大平衡黄金回归 75/75，误差 0.0002%，随时可复跑；三，您厂自己的数据可以做影子模式试跑。</b>剩下那些我们没有真实数据的指标，我们在白皮书里明写'待采集'——<b>我们不拿形容词当指标。</b>"</td>
+  <td>主动承认"哪些还没有数据"，是我们最强的信任建设工具</td>
+</tr>
+<tr>
+  <td>"那假别人也在他们的材料里抄你们的验收条款怎么办？"</td>
+  <td>"那更好。<b>验收标准一旦成为行业默认门槛，最早定义它的人天然占优</b>——因为我们的白皮书是照着我们自己的架构写的，每一条我们都做得到。别人要么照抄承认跟随，要么改条款然后解释为什么。"</td>
+  <td style="color:var(--warn)"><b>内部话术，不对客户说</b></td>
+</tr>
+<tr>
+  <td>"你们会不会也不给看数据，光给 PPT？"</td>
+  <td>"可以现场复跑。黄金回归脚本在这儿，<b>Python 跑一遍，JS 移植版本再跑一遍</b>，结果对不上我们从头查。演示态和生产态我们分开给您讲，什么是生产真跑出来的、什么是还在采集的，我们不混。"</td>
+  <td>承诺"可复跑"是高信任低成本动作</td>
+</tr>
+</table>
+
+<h3>6.2 应答三句话模板（记不住就用这个）</h3>
+<div class="say say-g"><b>① 认</b>——"这个方向是对的，大家做的是同一件事。"（不树敌）<br><b>② 转</b>——"差别在于：<b>角色是视图还是智能体；数字能不能验收。</b>"（升维）<br><b>③ 落</b>——"要不这样，我们把验收条款摊开来对照一下？<b>谁达标谁说话。</b>"（拿到主动权）</div>
+
+<h2>附 A · 数据锚点台账（本文件唯一允许引用的数字）</h2>
+<table>
+<tr><th style="width:26%">数字</th><th style="width:30%">口径 / 出处</th><th>可用场合</th></tr>
+<tr><td><b>96.0%</b> 终点判断准确率</td><td>PS 转炉造渣终点判断，江铜贵溪 5 号炉已部署。<b>分母/判据/统计区间须由责任人书面确认后方可公开引用</b></td><td>白皮书、投标、演示视频（须注口径）</td></tr>
+<tr><td><b>75/75</b> 黄金回归（Python）<br><b>11/11</b>（JS 移植）</td><td>四大平衡对照 Excel 缓存值，最大误差 0.0002%；JS 端 RMSE 与 Python 完全一致</td><td>技术交流、总工对话、客户现场复跑</td></tr>
+<tr><td><b>420 万元</b> 单炉年增收</td><td>单炉年化增收测算（示例口径，须随测算表一起给）</td><td>厂长汇报、ROI 测算</td></tr>
+<tr><td><b>1280 万元</b> 年营收增收 / <b>460 万元</b> 利润</td><td>全厂推广口径年化测算</td><td>立项、经营层汇报</td></tr>
+<tr><td><b>927 万元</b></td><td>新合作项目规模（在谈）</td><td>商务背景介绍，<b>不作已签合同表述</b></td></tr>
+<tr><td><b>CF-001 ~ CF-008</b></td><td>口径冲突登记册编号；已定案：Tc=1361℃、V/(Si+Ti)=1.0、枪位低-高-低+高硅保下限等</td><td>总工对话、治理能力证明</td></tr>
+<tr><td><b>≥80%</b> 数据采集率门槛</td><td>自学习/漂移检测开启的数据门槛（P2 验收条款）</td><td>白皮书、合同技术条款</td></tr>
+<tr><td><b>3σ</b> 漂移检测</td><td>连续 N 炉预测误差超 3σ 触发口径复审。<b>N 的具体取值待基线采集后定</b></td><td>白皮书、技术方案</td></tr>
+</table>
+
+<h2>附 B · 发布前置检（谁签谁负责）</h2>
+<table>
+<tr><th style="width:20%">环节</th><th>检查项</th><th style="width:16%">责任人</th></tr>
+<tr><td>口径</td><td>是否使用了本文件已登记的定位语与用词；是否出现禁用词</td><td>产品/商务</td></tr>
+<tr><td>架构</td><td>是否存在架构做不到的承诺（自动交接 / 自主协商 / 离线执行 / 之前和特色句）</td><td><b>架构师签字</b></td></tr>
+<tr><td>数据</td><td>每个数字是否能在附 A 找到同口径出处</td><td>行业专家</td></tr>
+<tr><td>人格化</td><td>一线介质是否零人格化（主语只允许"系统/机理引擎/模型 vX.X"）</td><td>UX/UX 设计师</td></tr>
+<tr><td>集成</td><td>是否清楚写明了不替代 MES/L2、只读、不下发</td><td>信息化对接人</td></tr>
+</table>
+
+<footer>
+VERO 对外叙事工具箱 v1.0 · 2026-09-27 ｜ 上位文件：VERO_DIGITAL_CREW_BENCHMARK.html（七角色评审） ｜ 平行文件：VERO_ACCEPTANCE_WHITEBOOK.html（可验收标准）· docs/EXPERIENCE_CAPTURE.md（经验采集机制） ｜ 下一版触发：任一数字锚点变化 / 架构师背书结论变化 / 出现新的外部竞品叙事
+</footer>
+
+</div>
+</body>
+</html>

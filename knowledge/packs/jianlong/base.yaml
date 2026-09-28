@@ -1,5 +1,5 @@
 # =====================================================================
-# 建龙提钒 L1 配料知识包 (VEES Knowledge Pack)
+# 建龙提钒 L1 配料知识包 (VERO Knowledge Pack)
 # =====================================================================
 # 来源: 黑龙江建龙转炉提钒技术材料--修改--2020.6.13(1).pdf (规程查表法)
 # 对应引擎: backend/app/tools/initial_charge.py (L1 静态配料, 建龙查表口径)
@@ -10,7 +10,7 @@
 # 与攀钢包的已知冲突见 pangang/base.yaml 的 known_conflicts (CF-001~CF-005)
 # =====================================================================
 
-schema: vees.knowledge-pack/v1
+schema: vero.knowledge-pack/v1
 pack:
   plant: jianlong
   scope: plant

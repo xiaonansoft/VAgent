@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>《数字员工可验收标准》白皮书 · VERO 提钒冶炼智能体</title>
+<style>
+:root{
+  --bg:#0d1117; --panel:#161b22; --panel2:#1c2128; --line:#30363d; --line2:#21262d;
+  --ink:#e6edf3; --ink2:#9da7b3; --ink3:#6e7681;
+  --molten:#e8620f; --steel:#6b93b8; --ok:#4a9e5c; --warn:#b98a2e; --danger:#c94f42;
+  --mono:"SF Mono",Consolas,"Courier New",monospace;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font:15px/1.75 -apple-system,"PingFang SC","Microsoft YaHei",sans-serif;padding:32px 22px}
+.wrap{max-width:1180px;margin:0 auto}
+h1{font-size:25px;letter-spacing:.5px}
+.sub{color:var(--ink3);font-size:13px;margin-top:6px}
+h2{font-size:18px;margin:34px 0 14px;padding:9px 14px;background:var(--panel2);border-left:3px solid var(--molten);border-radius:4px}
+h3{font-size:15.5px;margin:22px 0 8px;color:var(--molten)}
+h4{font-size:14.5px;margin:14px 0 6px;color:var(--ink)}
+p{margin:9px 0;color:var(--ink2)}
+p b,li b,td b{color:var(--ink)}
+ul,ol{margin:8px 0 8px 22px;color:var(--ink2)}
+li{margin:5px 0}
+table{width:100%;border-collapse:collapse;margin:14px 0;font-size:13.5px;background:var(--panel)}
+th{background:var(--panel2);color:var(--ink);text-align:left;padding:8px 10px;border:1px solid var(--line);font-weight:600}
+td{padding:8px 10px;border:1px solid var(--line2);color:var(--ink2);vertical-align:top}
+.box{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:16px 18px;margin:16px 0}
+.box-warn{border-color:rgba(185,138,46,.5);background:rgba(185,138,46,.06)}
+.box-danger{border-color:rgba(201,79,66,.5);background:rgba(201,79,66,.06)}
+.box-ok{border-color:rgba(74,158,92,.45);background:rgba(74,158,92,.05)}
+.box-steel{border-color:rgba(107,147,184,.45);background:rgba(107,147,184,.05)}
+.tag{display:inline-block;padding:1px 8px;border-radius:999px;font-size:11.5px;border:1px solid var(--line);color:var(--ink2);margin-right:5px;white-space:nowrap}
+.tag-o{border-color:rgba(232,98,15,.5);color:var(--molten)}
+.tag-g{border-color:rgba(74,158,92,.5);color:var(--ok)}
+.tag-r{border-color:rgba(201,79,66,.5);color:var(--danger)}
+.tag-b{border-color:rgba(107,147,184,.5);color:var(--steel)}
+.tag-y{border-color:rgba(185,138,46,.55);color:var(--warn)}
+.mono{font-family:var(--mono);font-size:12.5px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+@media(max-width:900px){.grid2,.grid3{grid-template-columns:1fr}}
+.layer{border:1px solid var(--line);border-radius:8px;padding:14px 16px;background:var(--panel)}
+.layer .lv{font-size:19px;font-weight:700;color:var(--molten);font-variant-numeric:tabular-nums}
+.layer .ln{font-size:14.5px;color:var(--ink);font-weight:600;margin:2px 0 6px}
+.layer .lb{font-size:13.5px;color:var(--ink2);line-height:1.7}
+.kpi-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:16px 0}
+.kpi-row div{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:12px 14px;text-align:center}
+.kpi-row .v{font-size:24px;font-weight:700;color:var(--molten);font-variant-numeric:tabular-nums}
+.kpi-row .l{font-size:12px;color:var(--ink3);margin-top:4px}
+.clause{border-left:3px solid var(--danger);background:rgba(201,79,66,.06);padding:10px 14px;margin:8px 0;border-radius:0 6px 6px 0;font-size:13.5px;color:var(--ink2)}
+.clause b{color:var(--ink)}
+.flow{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin:16px 0}
+.flow div{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:10px 8px;text-align:center;font-size:12.5px;color:var(--ink2)}
+.flow div .fn{display:block;color:var(--molten);font-weight:700;font-size:12px;margin-bottom:4px}
+footer{margin-top:40px;padding-top:14px;border-top:1px solid var(--line);color:var(--ink3);font-size:12.5px}
+.big{font-size:17px;color:var(--ink);font-weight:600}
+.dim{color:var(--ink3);font-size:12.5px}
+.copy{background:var(--panel2);border:1px dashed var(--line);border-radius:6px;padding:8px 12px;font-size:13px;color:var(--ink2);font-family:var(--mono)}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<h1>《数字员工可验收标准》白皮书</h1>
+<div class="sub">VERO 提钒冶炼智能体 · 向提钒冶炼行业输出的验收方法论 ｜ 版本 v1.0 ｜ 2026-09-27 ｜ 面向：甲方总工/信息化/评标专家 ｜ 关联：VERO_NARRATIVE_KIT.html · VERO_DIGITAL_CREW_BENCHMARK.html</div>
+
+<div class="box box-steel">
+<div class="big">摘要（结论先行）</div>
+<p style="margin-top:8px">工业界正在进入"数字员工"叙事的高峰期。大量公开材料展示了协同演示与组织图景，但<b>几乎找不到一条可以被第三方复算的量化指标</b>——这既是行业当前的普遍状态，也是最大的风险：<b>如果验收范式被默认定义为"看协同演示效果"，整个行业会被拖进演示军备竞赛</b>，首期靠声量签单的项目，会在二期死在"它到底干成了什么"这一问上。</p>
+<p>本白皮书提出一套可落地的三层验收模型（<b>确定性底座 / 决策质量 / 业务结果</b>）、一份每个数字都标明出处与口径的可承诺指标表、一条逐条可审计的工程红线，以及一套争议仲裁规则。<b>VERO 愿意并且愿意以自己的真实数据接受这套标准的检验</b>——有真实数据的地方给数字，没有的地方写"（待采集）"，不把形容词当指标。</p>
+<p class="dim">本白皮书对外 downloadable 版本可整篇复用；VERO 不主张版权，主张的是定义权。</p>
+</div>
+
+<div class="kpi-row">
+  <div><div class="v">96.0%</div><div class="l">PS 转炉造渣终点判断准确率<br>（江铜贵溪 5 号炉已部署）</div></div>
+  <div><div class="v">75/75</div><div class="l">四大平衡黄金回归通过<br>（最大误差 0.0002%）</div></div>
+  <div><div class="v">≥80%</div><div class="l">自学习开启的数据采集率门槛</div></div>
+  <div><div class="v">3σ</div><div class="l">漂移检测触发口径复审</div></div>
+</div>
+
+<h2>01 · 为什么需要一套验收标准</h2>
+
+<h3>1.1 三个正在发生的现状</h3>
+<table>
+<tr><th style="width:20%">现状</th><th>描述</th><th style="width:32%">后果</th></tr>
+<tr>
+  <td><b>无 KPI 的叙事</b></td>
+  <td>公开材料里大量存在"提升效率""降低劳动强度""实现协同"这类表述，<b>但找不到分母、判据、统计区间和数据来源</b>。</td>
+  <td>甲方无法比价，只能比 PPT；乙方被迫加大演示投入而非产品投入。</td>
+</tr>
+<tr>
+  <td><b>演示态冒充生产态</b></td>
+  <td>在精心挑选的炉次、人工补齐的数据上跑通的流程，通常在验收文档里与真实产线表现混为一谈。</td>
+  <td>上线三个月后信任崩塌，比不上线更伤。</td>
+</tr>
+<tr>
+  <td><b>演示军备竞赛</b></td>
+  <td>当"有多少个角色、能联动多少环节"成为比拼尺度，<b>架构上越激进的方案越容易在演示中显得先进</b>。</td>
+  <td>劣币驱逐良币：稳健的单引擎架构在叙事上吃亏，多智能体交接的风险被隐藏。</td>
+</tr>
+</table>
+
+<h3>1.2 两类必须被拦住的表述</h3>
+<div class="box box-danger">
+<p><b>类型一：「联动更新全部控制参数」</b><br>
+这句话有两种读法。<b>合规读法</b>＝约束变化时全链路重算、输出新建议包、交人确认；<b>危险读法</b>＝系统直接改写控制回路设定值。危险读法一旦落地，意味着一条未经确认的数据获得了改变工艺设定的权限；跨设备分布式写入没有事务，写一半失败时炉子处于<b>未定义参数组合</b>。<b>验收条款必须把这两种读法分开写、分开罚。</b></p>
+<p style="margin-top:10px"><b>类型二：「由 XX 数字员工完成计算 / 交接 / 决策」</b><br>
+角色一旦进入执行链路，责任主体就模糊了。事故复盘时会出现标准句式——"是数字员工建议的"。<b>验收必须要求：留痕中不存在人称主语，只有系统标识、模型版本、工具名称与时间戳。</b></p>
+</div>
+
+<h3>1.3 本白皮书的三条主张</h3>
+<div class="grid3">
+  <div class="layer">
+    <div class="lv">主张一</div>
+    <div class="ln">验收分三层，不可跳层</div>
+    <div class="lb">先看确定性底座是否成立（能不能复现），再看决策质量（人能不能安全地推翻它），最后才看业务结果。<b>没有 L1 的 L3 是运气。</b></div>
+  </div>
+  <div class="layer">
+    <div class="lv">主张二</div>
+    <div class="ln">没有真实数据的指标不许填</div>
+    <div class="lb">指标表允许出现"（待采集）"，不允许出现"预计""有望""较大提升"。<b>承认无知，是工程可信的最低门槛。</b></div>
+  </div>
+  <div class="layer">
+    <div class="lv">主张三</div>
+    <div class="ln">红线要写成可查询的计数</div>
+    <div class="lb">不用"原则上不允许"这种措辞，用"<b>LLM 直接下发设定值次数＝0，可随时审计</b>"。</div>
+  </div>
+</div>
+
+<h2>02 · 三层验收模型</h2>
+
+<p>三层之间存在<b>单向支撑关系</b>：L1 不成立时，L2、L3 的漂亮数字都不可信；L2 不成立时，L3 的短期改善不可持续（因为没有纠错通道）。</p>
+
+<div class="box">
+<h4 style="color:var(--molten)">L1 · 确定性底座（Deterministic Foundation）</h4>
+<p><b>回答的问题</b>：同样的输入，是不是永远给出同样的输出？每一次变更，能不能被复算出来偏差在哪？</p>
+<table>
+<tr><th style="width:22%">验收项</th><th style="width:38%">判据</th><th>验证方式</th></tr>
+<tr><td><b>黄金回归</b></td><td>每次知识包 / 模型版本变更，回归用例必须全通过；当前基线 <b>75/75</b>，最大误差 <b>0.0002%</b></td><td>在甲方见证下现场执行回归脚本，输出 pass/fail 与误差分布</td></tr>
+<tr><td><b>可复现</b></td><td>同一输入 + 同一版本号 ⇒ 同一输出，两次调用结果逐字段一致</td><td>同一炉次数据重放两次，逐字段比对（含中间量）</td></tr>
+<tr><td><b>版本可追溯</b></td><td>任意历史建议包可反查出：<code>model_version</code> / <code>pack_version</code> / <code>trace_id</code> / 输入快照</td><td>随机抽 5 个历史炉次，30 分钟内给出完整溯源链</td></tr>
+<tr><td><b>双端一致性</b></td><td>同一模型的两种实现（如 Python 服务端 / 前端 JS）结果一致；当前基线 JS 端 <b>11/11</b> 与 Python 完全一致</td><td>parity 校验脚本，漂移时输出红灯而非静默</td></tr>
+<tr><td><b>数值溯源</b></td><td>输出中的每一个数字必须来自工具调用返回值；<b>溯源失败则拦截拒答</b></td><td>随机抽取输出项，逐一点击查看公式 + 数据来源 + 时间戳</td></tr>
+</table>
+</div>
+
+<div class="box">
+<h4 style="color:var(--steel)">L2 · 决策质量（Decision Quality）</h4>
+<p><b>回答的问题</b>：当人不认同系统时，能不能安全、低成本地推翻它？系统会不会从被推翻中变好？</p>
+<table>
+<tr><th style="width:22%">验收项</th><th style="width:38%">判据</th><th>验证方式</th></tr>
+<tr><td><b>建议不强制</b></td><td>所有影响工艺参数的建议在交付前必须经人工确认；不得存在绕过确认门的执行路径</td><td>静态检查 + 渗透测试：尝试构造直达执行的调用路径，应当失败</td></tr>
+<tr><td><b>推翻留痕</b></td><td>每个建议提供【推翻】入口；推翻事件记录：建议值 / 实际值 / 理由分类 / 时间戳 / 操作人（岗位）</td><td>抽查留痕记录，字段完整率 100%</td></tr>
+<tr><td><b>推翻仲裁自动化</b></td><td>推翻对错由<b>机理引擎回溯铁数据</b>判定（终点温度 / 终点碳 / 喷溅记录 / 化验实绩），<b>不由专家拍板</b></td><td>抽取已结案推翻事件，核对判定依据字段是否来自数据源而非人工填写</td></tr>
+<tr><td><b>推翻后命中率</b></td><td>运营观测指标（定义见 §04），<b>不设为罚款条款</b></td><td>月度运营报表</td></tr>
+<tr><td><b>建议留痕完整率</b></td><td>每一条对外建议都入留痕管道，无旁路</td><td>比对引擎调用计数与留痕条数，差值为 0</td></tr>
+</table>
+<p class="dim">关键设计：<b>不考核采纳率</b>。理由见 §04。</p>
+</div>
+
+<div class="box">
+<h4 style="color:var(--ok)">L3 · 业务结果（Business Outcome）</h4>
+<p><b>回答的问题</b>：炉子到底更好了没有？钱到底省在哪里？</p>
+<table>
+<tr><th style="width:22%">验收项</th><th style="width:38%">判据</th><th>数据门槛</th></tr>
+<tr><td><b>终点命中率</b></td><td>终点判断结果与工艺判定一致的炉次占比（判据须在合同中写死：温度窗 / 碳窗 / 是否需补吹）</td><td>统计样本量下限<b>（待基线采集后确定，建议 ≥100 炉）</b>；新炉座、原料结构重大变化时重新起算</td></tr>
+<tr><td><b>钒回收率</b></td><td>进入钒渣的钒量与铁水带入钒量之比</td><td>基线值<b>（待采集）</b>，需先统一化验口径与取样规则</td></tr>
+<tr><td><b>例外炉次率</b></td><td>触发例外流程（黄灯及以上）的炉次占比</td><td>基线<b>（待采集）</b>；趋势下行即视为改善，不与惩罚挂钩</td></tr>
+<tr><td><b>单炉经济效益</b></td><td>按"配吃结构优化 + 回收率提升 + 返工/补吹减少"三项加总，逐项列出计算表</td><td>测算口径随数字一同交付；<b>任何单项不得单独抽出来宣称</b></td></tr>
+</table>
+</div>
+
+<h2>03 · VERO 可承诺指标表</h2>
+
+<div class="box box-warn">
+<b>使用须知（很重要）</b>
+<ul>
+<li>本表中"当前基线"一列，只有<b>标注了出处与口径</b>的数字才是已有真实数据；其余一律写"（待采集）"，<b>禁止在投标、宣传、汇报场合被替换成估算值</b>。</li>
+<li>所有承诺值在合同中须连同<b>数据门槛（样本量、采集率、统计区间、例外排除规则）</b>一起写。脱离门槛的指标没有意义。</li>
+<li>本表版本随产品版本迭代；引用时请注明版本号与日期。</li>
+</ul>
+</div>
+
+<table>
+<tr>
+  <th style="width:14%">指标</th>
+  <th style="width:20%">定义</th>
+  <th style="width:20%">计算方法</th>
+  <th style="width:13%">当前基线</th>
+  <th style="width:9%">承诺值</th>
+  <th style="width:12%">验收方式</th>
+  <th style="width:12%">数据门槛</th>
+</tr>
+<tr>
+  <td><b>黄金回归通过率</b><br><span class="tag tag-o">L1</span></td>
+  <td>四大平衡（物料/热量/冷料/钒）对照基准用例的通过比例</td>
+  <td>通过项数 / 总项数；误差上限单独约束</td>
+  <td><b>75/75</b>，最大误差 <b>0.0002%</b><br><span class="dim">（四大平衡参考实现 vs Excel 缓存值）</span></td>
+  <td><b>100%</b>（每次包/模型变更必跑）</td>
+  <td>甲方见证下现场执行回归脚本</td>
+  <td>不适用（确定性）</td>
+</tr>
+<tr>
+  <td><b>双端一致性</b><br><span class="tag tag-o">L1</span></td>
+  <td>同一模型的两套实现（服务端 / 前端）计算结果一致</td>
+  <td>parity 校验：11 项基准用例逐项比对</td>
+  <td><b>11/11</b><br><span class="dim">（JS 移植版 RMSE 与 Python 完全一致）</span></td>
+  <td><b>100%</b>，漂移即红灯</td>
+  <td>parity 脚本输出截图</td>
+  <td>不适用（确定性）</td>
+</tr>
+<tr>
+  <td><b>数值溯源成功率</b><br><span class="tag tag-o">L1</span></td>
+  <td>输出中的每个数值可追溯到具体工具调用与公式的比例</td>
+  <td>可溯源数值项 / 输出数值总项</td>
+  <td><b>（待采集）</b><br><span class="dim">当前为架构红线保证，尚缺统计算法</span></td>
+  <td><b>100%</b>；溯源失败即拦截拒答</td>
+  <td>随机抽取 20 个输出数值现场点开溯源</td>
+  <td>抽样 ≥20 项</td>
+</tr>
+<tr>
+  <td><b>版本可追溯率</b><br><span class="tag tag-o">L1</span></td>
+  <td>历史建议包可反查 model_version / pack_version / trace_id 的比例</td>
+  <td>可完整溯源的建议包 / 抽查建议包总数</td>
+  <td><b>（待采集）</b></td>
+  <td><b>100%</b></td>
+  <td>随机抽 5 个历史炉次</td>
+  <td>抽样 ≥5 炉</td>
+</tr>
+<tr>
+  <td><b>建议留痕完整率</b><br><span class="tag tag-b">L2</span></td>
+  <td>对外建议中写入留痕管道的比例</td>
+  <td>留痕条数 / 引擎建议生成次数</td>
+  <td><b>（待采集）</b></td>
+  <td><b>100%</b>（差值为 0）</td>
+  <td>日志计数比对</td>
+  <td>连续 ≥1 个班次</td>
+</tr>
+<tr>
+  <td><b>推翻率</b><br><span class="tag tag-b">L2</span></td>
+  <td>被现场推翻的建议占全部建议的比例</td>
+  <td>推翻事件数 / 建议总数</td>
+  <td><b>（待采集）</b><br><span class="dim">4 周基线期内统计，不考核</span></td>
+  <td><b>不设承诺值</b>（仅观测趋势）</td>
+  <td>月度运营报表</td>
+  <td>≥4 周基线期</td>
+</tr>
+<tr>
+  <td><b>推翻后命中率</b><br><span class="tag tag-b">L2</span></td>
+  <td>推翻事件中，经机理引擎回溯判定"推翻正确"的比例</td>
+  <td>回溯判定正确数 / 已结案推翻事件数</td>
+  <td><b>（待采集）</b></td>
+  <td><b>不设承诺值</b>（运营改进指标）</td>
+  <td>月度运营报表 + 判据抽样</td>
+  <td>已结案推翻事件 ≥20 条</td>
+</tr>
+<tr>
+  <td><b>建议响应时延</b><br><span class="tag tag-b">L2</span></td>
+  <td>从触发条件成立到建议呈现给操作工的时间</td>
+  <td>建议生成时间戳 − 触发时间戳</td>
+  <td><b>（待采集）</b></td>
+  <td><b>（示例值：≤30 秒）<span class="tag tag-y">待商务确认</span></b></td>
+  <td>系统埋点统计 P50 / P95</td>
+  <td>≥100 次采样</td>
+</tr>
+<tr>
+  <td><b>终点命中率</b><br><span class="tag tag-g">L3</span></td>
+  <td>终点判断结果与工艺判定一致的炉次占比</td>
+  <td>命中炉次数 / 有效炉次数（判据写死在合同附件）</td>
+  <td><b>96.0%</b><br><span class="dim">PS 转炉造渣终点判断 · 江铜贵溪 5 号炉已部署；<b>分母/判据/统计区间须由责任人书面确认后方可对外引用</b></span></td>
+  <td><b>按合同谈判</b>；建议形式：不低于"基线 − Δ"，Δ <b>（待采集）</b></td>
+  <td>联合统计：双方各出一人在同一数据集上核算</td>
+  <td>样本量下限 <b>（待采集，建议 ≥100 炉）</b>；采集率 ≥80%</td>
+</tr>
+<tr>
+  <td><b>钒回收率</b><br><span class="tag tag-g">L3</span></td>
+  <td>进入钒渣的钒量 / 铁水带入钒量</td>
+  <td>按厂内既有化验口径核算</td>
+  <td><b>（待采集）</b></td>
+  <td><b>（待采集后再承诺）</b></td>
+  <td>月度联合核算</td>
+  <td>化验口径与取样规则先统一</td>
+</tr>
+<tr>
+  <td><b>例外炉次率</b><br><span class="tag tag-g">L3</span></td>
+  <td>触发例外流程的炉次占比</td>
+  <td>例外炉次数 / 总炉次数</td>
+  <td><b>（待采集）</b></td>
+  <td>趋势下行（不与惩罚挂钩）</td>
+  <td>月度联合核算</td>
+  <td>≥1 个月稳定生产期</td>
+</tr>
+<tr>
+  <td><b>单炉经济效益</b><br><span class="tag tag-g">L3</span></td>
+  <td>配吃结构优化 + 回收率提升 + 返工减少三项加总</td>
+  <td>随附测算表逐项列出</td>
+  <td><b>420 万元 / 年（单炉）</b><br><span class="dim">测算值，须随口径一同交付</span><br>全厂推广口径：营收 <b>1280 万元</b> / 利润 <b>460 万元</b></td>
+  <td>以测算表口径为准，<b>不单独抽项宣称</b></td>
+  <td>甲乙双方共同确认测算表</td>
+  <td>测算期 ≥1 个月，原始数据可查</td>
+</tr>
+</table>
+
+<h2>04 · 双轨 KPI 与四周基线期规则</h2>
+
+<h3>4.1 为什么坚决删除采纳率</h3>
+<div class="box box-danger">
+<p><b>采纳率作为 KPI 会导致两个确定性后果：</b></p>
+<ol>
+<li><b>系统侧</b>：为保采纳率，系统会自我保守化——只挑没有争议的建议推送，最需要提醒的例外工况反而沉默。</li>
+<li><b>人的侧</b>：KPI 落到班组，终点就是逼操作工点确认。<b>操作工被训练成橡皮图章的那一刻，AI 的错误就被洗白成了人的决策</b>——责任链断裂，且不可逆。</li>
+</ol>
+<p><b>因此：采纳率从 KPI 体系中永久删除，不作为付款条件、不作为班组考核项、不作为验收指标。</b></p>
+</div>
+
+<h3>4.2 双轨 KPI</h3>
+<table>
+<tr><th style="width:14%">轨道</th><th style="width:22%">指标</th><th style="width:16%">对谁负责</th><th style="width:16%">进什么文本</th><th>性质</th></tr>
+<tr>
+  <td><b>结果轨</b><br><span class="tag tag-g">Result</span></td>
+  <td>终点命中率 · 钒回收率 · 例外炉次率 · 单炉经济效益</td>
+  <td><b>厂长 / 经营层</b></td>
+  <td>合同付款条款</td>
+  <td>硬的、可罚的、可验收的。<b>这一轨讲钱。</b></td>
+</tr>
+<tr>
+  <td><b>质量轨</b><br><span class="tag tag-b">Quality</span></td>
+  <td>推翻率趋势 · 推翻后命中率 · 建议留痕完整率 · 建议响应时延</td>
+  <td><b>一线班组 / 工艺口</b></td>
+  <td>运营协议 / 月度报表</td>
+  <td>观测的、改进的、不罚款的。<b>这一轨讲信任。</b></td>
+</tr>
+</table>
+
+<h3>4.3 推翻判定的三条铁规则</h3>
+<div class="grid3">
+  <div class="layer"><div class="lv">规则一</div><div class="ln">机器回溯，不由专家拍板</div><div class="lb">推翻对错由机理引擎自动回溯铁数据判定：<b>终点温度 / 终点碳 / 喷溅记录 / 化验实绩</b>。<b>不让任何人在当时当地的情绪下做裁判。</b></div></div>
+  <div class="layer"><div class="lv">规则二</div><div class="ln">推翻正确＝给引擎上课</div><div class="lb">判定"推翻正确"的样本自动进评测集，作为下一次模型/知识包变更的必过用例；判定"推翻错误"的进培训案例。<b>被推翻不是污点，是燃料。</b></div></div>
+  <div class="layer"><div class="lv">规则三</div><div class="ln">奖励发"面子"不发钱</div><div class="lb">适配国企：<b>月度会公开念名 + 免责记录</b>（该次推翻已被判定正确，不因偏离建议追责）。不承诺现金。</div></div>
+</div>
+
+<h3>4.4 4 周基线期规则</h3>
+<table>
+<tr><th style="width:16%">周次</th><th>做什么</th><th style="width:24%">禁止做什么</th></tr>
+<tr><td><b>W1</b></td><td>影子模式：系统出建议但不推送；采集推翻留痕字段的完整性</td><td rowspan="4"><b>不公布、不考核、不排名、不与任何班组挂钩。</b>基线期的唯一目的是"弄清楚现在的真实水平"，防止"以不推翻为目标"污染数据。</td></tr>
+<tr><td><b>W2</b></td><td>建议正式可见，推翻留痕上线；统计推翻字段完整率</td></tr>
+<tr><td><b>W3</b></td><td>回溯通道打通：终点数据自动回流，推翻事件自动判定</td></tr>
+<tr><td><b>W4</b></td><td>出具基线报告：推翻率水平、推翻后命中率、判定成功率；双方签字<b>锁定基线值</b></td></tr>
+<tr><td><b>W5 起</b></td><td>双轨 KPI 正式生效；目标值以"基线 ± Δ"形式写入合同附件，Δ 由基线报告确定</td><td>不得用无基线的绝对数字作为考核起点</td></tr>
+</table>
+<p class="dim">配套门槛：数据采集率 <b>≥80%</b> 才允许开启自学习与漂移检测；低于此门限时，系统明确标注"学习未启用"，<b>不假装已启用</b>。</p>
+
+<h2>05 · 红线条款（可直接进合同附件）</h2>
+
+<div class="clause"><b>第 1 条 · 不下发设定值。</b>乙方系统不得以任何形式向 L1/PLC/DCS 控制回路下发设定值或执行指令。可审计判据：<b>「LLM 直接下发设定值次数 = 0」</b>，甲方可随时通过日志查询验证；<b>IControlSignalWriter 永不提供真实 DCS 实现</b>。</div>
+<div class="clause"><b>第 2 条 · 数值必须溯源。</b>乙方系统输出的全部数值必须来自确定性工具调用返回值。<b>溯源失败时系统必须拦截并拒答</b>，不得以任何方式给出"估算值""参考值"。LLM 不承担数值计算职责。</div>
+<div class="clause"><b>第 3 条 · 零人格化留痕。</b>所有留痕、操作记录、审计日志中<b>不得出现人格化主语</b>（人名、昵称、"数字员工/AI 同事/虚拟班组"等）。主语只允许："系统 / 机理引擎 / 模型 vX.X / 数据来源·接口·时间戳"。</div>
+<div class="clause"><b>第 4 条 · 确认门不可绕过。</b>所有影响工艺参数的建议节点后必须挂人工确认门；乙方以 CI 静态检查拒绝任何绕过路径合入。甲方有权进行渗透测试，构造直达执行路径应当失败。</div>
+<div class="clause"><b>第 5 条 · 口径冲突必须登记。</b>规程、文献、厂级标准之间存在冲突的参数，必须在<b>口径登记册（CF-001 ~ CF-008 及后续）</b>中登记：冲突双方、证据来源、仲裁结论、生效版本。<b>未登记的冲突不得在系统中静默取值。</b></div>
+<div class="clause"><b>第 6 条 · 数据质量自曝义务。</b>数据存在缺失、延迟、超范围时，系统必须显式标注（来源 / 时效 / 完整度），并沿下游计算链路<b>传染</b>标记；不得用默认值冒充实测值。</div>
+
+<h2>06 · 验收流程与争议仲裁</h2>
+
+<div class="flow">
+  <div><span class="fn">STEP 1</span>影子并行<br><span class="dim">只出建议不打扰</span></div>
+  <div><span class="fn">STEP 2</span>4 周基线期<br><span class="dim">只统计不考核</span></div>
+  <div><span class="fn">STEP 3</span>基线签字锁定<br><span class="dim">确定 Δ</span></div>
+  <div><span class="fn">STEP 4</span>正式运行 + 月度核算<br><span class="dim">联合统计</span></div>
+  <div><span class="fn">STEP 5</span>争议数据回溯<br><span class="dim">机器裁定</span></div>
+</div>
+
+<table>
+<tr><th style="width:22%">环节</th><th>规则</th></tr>
+<tr><td><b>验收主体</b></td><td>甲乙双方各指定 1 名数据负责人，在<b>同一份导出数据集</b>上分别核算；核算脚本与中间结果双向公开。</td></tr>
+<tr><td><b>采样规则</b></td><td>随机抽样不得事后调整；<b>排除规则（停机、检修、原料异常、非计划变更）必须在开始前写死</b>，事后不得追加剔除。</td></tr>
+<tr><td><b>数据门槛</b></td><td>① 数据采集率 ≥80% 才开自学习；② 指标统计样本量下限<b>（待基线采集，建议 ≥100 炉）</b>；③ 原料结构/炉衬周期重大变化时<b>重新起算</b>。</td></tr>
+<tr><td><b>漂移与重算</b></td><td>连续 N 炉预测误差超 <b>3σ</b> → 触发口径复审 + 模型复核；N 的取值<b>（待基线采集）</b>。漂移期间停止对外口径承诺直到复审完成。</td></tr>
+<tr><td><b>争议仲裁</b></td><td><b>以数据回溯为最终裁定依据</b>：以 <code>trace_id</code> 拉取输入快照、模型版本、知识包版本、工具调用链，重放并比对。重放结果与实际留痕不一致时，<b>以留痕为准</b>（保证：留痕不可篡改）。裁定不由任何一方专家单独拍板。</td></tr>
+<tr><td><b>不可抗力与例外炉</b></td><td>例外炉次单独记账、单独分析，<b>计入统计但标注</b>；不得因为难看而剔除。</td></tr>
+<tr><td><b>退出条款</b></td><td>连续两个核算周期未达承诺值且非甲方数据原因，甲方有权要求<b>退回本阶段款项或终止合同</b>——<b>敢写退出条款，是这套指标可信的最好证明。</b></td></tr>
+</table>
+
+<h2>07 · 附：给甲方的「数字员工招标参数建议」清单</h2>
+
+<p>以下 10 条可直接复制粘贴进招标文件的<b>技术评分/符合性条款</b>。VERO 全部满足；这十条中每一条都对应一个真实存在过、且被公开材料反复踩到的坑。</p>
+
+<table>
+<tr><th style="width:4%">#</th><th style="width:34%">建议条款（可直接复制）</th><th style="width:30%">为什么必须有这条</th><th style="width:18%">VERO 满足情况</th><th style="width:14%">多数对手难点</th></tr>
+<tr>
+  <td><b>1</b></td>
+  <td>投标方须提供<b>确定性底座证明</b>：核心工艺模型须通过回归测试，并提供加权用例数、允许误差、最近一次回归时间与输出件。</td>
+  <td>区分"机理模型"与"Prompt 包装"的唯一硬办法。</td>
+  <td><span class="tag tag-g">满足</span>75/75，误差 0.0002%，可现场复跑</td>
+  <td>无回归体系或不敢公开</td>
+</tr>
+<tr>
+  <td><b>2</b></td>
+  <td>投标方须承诺<b>不向 L1/L2 控制回路下发任何设定值</b>，并接受「AI 直发设定值次数＝0」的日志审计。</td>
+  <td>拦截"联动更新全部控制参数"的危险读法。</td>
+  <td><span class="tag tag-g">满足</span>写入红线条款可审计</td>
+  <td>把"联动"当卖点的方案难以撤回</td>
+</tr>
+<tr>
+  <td><b>3</b></td>
+  <td>系统输出的每个数值须可溯源至<b>工具调用返回值 + 公式 + 数据来源 + 时间戳</b>；溯源失败须拒答而非估算。</td>
+  <td>防 LLM 数值幻觉（编一个终点温度就是一次事故）。</td>
+  <td><span class="tag tag-g">满足</span>架构红线硬保证</td>
+  <td>依赖 LLM 自由输出的方案做不到</td>
+</tr>
+<tr>
+  <td><b>4</b></td>
+  <td>所有留痕、审计日志中<b>禁止人格化主语</b>，须使用系统/模型版本/数据源标识；须提供随机历史记录的溯源演示。</td>
+  <td>防止"是数字员工建议的"成为责任稀释句式。</td>
+  <td><span class="tag tag-g">满足</span>零人格化留痕规范</td>
+  <td>把人格化做进产品的厂商需返工</td>
+</tr>
+<tr>
+  <td><b>5</b></td>
+  <td>投标方须提供<b>角色协作的架构说明</b>：角色是独立智能体还是同一引擎的多视图？若为多智能体，须说明交接协议的结构化字段与失败重试机制。</td>
+  <td>多智能体自然语言交接＝有损压缩 + 幻觉注入点。</td>
+  <td><span class="tag tag-g">满足</span>单引擎多视角，无交接链</td>
+  <td>以"多角色协同"为核心卖点者难以解释</td>
+</tr>
+<tr>
+  <td><b>6</b></td>
+  <td>须提供<b>推翻通道</b>：每条建议可一键推翻并记录理由分类；推翻事件由系统回溯终点实绩自动判定对错，不得由人工仲裁。</td>
+  <td>没有推翻通道的系统会训练出橡皮图章。</td>
+  <td><span class="tag tag-g">满足</span>机制已定，P1 落地上线后可用</td>
+  <td>多数方案未设计推翻数据回流</td>
+</tr>
+<tr>
+  <td><b>7</b></td>
+  <td><b>不得将采纳率作为考核或验收指标</b>；替代方案为结果指标（命中率/回收率）＋决策质量指标（推翻后命中率）。</td>
+  <td>采纳率会污染行为数据并洗白 AI 错误。</td>
+  <td><span class="tag tag-g">满足</span>已采纳率永久删除写入文件</td>
+  <td>把采纳率写进 KPI 的方案需改 KPI</td>
+</tr>
+<tr>
+  <td><b>8</b></td>
+  <td>须设置<b>不少于 4 周的基线期</b>，基线期内只统计不考核；承诺值以基线 ± Δ 形式确定并提供 Δ 的计算依据。</td>
+  <td>无基线的绝对指标等于凭空表态。</td>
+  <td><span class="tag tag-g">满足</span>4 周基线期规则已写入本文 §04</td>
+  <td>急于签单者不愿先跑一个月</td>
+</tr>
+<tr>
+  <td><b>9</b></td>
+  <td>须明确<b>数据采集率门槛</b>（建议 ≥80%）与时延、丢失情况下的显式标注策略；未达门槛时须明确告知"学习/实时能力未启用"。</td>
+  <td>防止用演示数据冒充生产数据。</td>
+  <td><span class="tag tag-g">满足</span>含数据徽标三元 + 传染标记</td>
+  <td>数据治理能力不足者难以承诺</td>
+</tr>
+<tr>
+  <td><b>10</b></td>
+  <td>须提供<b>知识包/口径管理清单</b>：分层结构、版本机制、冲突登记与仲裁记录，以及"未登记冲突不得静默取值"的书面承诺。</td>
+  <td>没有口径治理的知识资产会随时间腐坏。</td>
+  <td><span class="tag tag-g">满足</span>三层包 + CF-001~008 登记册</td>
+  <td>多数厂商无冲突治理机制</td>
+</tr>
+</table>
+
+<div class="box box-ok">
+<b>给甲方的一句话收尾</b>："这十条您不必只问我们一家。<b>您问所有投标方，答不上来的那条，就是将来最可能出问题那条。</b>"
+</div>
+
+<h2>08 · 术语与数据口径声明</h2>
+<table>
+<tr><th style="width:22%">术语</th><th>本白皮书口径</th></tr>
+<tr><td><b>数字员工</b></td><td>本文采用保守定义：<b>能够稳定承担某一岗位部分职责（读取、计算、校核、留痕）的软件能力集合</b>。人格化表述仅在管理层沟通与市场材料中使用，<b>不进入执行链路与留痕</b>。</td></tr>
+<tr><td><b>单引擎多视角架构</b></td><td>VERO 采用的拓扑：<b>角色是数据的视图，不是独立的智能体</b>；所有视角读取同一份带 <code>trace_id</code> 的计算结果，<b>不存在交接幻觉链</b>。</td></tr>
+<tr><td><b>行业通用</b></td><td>指跨厂一致的规则层级（对应知识包 <code>industry</code> 层）。VERO 是<b>面向提钒冶炼行业的行业级产品</b>，不是单厂定制项目；厂级差异通过覆盖层（<code>jianlong</code> / <code>pangang</code>）承载。</td></tr>
+<tr><td><b>确定性与红线</b></td><td>确定性＝同样输入同样输出的成因计算；LLM 只承担语言层任务（意图识别、证据组织、解释生成），<b>不承担数值计算与执行</b>。</td></tr>
+<tr><td><b>（待采集）</b></td><td>指 VERO 当前<b>尚无经过可验证数据源采集</b>的指标。本文禁止以估算值填充；相关字段在获得基线数据后于本表更新。</td></tr>
+<tr><td><b>（示例值）</b></td><td>指可用于谈判讨论、但尚未经双方确认的建议取值，不得直接写入合同。</td></tr>
+</table>
+
+<footer>
+《数字员工可验收标准》白皮书 v1.0 · VERO 提钒冶炼智能体 · 2026-09-27 ｜ 平行文件：VERO_NARRATIVE_KIT.html（叙事口径）· docs/EXPERIENCE_CAPTURE.md（经验采集机制）· VERO_DIGITAL_CREW_BENCHMARK.html（评审依据）<br>
+本白皮书所列 真实数据锚点：96.0%（贵溪 PS 转炉造渣终点判断）· 75/75（黄金回归）· 11/11（JS 双端一致）· 420 万元/年（单炉测算）· 1280 万元/460 万元（全厂测算）· 927 万元（在谈项目）· CF-001~008（口径登记册）。其余指标均为（待采集）。
+</footer>
+
+</div>
+</body>
+</html>

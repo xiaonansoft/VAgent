@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>VEES 提钒智能体 · 分角色驾驶舱 v0.7</title>
+<title>VERO 提钒智能体 · 分角色驾驶舱 v0.8</title>
 <style>
 /* ========== 第一层：色板（raw） ========== */
 :root{
@@ -256,6 +256,41 @@ body.fs footer{flex:0 0 auto;margin-top:0}
 @media(prefers-reduced-motion:reduce){
   *{animation:none!important;transition:none!important}
 }
+
+/* ===== v0.8：炉次号 / 数据来源 / 枪位时间轴 ===== */
+.heat-row{display:flex;gap:var(--s2);align-items:center}
+.heat-input{flex:1;min-width:0;background:var(--surface);border:1px solid var(--line);border-radius:var(--r-ctrl);
+  color:var(--t1);font-weight:700;font-size:var(--fs-h2);padding:6px 10px;font-family:inherit;
+  font-variant-numeric:tabular-nums;letter-spacing:.5px}
+.heat-input:focus{border-color:var(--accent);outline:none}
+.heat-input::placeholder{color:var(--t3);font-weight:400;font-size:var(--fs-cap)}
+.src-line{display:flex;align-items:center;gap:6px;flex-wrap:wrap;font-size:var(--fs-cap);color:var(--t3);margin-top:var(--s2)}
+.src-badge{display:inline-flex;align-items:center;font-size:var(--fs-cap);font-weight:700;
+  padding:2px 9px;border-radius:var(--r-pill);border:1px solid var(--line);color:var(--t2)}
+.src-badge.auto{color:var(--info);border-color:var(--info)}
+/* 枪位推荐：工业时间轴 */
+.lance-bar{position:relative;height:34px;background:var(--line);border-radius:var(--r-ctrl);
+  overflow:hidden;margin:10px 0 4px}
+.lance-seg{position:absolute;top:0;height:100%;display:flex;align-items:center;justify-content:center;
+  font-size:var(--fs-cap);font-weight:700;color:var(--t1);font-variant-numeric:tabular-nums;
+  border-right:1px solid var(--bg)}
+.lance-seg.low{background:rgba(107,147,184,.32)}
+.lance-seg.high{background:rgba(232,98,15,.42)}
+.lance-scale{display:flex;justify-content:space-between;font-size:11px;color:var(--t3);
+  font-variant-numeric:tabular-nums;margin:0 2px}
+.lance-steps{margin-top:var(--s2);font-size:var(--fs-body);color:var(--t2)}
+.lance-steps b{color:var(--t1)}
+.lance-act{margin-top:var(--s2);background:var(--surface);border:1px solid var(--line);border-radius:var(--r-panel);
+  padding:9px 12px;font-size:var(--fs-body);color:var(--t1);font-weight:600}
+/* 留痕筛选 */
+.log-filter{width:100%;background:var(--surface);border:1px solid var(--line);border-radius:var(--r-ctrl);
+  color:var(--t1);font-size:var(--fs-cap);padding:6px 10px;font-family:inherit;margin-bottom:var(--s2)}
+.log-filter:focus{border-color:var(--info);outline:none}
+.log-filter::placeholder{color:var(--t3)}
+@media(min-width:1600px){
+  .heat-input{font-size:var(--fs-h2)}
+  .lance-bar{height:42px}
+}
 </style>
 </head>
 <body>
@@ -263,7 +298,7 @@ body.fs footer{flex:0 0 auto;margin-top:0}
 <header class="header">
   <div class="header-row">
     <div>
-      <h1>提钒冶炼智能体 · 分角色驾驶舱 <span class="v">v0.7</span></h1>
+      <h1>提钒冶炼智能体 · 分角色驾驶舱 <span class="v">v0.8</span></h1>
       <div class="sub">攀钢「四大平衡」机理引擎 · 黄金回归对照 Excel 703 公式 · 同一引擎，三层角色视图</div>
     </div>
     <div class="hdr-right">
@@ -288,6 +323,13 @@ body.fs footer{flex:0 0 auto;margin-top:0}
     <!-- 01 输入 -->
     <div class="panel">
       <h2><span class="num">01</span>开吹条件 <span class="hint">按化验单填写 · 点击数值可直接输入</span></h2>
+      <label for="inHeat"><b>炉次号</b><span class="note" style="float:right;font-weight:400">唯一标识 · 全程留痕追溯</span></label>
+      <div class="heat-row">
+        <input type="text" id="inHeat" class="heat-input" maxlength="24" placeholder="如 H20260927-001" aria-label="炉次号（唯一标识）">
+        <button class="btn-mini" id="newHeatBtn" title="生成下一个炉次号">＋新炉次</button>
+      </div>
+      <div id="heatDup" class="note" style="display:none;color:var(--info);margin-top:2px">该炉次号已有留痕记录，后续记录将关联同一炉次</div>
+      <div class="src-line" id="heatSrc"></div>
       <label for="inW"><b>铁水装入量</b><span class="val" id="vW" aria-live="polite"></span></label>
       <input type="range" id="inW" min="60000" max="120000" step="1000" value="80000" aria-label="铁水装入量（吨）">
       <div class="scale"><span>60t</span><span>90t</span><span>120t</span></div>
@@ -301,6 +343,7 @@ body.fs footer{flex:0 0 auto;margin-top:0}
       <input type="range" id="inT" min="1250" max="1350" step="5" value="1300" aria-label="铁水温度（摄氏度）">
       <div class="scale"><span>1250</span><span>1300</span><span>1350</span></div>
       <div class="dh-line">计算口径：<b id="dhLine">攀钢经验口径 2777 kJ/kg</b>（专家审定中 · 切换权限在工艺工作台）<span id="arbEcho"></span></div>
+      <button class="btn-mini" id="mockPush" style="margin-top:var(--s2)" title="通过预留接口 VERO_API.applyHeat 推送一炉模拟开吹条件，验证外部系统对接链路">⇪ 模拟外部推送（走预留接口）</button>
     </div>
 
     <!-- 02 决策卡 -->
@@ -343,12 +386,18 @@ body.fs footer{flex:0 0 auto;margin-top:0}
         </details>
       </div>
 
+      <div class="panel">
+        <h2><span class="num">LC</span>氧枪枪位推荐 <span class="hint">行业通用模式 · 厂级参数 900/1200mm</span>
+          <span class="badge b-g" id="lanceBadge"><span class="sq"></span>低-高-低</span></h2>
+        <div id="lanceBody"></div>
+      </div>
+
       <div class="panel" id="guideCard">
         <h2>如何用 · 炉长驾驶舱
           <button class="btn-mini" id="guideHide" style="margin-left:auto">知道了，收起</button></h2>
         <div class="explain">
-          <div>1. 按化验单拨动左侧四个滑杆（也可由 PLC/化验室自动带入），点击数值可直接键入。</div>
-          <div>2. 看右侧<b>两个大数字</b>：配吃量 + 品位预测（刻度尺上红线为 14.0 目标）。</div>
+          <div>1. 核对<b>炉次号</b>（每炉唯一，留痕追溯用），按化验单拨动四个滑杆，或等外部系统经预留接口自动带入。</div>
+          <div>2. 看右侧<b>两个大数字</b>：配吃量 + 品位预测（刻度尺上红线为 14.0 目标），并核对<b>氧枪枪位推荐</b>时间轴。</div>
           <div>3. 看<b>状态灯</b>：绿灯照做；黄灯按判例行提示的预案动作执行，并记例外。</div>
           <div class="note" style="margin-top:6px">双口径仲裁、敏感性曲线、黄金回归等专家级信息在「工艺工作台 / 数据治理台」。</div>
         </div>
@@ -425,15 +474,20 @@ body.fs footer{flex:0 0 auto;margin-top:0}
     </div>
     <div class="col-stack">
       <div class="panel">
-        <h2><span class="num">B</span>计算留痕 <span class="hint">本地无网络请求 · localStorage 持久化</span></h2>
+        <h2><span class="num">B</span>计算留痕 <span class="hint">本地无网络请求 · localStorage 持久化 · 按炉次号追溯</span></h2>
         <div class="explain" id="trace"></div>
-        <div class="explain" id="opLog" style="margin-top:var(--s2);border-color:rgba(74,158,92,.35);background:rgba(74,158,92,.04)" aria-live="polite">
+        <input type="text" id="logFilter" class="log-filter" placeholder="按炉次号 / 关键词筛选留痕…" aria-label="留痕筛选" style="margin-top:var(--s2)">
+        <div class="explain" id="opLog" style="border-color:rgba(74,158,92,.35);background:rgba(74,158,92,.04)" aria-live="polite">
           <div class="note">操作留痕区：炉长确认 / 工艺仲裁将记录于此（localStorage 持久化，刷新不丢失）</div>
         </div>
       </div>
       <div class="gov">
-        <h3>P3 数据接口规范 <span class="badge b-y">待建 · HANDOVER D6</span></h3>
-        <div class="mono">TSC/TSO · 烟气 CO/CO₂/流量 · 氧枪/枪位 · 炉后台账<br>字段/频率/网络边界 → 见 docs/DATA_INTERFACE_SPEC.md</div>
+        <h3>数据接口规范 <span class="badge b-g"><span class="sq"></span>开吹条件适配器已预留</span></h3>
+        <div class="mono">开吹条件推送（外部系统 → 本页）：window.VERO_API.applyHeat({heat_no, iron_weight_t, si_pct, v_pct, temp_c, source})<br>状态查询（本页 → 外部系统）：window.VERO_API.getState() → 炉次号/输入/配吃建议/枪位推荐 JSON<br>字段校验范围对齐 DATA_INTERFACE_SPEC.md §3.1/§3.6 · 炉前页「模拟外部推送」按钮走同一接口验证链路</div>
+      </div>
+      <div class="gov">
+        <h3>P3 实时数据接口 <span class="badge b-y">待建 · HANDOVER D6</span></h3>
+        <div class="mono">TSC/TSO · 烟气 CO/CO₂/流量 · 氧枪/枪位实时流 · 炉后台账<br>字段/频率/网络边界 → 见 docs/DATA_INTERFACE_SPEC.md</div>
       </div>
     </div>
   </div>
@@ -442,7 +496,7 @@ body.fs footer{flex:0 0 auto;margin-top:0}
 </div>
 
 <footer>
-  <span>VEES 分角色驾驶舱 · 状态：离线运行 · 黄金回归 11/11</span>
+  <span>VERO 分角色驾驶舱 v0.8 · 炉次留痕追溯 · 氧枪枪位推荐 · 外部对接已预留 · 黄金回归 11/11</span>
   <span>术语：配吃=冷料加入 · 球返=球团矿返矿 · 品位=V₂O₅ 质量分数 · 富余=热量富余 · 留痕=全量计算记录</span>
 </footer>
 
@@ -566,6 +620,73 @@ function nearH(Si,V){
               .sort((a,b)=>a.d-b.d).slice(0,4);
 }
 
+/* ============ 氧枪枪位推荐（JS 同源移植自 backend/app/tools/lance_profile.py） ============
+   模式逻辑 = 行业基线(industry/base.yaml)：标准「低-高-低」+ 高Si保持下限（CF-006 已定案）
+   阈值 0.20% 与枪位值 900/1200mm = 厂级默认参数（jianlong/base.yaml，可被厂级包覆盖） */
+const LANCE_P={siTh:0.20,low:900,high:1200,lowUntil:2.0,endPressS:40,totalBlow:5.5};
+function lanceProfile(Si){
+  const P=LANCE_P;
+  if(Si<P.siTh){
+    const ep=+(P.totalBlow-P.endPressS/60).toFixed(3);
+    return {mode:"low_high_low",label:"低-高-低",
+      steps:[{a:0,b:P.lowUntil,h:P.low},{a:P.lowUntil,b:ep,h:P.high},{a:ep,b:P.totalBlow,h:P.low}],
+      action:"吹氧结束前 "+P.endPressS+" 秒压枪至 "+P.low+" mm，降低渣中 FeO。",
+      basis:"点火/前期低枪位 → 主吹高枪位（软吹化渣、保碳）→ 终点压枪低枪位（行业通用：攀钢综述 / 讲课稿 / 黑龙江建龙 p22）"};
+  }
+  return {mode:"constant_low",label:"全程低枪位",
+    steps:[{a:0,b:P.totalBlow,h:P.low}],
+    action:"高硅（Si ≥ "+P.siTh+"%）吹炼全程保持低枪位 "+P.low+" mm，抑制脱碳、保钒。",
+    basis:"高 Si 枪位保持下限（行业通用：黑龙江建龙 p16/p22 · 下钢综述）"};
+}
+function renderLance(inp){
+  const lp=lanceProfile(inp.Si), T=LANCE_P.totalBlow;
+  const badge=$("lanceBadge");
+  badge.className="badge "+(lp.mode==="constant_low"?"b-y":"b-g");
+  badge.innerHTML="<span class='sq'></span>"+lp.label;
+  let bar="";
+  lp.steps.forEach(s=>{
+    bar+="<div class='lance-seg "+(s.h===LANCE_P.low?"low":"high")+"' style='left:"+(s.a/T*100).toFixed(2)+"%;width:"+((s.b-s.a)/T*100).toFixed(2)+"%'>"+s.h+" mm</div>";
+  });
+  const stepsTxt=lp.steps.map((s,i)=>{
+    return "<div>第 "+(i+1)+" 段　<b>"+fmt(s.a,1)+" – "+fmt(s.b,2)+" min</b>　枪位 <b>"+s.h+" mm</b></div>";
+  }).join("");
+  $("lanceBody").innerHTML=
+    "<div class='lance-bar' role='img' aria-label='枪位时间轴："+lp.label+"'>"+bar+"</div>"+
+    "<div class='lance-scale'><span>0 min</span><span>2.0</span><span>4.0</span><span>"+T+" min（供氧时长）</span></div>"+
+    "<div class='lance-steps'>"+stepsTxt+"</div>"+
+    "<div class='lance-act'>"+lp.action+"</div>"+
+    "<div class='note' style='margin-top:6px'>"+lp.basis+"<br>模式逻辑 = 行业基线；阈值 0.20% 与 900/1200mm = 厂级默认参数（可被厂级知识包覆盖）</div>";
+}
+
+/* ============ 炉次号 + 数据来源 ============ */
+let heatNo="";
+let heatReg={};
+try{heatReg=JSON.parse(localStorage.getItem("vero_heats")||"{}");}catch(e){heatReg={};}
+let dataSource={mode:"manual",label:"手动录入",detail:"按化验单填写"};
+function todayStr(){const d=new Date();return d.getFullYear()+String(d.getMonth()+1).padStart(2,"0")+String(d.getDate()).padStart(2,"0");}
+function nextHeatNo(){
+  const day=todayStr();let n=0;
+  Object.keys(heatReg).forEach(k=>{const m=k.match(/^H(\d{8})-(\d+)$/);if(m&&m[1]===day)n=Math.max(n,+m[2]);});
+  return "H"+day+"-"+String(n+1).padStart(3,"0");
+}
+function setHeatNo(v){
+  heatNo=String(v||"").trim().slice(0,24);
+  const el=$("inHeat"); if(el&&el.value!==heatNo)el.value=heatNo;
+  const dup=$("heatDup"); if(dup)dup.style.display=(heatNo&&heatReg[heatNo])?"":"none";
+}
+function registerHeat(){
+  if(!heatNo)setHeatNo(nextHeatNo());
+  heatReg[heatNo]={t:new Date().toISOString(),source:dataSource.label};
+  try{localStorage.setItem("vero_heats",JSON.stringify(heatReg));}catch(e){}
+  const dup=$("heatDup"); if(dup)dup.style.display="";
+}
+function renderHeatLine(){
+  const el=$("heatSrc"); if(!el)return;
+  el.innerHTML="数据来源：<span class='src-badge"+(dataSource.mode==="auto"?" auto":"")+"'>"+esc(dataSource.label)+"</span>"+
+    (dataSource.detail?"<span>"+esc(dataSource.detail)+"</span>":"")+
+    "<span style='margin-left:auto'>外部对接已预留：VERO_API.applyHeat</span>";
+}
+
 /* ============ 性能缓存：分层失效（拖 Si 只移游标；拖 V/W/T 重建曲线；dhV 切换全量重建） ============ */
 let _cache={keyDh:null,keyFull:null,sweepPts:null,replayPreds:null,rmseA:null,rmseB:null,altModel:null};
 function calcRmse(dh){
@@ -598,26 +719,31 @@ function ensureCache(inp){
   }
 }
 
-/* 操作留痕 — localStorage 持久化（纯文本存储，渲染时转义） */
+/* 操作留痕 — localStorage 持久化（纯文本存储，渲染时转义；每条绑定炉次号） */
 let opLog=[];
-try{opLog=JSON.parse(localStorage.getItem("vees_oplog")||"[]");}catch(e){opLog=[];}
-function saveOpLog(){try{localStorage.setItem("vees_oplog",JSON.stringify(opLog));}catch(e){}}
+try{opLog=JSON.parse(localStorage.getItem("vero_oplog")||"[]");}catch(e){opLog=[];}
+function saveOpLog(){try{localStorage.setItem("vero_oplog",JSON.stringify(opLog));}catch(e){}}
 function pushLog(msg){
-  opLog.unshift({t:new Date().toLocaleString("zh-CN",{hour12:false}),msg:String(msg)});
+  opLog.unshift({t:new Date().toLocaleString("zh-CN",{hour12:false}),heat:heatNo||"",msg:String(msg)});
   if(opLog.length>50)opLog.pop();
   saveOpLog();
   renderOpLog();
 }
 function renderOpLog(){
   if(activeView!=="data")return;
-  if(!opLog.length){$("opLog").innerHTML='<div class="note">操作留痕区：炉长确认 / 工艺仲裁将记录于此（localStorage 持久化，刷新不丢失）</div>';return;}
-  $("opLog").innerHTML='<div style="margin-bottom:6px;font-weight:700;color:var(--ok)">操作留痕（最近 '+opLog.length+' 条 · 本地持久化）</div>'+
-    opLog.map(r=>'<div style="padding:4px 0;border-bottom:1px dashed rgba(74,158,92,.2)"><span class="note">'+esc(r.t)+'</span> '+esc(r.msg)+'</div>').join("");
+  const fEl=$("logFilter"), f=(fEl?fEl.value:"").trim().toLowerCase();
+  const rows=f?opLog.filter(r=>String(r.heat||"").toLowerCase().includes(f)||String(r.msg).toLowerCase().includes(f)):opLog;
+  if(!opLog.length){$("opLog").innerHTML='<div class="note">操作留痕区：炉长确认 / 工艺仲裁 / 外部数据接入将记录于此（localStorage 持久化，刷新不丢失）</div>';return;}
+  if(!rows.length){$("opLog").innerHTML='<div class="note">共 '+opLog.length+' 条留痕，无匹配「'+esc(f)+'」的记录</div>';return;}
+  $("opLog").innerHTML='<div style="margin-bottom:6px;font-weight:700;color:var(--ok)">操作留痕（'+(f?"匹配 "+rows.length+" / ":"最近 ")+Math.min(rows.length,50)+' 条 · 本地持久化）</div>'+
+    rows.map(r=>'<div style="padding:4px 0;border-bottom:1px dashed rgba(74,158,92,.2)">'+
+      (r.heat?'<span class="src-badge" style="margin-right:6px;padding:0 7px">'+esc(r.heat)+'</span>':'<span class="note">[未编号]</span> ')+
+      '<span class="note">'+esc(r.t)+'</span> '+esc(r.msg)+'</div>').join("");
 }
 
 /* 仲裁终态（localStorage） */
 let arbChoice=null;
-try{arbChoice=localStorage.getItem("vees_arb")||null;}catch(e){}
+try{arbChoice=localStorage.getItem("vero_arb")||null;}catch(e){}
 function renderArbState(){
   const el=$("arbState");
   if(!el)return;
@@ -635,6 +761,8 @@ let activeView="furnace";
 
 /* ---------- 炉长视图渲染 ---------- */
 function renderFurnace(inp,r){
+  renderHeatLine();
+  renderLance(inp);
   $("vW").textContent=fmt(inp.W/1000,1)+" t";
   $("vSi").textContent=inp.Si.toFixed(3)+" %";
   $("vV").textContent=inp.V.toFixed(3)+" %";
@@ -785,10 +913,13 @@ function explainTB(inp,r,risky){
 /* ---------- 数据台渲染 ---------- */
 function traceTB(inp){
   if(activeView!=="data")return;
+  const lp=lanceProfile(inp.Si);
   $("trace").innerHTML=
+   "<div>炉次：<b style='color:var(--t1)'>"+esc(heatNo||"（未编号）")+"</b>　数据来源："+esc(dataSource.label)+"</div>"+
    "<div>时间："+new Date().toLocaleString("zh-CN",{hour12:false})+"</div>"+
    "<div>输入：铁水 "+fmt(inp.W/1000,1)+" t／Si "+inp.Si.toFixed(3)+"%／V "+inp.V.toFixed(3)+"%／"+inp.T+" ℃；氧化热口径 "+inp.dhV+" kJ/kg</div>"+
    "<div>链路：物料平衡 → 热量平衡 → 冷料配吃 → 钒平衡 → 品位预测（单次 <1ms）</div>"+
+   "<div>枪位推荐："+lp.label+"（"+lp.steps.map(s=>fmt(s.a,1)+"–"+fmt(s.b,2)+"min@"+s.h+"mm").join(" → ")+"）</div>"+
    "<div>口径：pangang/base.yaml v1.0.0（试用）· 31 类工程参数（<b style='color:var(--ok)'>全部计算在本页浏览器内完成，零网络请求</b>）</div>";
 }
 let _goldCache=null;
@@ -973,10 +1104,11 @@ $("resetBtn").addEventListener("click",()=>{
   update();
 });
 
-/* 炉长确认 */
+/* 炉长确认（登记炉次 + 留痕） */
 $("confirmBtn").addEventListener("click",()=>{
   const inp=readInput();const r=runModel(inp);
   const risky=inp.Si>0.25||inp.V<0.27;
+  registerHeat();
   pushLog("炉长确认照单执行｜配吃 "+fmt(r.pl/1000,2)+"t · 品位 "+fmtGrade(r.grade)+"% · "+(risky?"黄灯·例外流程":"绿灯·照做"));
   const b=$("confirmBtn");b.textContent="✓ 已留痕（数据治理台可查）";b.disabled=true;b.classList.add("done");
   setTimeout(()=>{b.textContent="确认照单执行 · 留痕";b.disabled=false;b.classList.remove("done");},1400);
@@ -986,7 +1118,7 @@ $("confirmBtn").addEventListener("click",()=>{
 $("arbBtns").addEventListener("click",e=>{
   const b=e.target.closest(".btn-mini");if(!b)return;
   arbChoice=b.dataset.d;
-  try{localStorage.setItem("vees_arb",arbChoice);}catch(err){}
+  try{localStorage.setItem("vero_arb",arbChoice);}catch(err){}
   const inp=readInput();
   pushLog("工艺仲裁｜"+arbChoice+"（当前口径 "+(inp.dhV===2777?"经验 2777":"文献 15000")+" kJ/kg）");
   renderArbState();
@@ -1002,15 +1134,78 @@ $("recheckBtn").addEventListener("click",()=>{
 function setGuide(hide){
   $("guideCard").style.display=hide?"none":"";
   $("guideShow").style.display=hide?"":"none";
-  try{localStorage.setItem("vees_guide_hide",hide?"1":"");}catch(e){}
+  try{localStorage.setItem("vero_guide_hide",hide?"1":"");}catch(e){}
 }
 $("guideHide").addEventListener("click",()=>setGuide(true));
 $("guideShowBtn").addEventListener("click",()=>setGuide(false));
-try{if(localStorage.getItem("vees_guide_hide")==="1")setGuide(true);}catch(e){}
+try{if(localStorage.getItem("vero_guide_hide")==="1")setGuide(true);}catch(e){}
+
+/* ============ 外部系统对接适配器（预留接口，详见 docs/DATA_INTERFACE_SPEC.md §3.6） ============
+   外部系统（MES/L2/化验室）通过 window.VERO_API.applyHeat(payload) 推送开吹条件，
+   与手动录入共用同一渲染与留痕链路；推送后数据来源徽标自动切换。 */
+window.VERO_API={
+  version:"0.8.0",
+  applyHeat(p){
+    if(!p||typeof p!=="object")return {ok:false,err:"payload 必须为对象"};
+    const W=+p.iron_weight_t, Si=+p.si_pct, V=+p.v_pct, T=+p.temp_c;
+    const errs=[];
+    if(!(W>=40&&W<=140))errs.push("iron_weight_t 应在 40–140 t");
+    if(!(Si>=0.05&&Si<=0.35))errs.push("si_pct 应在 0.05–0.35 %");
+    if(!(V>=0.15&&V<=0.40))errs.push("v_pct 应在 0.15–0.40 %");
+    if(!(T>=1250&&T<=1380))errs.push("temp_c 应在 1250–1380 ℃");
+    if(errs.length)return {ok:false,err:errs.join("；")};
+    if(p.heat_no)setHeatNo(String(p.heat_no));
+    $("inW").value=Math.min(Math.max(Math.round(W*10)*100,60000),120000);
+    $("inSi").value=Math.min(Math.max(Si,0.10),0.30);
+    $("inV").value=Math.min(Math.max(V,0.20),0.36);
+    $("inT").value=Math.min(Math.max(T,1250),1350);
+    dataSource={mode:"auto",label:String(p.source||"外部系统").slice(0,20),
+      detail:"接口推送 · "+new Date().toLocaleTimeString("zh-CN",{hour12:false})};
+    ["inW","inSi","inV","inT"].forEach(id=>$(id).dispatchEvent(new Event("input",{bubbles:true})));
+    pushLog("外部数据接入｜"+(p.source||"外部系统")+" 推送开吹条件（Si "+Si+"% / V "+V+"% / "+T+"℃ / "+W+"t）");
+    update();
+    return {ok:true,heat_no:heatNo};
+  },
+  getState(){
+    const inp=readInput();const r=runModel(inp);const lp=lanceProfile(inp.Si);
+    return {heat_no:heatNo||null,source:dataSource.label,api_version:"0.8.0",
+      input:{iron_weight_t:inp.W/1000,si_pct:inp.Si,v_pct:inp.V,temp_c:inp.T,dh_kj_kg:inp.dhV},
+      recommendation:{coolant_pellet_t:+(r.pl/1000).toFixed(3),grade_v2o5_pct:+r.grade.toFixed(4),
+        heat_surplus_gj:+(r.surplus/1e6).toFixed(2),risky:inp.Si>0.25||inp.V<0.27},
+      lance:{mode:lp.label,si_threshold_pct:LANCE_P.siTh,steps:lp.steps,action:lp.action}};
+  }
+};
+/* 炉次号交互 */
+$("inHeat").addEventListener("input",e=>{
+  heatNo=e.target.value.trim().slice(0,24);
+  const dup=$("heatDup"); if(dup)dup.style.display=(heatNo&&heatReg[heatNo])?"":"none";
+});
+$("inHeat").addEventListener("blur",()=>{setHeatNo(heatNo||nextHeatNo());});
+$("newHeatBtn").addEventListener("click",()=>{
+  setHeatNo(nextHeatNo());
+  dataSource={mode:"manual",label:"手动录入",detail:"按化验单填写"};
+  pushLog("新建炉次 "+heatNo);
+  renderHeatLine();
+});
+/* 模拟外部推送（走 VERO_API.applyHeat 同一链路，验证对接路径） */
+$("mockPush").addEventListener("click",()=>{
+  const h=HEATS[Math.floor(Math.random()*HEATS.length)];
+  const res=window.VERO_API.applyHeat({
+    heat_no:nextHeatNo(),
+    iron_weight_t:+(78+Math.random()*8).toFixed(1),
+    si_pct:+Math.min(0.30,Math.max(0.10,h.si+(Math.random()*0.02-0.01))).toFixed(3),
+    v_pct:h.v,
+    temp_c:1290+Math.floor(Math.random()*20),
+    source:"L2 模拟推送"});
+  if(!res.ok)pushLog("模拟推送被拒｜"+res.err);
+});
+/* 留痕筛选 */
+$("logFilter").addEventListener("input",()=>renderOpLog());
 
 update();
 goldTB();
 renderArbState();
+setHeatNo(nextHeatNo());
 </script>
 </body>
 </html>

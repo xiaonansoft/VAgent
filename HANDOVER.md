@@ -1,4 +1,4 @@
-# VEES 项目交接文档（HANDOVER）
+# VERO 项目交接文档（HANDOVER）
 
 > 交接日期：2026-09-23 · 交接对象：workbuddy · 接手前必读
 > 工作目录：`~/Documents/VAgent`（OpenCode 会话所在，git 已初始化的本地克隆）
@@ -7,7 +7,7 @@
 
 ## 1. 项目一句话
 
-**提钒冶炼智能体（VEES）**：把攀钢专家的四大多平衡 Excel 模型（703 公式）变成可治理、可学习、可解释的工业智能体。当前进度：**MVP 驾驶舱已交付并通过验收**，下一步是数据接口规范与后端真实 API 接入。
+**提钒冶炼智能体（VERO）**：把攀钢专家的四大多平衡 Excel 模型（703 公式）变成可治理、可学习、可解释的工业智能体。当前进度：**MVP 驾驶舱已交付并通过验收**，下一步是数据接口规范与后端真实 API 接入。
 
 ## 2. 目录即地图
 
@@ -18,10 +18,10 @@
 │   ├─ ① PANGANG_EXCEL_DECODED.md     攀钢秘诀 Excel 解码报告
 │   │     8 表 703 公式全解码；专家常数清单（1.157 系数、Ti 折算比、
 │   │     凝固点双公式）；6 处引用怪癖 Q1–Q6；与仓库建龙口径的 5+1 条冲突
-│   ├─ ② VEES_AGENT_BRAINSTORM.html    第一轮：多专家头脑风暴（四层架构定案）
-│   ├─ ③ VEES_TECH_DEEPDIVE.html       第二轮：前沿技术辩论（七项技术裁决：采 3 试点 3 拒 1）
-│   ├─ ④ VEES_DEV_PROCESS_PLAN.html    第三轮：开发方法论 + 14 份待写文档清单 + RACI
-│   ├─ ⑤ VEES_MVP.html                 ★ 可运行 MVP v0.2（浏览器直接打开，离线，单文件）
+│   ├─ ② VERO_AGENT_BRAINSTORM.html    第一轮：多专家头脑风暴（四层架构定案）
+│   ├─ ③ VERO_TECH_DEEPDIVE.html       第二轮：前沿技术辩论（七项技术裁决：采 3 试点 3 拒 1）
+│   ├─ ④ VERO_DEV_PROCESS_PLAN.html    第三轮：开发方法论 + 14 份待写文档清单 + RACI
+│   ├─ ⑤ VERO_MVP.html                 ★ 可运行 MVP v0.2（浏览器直接打开，离线，单文件）
 │   ├─ ⑥ ARBITRATION_DEMO.md           双引擎冲突仲裁演示报告（CF-001~006）
 │   └─ ⑦ docs/MVP_SPEC.md              MVP 规格（验收硬条款 A1–A8）★ 已达成
 │
@@ -31,7 +31,7 @@
 │     ⚠️ 与 pangang_reference.py 的常数一致性由 pangang_pack.py 校验（必须保持同步）
 ├─ knowledge/packs/jianlong/base.yaml  建龙 L1 配料知识包（厂级：查表法+枪位默认值）
 │     ★ scope 分层：行业基线(industry) < 厂(plant) < 车间 < 炉座；引擎经 resolve_parameters()
-│       以行业基线打底、厂级包覆盖合并取值（默认厂 jianlong，可用 VEES_PLANT 覆盖）
+│       以行业基线打底、厂级包覆盖合并取值（默认厂 jianlong，可用 VERO_PLANT 覆盖）
 │
 ├─ backend/                            Python 后端（⚠️ 需 Python 3.10+，系统只有 3.9）
 │   app/tools/pangang_reference.py    ★ 四大平衡参考实现（黄金 75/75，误差 0.0002%）
@@ -53,7 +53,7 @@
 ├─ README.md / MODEL_ALGORITHM.md / API_DOCUMENTATION.md / DEPLOYMENT.md
 │   DEVELOPMENT_PLAN.md / SOLUTION_PITCH.md / USER_MANUAL.md
 │   └─ 仓库原有文档（建龙口径基线，部分数字已过时——冲突见 DECODED §3）
-└─ 提钒冶炼智能体 VEES v6.0 实施 PRD.md   原始 PRD（Source 106/95 引用体系）
+└─ 提钒冶炼智能体 VERO v6.0 实施 PRD.md   原始 PRD（Source 106/95 引用体系）
 ```
 
 **仓库之外的关联资产**
@@ -79,7 +79,7 @@
 - **P2 认知层（下一步主攻）**：⬜ D6 数据接口规范（最紧急）· 真 RAG+IP 分级 · 三要素回答模板 · 仲裁工作台
 - **P3 学习闭环**：炉次误差回流 RLS/PINN 残差 · TabPFN 试点 · 漂移检测
 - **P4 治理**：审批流/跨厂判例/例外率看板
-- MVP 已按 D1–D5 交付：`VEES_MVP.html`（验收硬条款 A1–A8 除 A7 演示脚本人工完成外全部通过）
+- MVP 已按 D1–D5 交付：`VERO_MVP.html`（验收硬条款 A1–A8 除 A7 演示脚本人工完成外全部通过）
 
 ## 5. 工具链状态
 
@@ -108,7 +108,7 @@
 cd ~/Documents/VAgent
 git add -A && git commit -m "chore: lock in P1 artifacts + MVP v0.2 (pre-handover state)"   # 先锁定现场
 python3 backend/tests/test_pangang_reference.py                                          # 验证引擎基线
-open VEES_MVP.html                                                                       # 看当前 MVP
+open VERO_MVP.html                                                                       # 看当前 MVP
 ```
 
 然后二选一推进：

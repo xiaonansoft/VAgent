@@ -2,7 +2,7 @@ import { useState, useCallback } from 'react';
 
 const translations = {
   zh: {
-    title: '提钒冶炼智能体 VEES v7.0',
+    title: '提钒冶炼智能体 VERO v7.0',
     subtitle: 'VANADIUM EXTRACTION EXPERT SYSTEM',
     l1_title: 'L1: 静态设定',
     l2_title: 'L2: 动态监测',
@@ -10,7 +10,7 @@ const translations = {
     // ... add more as needed
   },
   en: {
-    title: 'VEES v7.0 Industrial Agent',
+    title: 'VERO v7.0 Industrial Agent',
     subtitle: 'VANADIUM EXTRACTION EXPERT SYSTEM',
     l1_title: 'L1: STATIC SETUP',
     l2_title: 'L2: DYNAMIC MONITOR',

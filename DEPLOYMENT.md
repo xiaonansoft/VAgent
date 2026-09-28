@@ -1,10 +1,10 @@
-# VEES v7.0 系统部署指南 (Deployment Guide)
+# VERO v7.0 系统部署指南 (Deployment Guide)
 
-本指南旨在指导技术人员在生产环境或测试环境中部署 **VEES (Vanadium Extraction Expert System)** 提钒冶炼智能体。
+本指南旨在指导技术人员在生产环境或测试环境中部署 **VERO (Vanadium Extraction Expert System)** 提钒冶炼智能体。
 
 ## 1. 系统架构概览
 
-VEES 采用现代化的微服务架构：
+VERO 采用现代化的微服务架构：
 *   **前端 (Frontend)**: React 18 + Vite + TailwindCSS (可视化大屏)
 *   **后端 (Backend)**: Python 3.10+ + FastAPI + Uvicorn (仿真计算与 AI 逻辑)
 *   **数据库 (Database)**: PostgreSQL (生产) / SQLite (开发) + SQLAlchemy (异步 ORM)
@@ -131,7 +131,7 @@ DATABASE_URL=postgresql+asyncpg://user:password@localhost/vagent
 ```nginx
 server {
     listen 80;
-    server_name vees.example.com;
+    server_name vero.example.com;
 
     location / {
         proxy_pass http://localhost:3000;

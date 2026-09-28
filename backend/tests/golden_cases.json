@@ -1,0 +1,71 @@
+{
+  "meta": {
+    "name": "VERO 提钒四大平衡引擎 · 黄金基准集",
+    "version": "1.0.0",
+    "frozen_date": "2026-09-27",
+    "source": "专家 Excel《提钒预算测算钒品位低原因说明(1).xlsx》(8 表 703 公式) 公式缓存全精度值; 与 backend/app/tools/pangang_reference.py 默认用例 (PangangInputs 默认值 = 基表!N14/15 行15/16/17) 逐项对齐",
+    "note": "本文件是 Python 引擎与 JS(HTML 演示页) 引擎共同的唯一判定基线。期望值以本文件为准, 不得为了让测试通过而修改期望值。Python 侧机理迭代若导致本文件失败, 必须由专家评审后修订本文件的期望值并同步 ENGINE_SINGLE_SOURCE.md, 严禁反向迁就代码。",
+    "policy": "docs/ENGINE_SINGLE_SOURCE.md",
+    "cases_count": 11,
+    "tolerance": {
+      "mode": "relative",
+      "rel": 1e-4,
+      "abs_floor": 1e-9,
+      "desc": "相对误差 |actual-expected|/max(|expected|,abs_floor) <= 1e-4"
+    }
+  },
+
+  "input": {
+    "W": 80000,
+    "Si": 0.215,
+    "V": 0.284,
+    "T": 1300,
+    "C": 4.3,
+    "dhV": 2777
+  },
+
+  "input_defaults": {
+    "Mn": 0.18,
+    "P": 0.132572156196944,
+    "S": 0.0708828522920203,
+    "Cr": 0.09,
+    "Ti": 0.11,
+    "pig_iron_weight": 0.0,
+    "fesilicon_kg": 34.5,
+    "semi_steel": {
+      "C": 3.485, "Si": 0.006, "Mn": 0.02, "P": 0.12225,
+      "S": 0.0708828522920203, "V": 0.025, "Cr": 0.02,
+      "Ti": 0.00833024691358023, "temp": 1370.0
+    },
+    "coolant_weights": { "pellet": null, "metal_fe": 0.0, "ore_block": 0.0, "waste_slag_ball": 0.0 },
+    "desc": "黄金用例未显式给出的成分取 pangang_reference.PangangInputs 默认值; null 表示该冷料量按『热量富余 / 单位吸热』自动求解"
+  },
+
+  "mapping": {
+    "fc":      { "python": "material['iron_C_fixed']",                  "js": "r.fc",      "unit": "%",   "desc": "入炉碳 = 化验C × 1.157 (物料平衡!C8)" },
+    "slg":     { "python": "material['slag_total']",                    "js": "r.slg",     "unit": "kg",  "desc": "渣总量 = 非铁氧化物/(1-FeO%-Fe2O3%) (物料平衡!E63)" },
+    "steel":   { "python": "material['steel']",                         "js": "r.steel",   "unit": "kg",  "desc": "冷料前半钢量 (物料平衡!D96)" },
+    "o2kg":    { "python": "material['o2_kg']",                         "js": "r.o2kg",    "unit": "kg",  "desc": "实际氧耗 (物料平衡!C84)" },
+    "tI":      { "python": "heat['tf_iron']",                           "js": "r.tI",      "unit": "℃",  "desc": "铁水熔点 (热量平衡!C29)" },
+    "tS":      { "python": "heat['tf_steel']",                          "js": "r.tS",      "unit": "℃",  "desc": "半钢熔点 (热量平衡!C30, C 系数 65)" },
+    "surplus": { "python": "heat['surplus']",                           "js": "r.surplus", "unit": "kJ",  "desc": "热量富余 = 热收入 - 热支出 (热量平衡!G90)" },
+    "pl":      { "python": "after['coolant_weights']['pellet']",        "js": "r.pl",      "unit": "kg",  "desc": "球团(球返)自动配吃量 = 富余/单位吸热 (冷料!H35)" },
+    "steel2":  { "python": "after['steel']",                            "js": "r.steel2",  "unit": "kg",  "desc": "冷料后半钢量" },
+    "grade":   { "python": "product['slag_grade']['V2O5']",             "js": "r.grade",   "unit": "%",   "desc": "精钒渣 V2O5 品位 (提钒转炉原料标准!F20) ★核心输出" },
+    "balPct":  { "python": "material['balance_diff_pct'] * 100",        "js": "r.balPct*100", "unit": "%", "desc": "物料收支差百分比 (物料平衡!G109); 期望值已 ×100" }
+  },
+
+  "expect": {
+    "fc": 4.9751,
+    "slg": 2075.9151777,
+    "steel": 76881.0973,
+    "o2kg": 2500.4605,
+    "tI": 1022.1208,
+    "tS": 1295.8874,
+    "surplus": 16495062.03,
+    "pl": 3529.5978,
+    "steel2": 78709.0574,
+    "grade": 13.2989651,
+    "balPct": -0.0193868754
+  }
+}

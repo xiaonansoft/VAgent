@@ -1,5 +1,10 @@
-# Vanadium Smelting Intelligent Agent (VEES v7.0)
-# 钒冶炼智能体系统 (VEES v7.0)
+# Vanadium Smelting Intelligent Agent (VERO v7.0)
+# 钒冶炼智能体系统 (VERO v7.0)
+
+> **关于命名**：VERO（中文名「维罗」）。**V = 钒的化学元素符号**（Vanadium，原子序数 23）；
+> 词取自拉丁语 *verus*「真实」，对应本产品的核心承诺——**每个数字都可验证、可溯源、可验收**。
+> 曾用名 VEES（2026-09-28 更名）；环境变量前缀同步由 `VEES_*` 改为 `VERO_*`
+> （如 `VERO_PLANT`、`VERO_LLM_BASE_URL`），知识包 schema 为 `vero.knowledge-pack/v1`。
 
 A comprehensive AI-driven system for optimizing the vanadium extraction process in converter steelmaking. This system integrates L1 (Static), L2 (Dynamic), and L3 (AI Copilot) layers to provide real-time monitoring, process simulation, and decision support.
 

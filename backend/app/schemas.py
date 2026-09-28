@@ -197,6 +197,61 @@ class SaveHeatResultsInputs(BaseModel):
     timestamp: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 
+# ============================================================================
+# A2 · 结构化交接协议 (Handoff Envelope) + 炉次/建议状态
+# 对标"数字班组": 每个 Agent 之间的交接必须是结构化信封, 而不是自由 dict,
+# 以便审计、回放与知识包/技能版本溯源。
+# ============================================================================
+
+class HeatStatus(str, Enum):
+    """炉次生命周期状态 (Heat 锚点贯穿全链路)"""
+    CREATED = "CREATED"           # 炉次已创建, 尚未录入铁水条件
+    CHARGING = "CHARGING"         # 已录入条件 / 配料计算中
+    BLOWING = "BLOWING"           # 吹炼中 (仿真/枪位推荐已产出)
+    PENDING_CONFIRM = "PENDING_CONFIRM"  # 建议已生成, 等待人工确认
+    CONFIRMED = "CONFIRMED"       # 人工已确认 (仅表示采纳建议, 不涉及下发)
+    ARCHIVED = "ARCHIVED"         # 炉次已归档
+    EXCEPTION = "EXCEPTION"       # 异常中断 (数据缺失/工具失败等)
+
+
+class HandoffEnvelope(BaseModel):
+    """
+    Agent 间结构化交接信封。
+
+    约定: 任何 Agent 结果写入 GraphState 时必须封装为本信封;
+    自由 dict 只允许放在 input_snapshot / conclusions 内部作为载荷。
+    """
+    heat_id: str = Field(..., description="炉次号 (Heat 锚点)")
+    trace_id: str = Field(..., description="链路追踪 ID (全链路贯穿)")
+    from_agent: str = Field(..., description="交接发起方 Agent/节点名")
+    to_agent: str = Field(..., description="交接接收方 Agent/节点名")
+    input_snapshot: dict[str, Any] = Field(
+        default_factory=dict, description="接收方所需的输入快照 (可复算的最小充分输入集)")
+    conclusions: dict[str, Any] = Field(
+        default_factory=dict, description="本环节结论载荷 (数值必须来自确定性工具, 禁止 LLM 生成)")
+    confidence: float | None = Field(default=None, ge=0.0, le=1.0, description="结论置信度 0~1")
+    warnings: list[str] = Field(default_factory=list, description="交接时携带的告警/注意事项")
+    knowledge_versions: dict[str, str] = Field(
+        default_factory=dict, description="所用知识包版本, 如 {'industry':'1.0.0','jianlong':'0.3.0'}")
+    skill_versions: dict[str, str] = Field(
+        default_factory=dict, description="所用技能版本, 如 {'calculate_initial_charge':'0.1.0'}")
+    created_at: datetime = Field(
+        default_factory=lambda: datetime.now(timezone.utc), description="交接创建时间 (UTC)")
+
+
+class OverturnRecord(BaseModel):
+    """
+    人工"推翻建议"记录 (对应 ADVICE_OVER TURNED 事件)。
+    这是"数字班组"闭环学习的数据基础: 采纳/推翻 + 理由 → 用于后续仲裁与知识包校准。
+    """
+    overturned: bool = Field(default=False, description="是否被人工推翻")
+    overturn_reason: str | None = Field(default=None, description="推翻理由 (人工填写)")
+    overturn_by: str | None = Field(default=None, description="推翻人 (工号/岗位/系统标识)")
+    overturned_at: datetime | None = Field(default=None, description="推翻时间 (UTC)")
+    arbitration_result: bool | None = Field(
+        default=None, description="仲裁结果: True=维持人工推翻, False=维持系统建议, None=未仲裁")
+
+
 class CloudBrainState(BaseModel):
     current_step: str
     l1_result: InitialChargeResult | None = None

@@ -1,6 +1,6 @@
 # 模型算法文档 (Model Algorithm Documentation)
 
-本文档详细介绍了钒冶炼智能体系统 (VEES v7.0) 中使用的数学模型和算法。
+本文档详细介绍了钒冶炼智能体系统 (VERO v7.0) 中使用的数学模型和算法。
 
 ## 1. L1 静态模型 (操作级)
 **代码位置**: `backend/app/tools/initial_charge.py`

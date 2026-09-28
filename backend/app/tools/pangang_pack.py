@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""VEES 知识包加载器 (Knowledge Pack Loader)
+"""VERO 知识包加载器 (Knowledge Pack Loader)
 
 加载厂级 YAML 知识包 (如 knowledge/packs/pangang/base.yaml), 并提供:
 1. load_pack()           —— 读取并做 schema 基本校验
@@ -23,8 +23,8 @@ DEFAULT_PACK = os.path.join(
 INDUSTRY_PACK = os.path.join(
     os.path.dirname(__file__), "..", "..", "..", "knowledge", "packs", "industry", "base.yaml")
 
-# 部署厂 (默认建龙; 可用环境变量 VEES_PLANT 覆盖)。产品本身面向行业, 厂级仅作参数覆盖源。
-DEFAULT_PLANT = os.environ.get("VEES_PLANT", "jianlong")
+# 部署厂 (默认建龙; 可用环境变量 VERO_PLANT 覆盖)。产品本身面向行业, 厂级仅作参数覆盖源。
+DEFAULT_PLANT = os.environ.get("VERO_PLANT", "jianlong")
 
 VALID_SCOPES = {"industry", "plant", "workshop", "furnace"}
 
@@ -33,7 +33,7 @@ def load_pack(path: str = DEFAULT_PACK) -> Dict:
     with open(path, "r", encoding="utf-8") as f:
         pack = yaml.safe_load(f)
     meta = pack.get("pack", {})
-    assert pack.get("schema") == "vees.knowledge-pack/v1", "未知知识包 schema"
+    assert pack.get("schema") == "vero.knowledge-pack/v1", "未知知识包 schema"
     assert meta.get("scope") in VALID_SCOPES, f"非法 scope: {meta.get('scope')}"
     return pack
 
@@ -137,13 +137,13 @@ def resolve_parameters(plant: str | None = None) -> Dict:
     """
     按 scope 分层合并参数: 行业基线(industry, 行业通用规则) → 厂级包(plant, 覆盖/补充)。
 
-    - plant=None 时使用 DEFAULT_PLANT (默认 jianlong, 可用 VEES_PLANT 覆盖)。
+    - plant=None 时使用 DEFAULT_PLANT (默认 jianlong, 可用 VERO_PLANT 覆盖)。
     - 返回合并后的 parameters dict, 供 initial_charge / lance_profile 等引擎统一取值。
     单一事实来源: 行业基线定「行业通用逻辑」, 厂级包定「厂级参数值」。
     """
     with open(INDUSTRY_PACK, "r", encoding="utf-8") as f:
         industry = yaml.safe_load(f)
-    assert industry.get("schema") == "vees.knowledge-pack/v1", "未知知识包 schema"
+    assert industry.get("schema") == "vero.knowledge-pack/v1", "未知知识包 schema"
     assert industry["pack"]["scope"] == "industry", "期望行业基线 scope=industry"
 
     merged = industry["parameters"]
@@ -152,7 +152,7 @@ def resolve_parameters(plant: str | None = None) -> Dict:
     ppath = os.path.join(packs_dir, target, "base.yaml")
     with open(ppath, "r", encoding="utf-8") as f:
         plant_pack = yaml.safe_load(f)
-    assert plant_pack.get("schema") == "vees.knowledge-pack/v1", "未知知识包 schema"
+    assert plant_pack.get("schema") == "vero.knowledge-pack/v1", "未知知识包 schema"
     merged = _deep_merge(merged, plant_pack["parameters"])
     return merged
 
