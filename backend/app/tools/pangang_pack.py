@@ -30,6 +30,15 @@ VALID_SCOPES = {"industry", "plant", "workshop", "furnace"}
 
 
 def load_pack(path: str = DEFAULT_PACK) -> Dict:
+    # 厂级知识包属保密资产, 允许不随仓库分发; 缺失时降级为「空覆盖集」, 计算以行业基线为准。
+    if not os.path.exists(path):
+        return {
+            "schema": "vero.knowledge-pack/v1",
+            "pack": {"scope": "plant", "plant": "pangang"},
+            "parameters": {},
+            "known_conflicts": [],
+            "_missing": True,
+        }
     with open(path, "r", encoding="utf-8") as f:
         pack = yaml.safe_load(f)
     meta = pack.get("pack", {})
@@ -50,6 +59,10 @@ def pack_discrepancies(pack: Dict) -> List[str]:
     """逐项核对包内常数与 pangang_reference 模块常数, 返回不一致清单"""
     from app.tools import pangang_reference as ref
     issues: List[str] = []
+
+    # 知识包缺失/为空 (保密资产未随仓库分发) 时, 无可核对项, 直接返回空清单。
+    if not pack.get("parameters"):
+        return issues
 
     def check(name: str, pack_value, ref_value, tol: float = 1e-9):
         if ref_value is None or pack_value is None:

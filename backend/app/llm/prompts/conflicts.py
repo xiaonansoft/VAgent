@@ -53,6 +53,9 @@ class ConflictRecord:
 
 def _load_yaml(path: Path) -> Dict[str, Any]:
     import yaml  # 延迟导入: 缺 pyyaml 时由调用方降级
+    # 厂级知识包属保密资产, 允许不随仓库分发; 缺失时降级为空集。
+    if not path.exists():
+        return {}
     with open(path, "r", encoding="utf-8") as f:
         return yaml.safe_load(f) or {}
 
