@@ -184,10 +184,10 @@ hr{border:0;border-top:1px dashed var(--line);margin:18px 0}
   <div class="box" style="margin:0">
     <h4 style="color:var(--steel)">卡 B · 对总工</h4>
     <p class="dim">他关心：机理站不站得住、结果能不能解释、口径谁说了算、能不能沉淀成资产。</p>
-    <div class="say"><b>开场</b><br>"我们是机理优先。<b>四大平衡（物料/热量/冷料/钒）是攀钢专家模型的还原，不是拟合出来的黑箱</b>，黄金回归 <b>75/75</b>，最大误差 <b>0.0002%</b>；JS 端移植 11/11 与 Python 完全一致。<b></b>"</div>
+    <div class="say"><b>开场</b><br>"我们是机理优先。<b>四大平衡（物料/热量/冷料/钒）是专家A专家模型的还原，不是拟合出来的黑箱</b>，黄金回归 <b>75/75</b>，最大误差 <b>0.0002%</b>；JS 端移植 11/11 与 Python 完全一致。<b></b>"</div>
     <div class="say"><b>讲可解释</b><br>"任何一个数，都能追到三样东西：<b>哪条公式、哪个数据来源、哪个知识包版本</b>。LLM 不做计算，只做包装；<b>数值溯源失败就拒绝输出</b>，这是硬编码的红线，不是承诺。"</div>
     <div class="say"><b>讲口径治理</b><br>"我们最值钱的不是模型，是<b>口径登记册</b>。跨厂规程打架的地方，比如碳钒转化温度到底是 1361 还是 1380、V/(Si+Ti) 判据阈值多少，我们全部登记成 <b>CF-001～CF-008</b>，每条有证据、有仲裁结论、有版本号。<b>吵架吵进系统里，不再吵在会上。</b>"</div>
-    <div class="say"><b>讲知识包</b><br>三层结构 <b>industry（行业通用）→ jianlong / pangang（厂级覆盖）→ 车间/炉座（预留）</b>。行业通用规则打底，厂级参数覆盖取值。<b>换一座炉，换的是覆盖层，不是重做一遍。</b></div>
+    <div class="say"><b>讲知识包</b><br>三层结构 <b>industry（行业通用）→ plant_b / plant_a（厂级覆盖）→ 车间/炉座（预留）</b>。行业通用规则打底，厂级参数覆盖取值。<b>换一座炉，换的是覆盖层，不是重做一遍。</b></div>
     <div class="say say-g"><b>收尾</b><br>"您不需要把它当成同事，当成副驾就行——它给建议、给依据、给历史判例，<b>方向盘始终在您手里，推翻它就是给它上课。</b>"</div>
   </div>
 
@@ -210,7 +210,7 @@ hr{border:0;border-top:1px dashed var(--line);margin:18px 0}
 <table>
 <tr><th style="width:20%">层级</th><th style="width:26%">对外名称</th><th>内容（一句话）</th><th style="width:16%">复购逻辑</th></tr>
 <tr><td rowspan="3"><b>知识层</b></td><td><b>行业通用基线包</b><br><span class="mono">industry/base.yaml</span></td><td>跨厂一致的行业通用规则：枪位控制模式（低-高-低 + 高硅保下限）、去钒保碳原理、碳钒转化温度 Tc=1361℃、终点控制目标（半钢残钒 ≤0.03%）、V/(Si+Ti) 判据</td><td>随行业修订升级，<b>一次买，持续更新</b></td></tr>
-<tr><td><b>厂级知识包 A/B</b><br><span class="mono">jianlong / pangang</span></td><td>厂级差异参数：查表值、枪位默认值、冷却剂配方、四大平衡 31 类参数（<b>全部溯源到原始 Excel 单元格</b>）</td><td><b>新增一座炉 / 一条线＝新增一份覆盖包</b>（这才是真正可规模化的收入）</td></tr>
+<tr><td><b>厂级知识包 A/B</b><br><span class="mono">plant_b / plant_a</span></td><td>厂级差异参数：查表值、枪位默认值、冷却剂配方、四大平衡 31 类参数（<b>全部溯源到原始 Excel 单元格</b>）</td><td><b>新增一座炉 / 一条线＝新增一份覆盖包</b>（这才是真正可规模化的收入）</td></tr>
 <tr><td><b>口径登记册 CF-001~008</b></td><td>每一处规程打架的地方：冲突双方、证据、仲裁结论、生效版本</td><td>每次口径复审＝一次版本发布</td></tr>
 <tr><td rowspan="3"><b>能力层</b><br><span class="dim">（确定性 Skill）</span></td><td><b>L1 静态配料</b><br><span class="mono">calculate_initial_charge</span></td><td>开吹前算配吃：按 Si 分档查表 + 热量平衡 + 冷却剂 + 氧量</td><td rowspan="3">按 Skill 订阅/按调用量计费；<b>新 Skill 上线＝追加席位而非重新立项</b></td></tr>
 <tr><td><b>L2 动态仿真</b><br><span class="mono">simulate_blow_path</span></td><td>吹炼路径动力学推演，含 Tc 拐点与终点预判</td></tr>
@@ -218,7 +218,7 @@ hr{border:0;border-top:1px dashed var(--line);margin:18px 0}
 <tr><td><b>枪位推荐</b><br><span class="mono">recommend_lance_profile</span></td><td>按 Si 给出低-高-低 / 全程低枪位策略（CF-006 已定案）</td></tr>
 <tr><td><b>临界温度 Tc</b><br><span class="mono">predict_critical_temp</span></td><td>碳钒转化温度与裕度（CF-007 已定案）</td></tr>
 <tr><td><b>炉后过程诊断</b><br><span class="mono">diagnose_process_quality</span></td><td>钒渣品位/收得率评估，V/(Si+Ti)=1.0 判据（CF-008 已定案）</td></tr>
-<tr><td><b>四大平衡</b><br><span class="mono">run_pangang_model（服务端）</span></td><td>攀钢四大平衡全量模型，黄金回归基准</td></tr>
+<tr><td><b>四大平衡</b><br><span class="mono">run_plant_a_model（服务端）</span></td><td>专家A四大平衡全量模型，黄金回归基准</td></tr>
 <tr><td><b>经验层</b></td><td><b>师傅默会经验包</b><br><span class="dim">贵溪试点产出</span></td><td>火焰/声音/异常前兆/例外处置的结构化经验条目，<b>每条带贡献人署名与采纳记账</b></td><td>每年新增条目分批入库，<b>知识资产年度维护费</b></td></tr>
 </table>
 <p class="dim">说明：以上 7 项确定性能力中 6 项已注册于 MCP 工具契约（tools/list 可直接取 schema），四大平衡走服务端 HTTP 端点；均为确定性函数，非 LLM 生成。发布对外材料时若引用"7 个确定性 Skill"，应附上这七个英文名，避免被误读为七个智能体角色。</p>

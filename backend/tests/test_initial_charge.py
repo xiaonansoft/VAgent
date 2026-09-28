@@ -37,7 +37,7 @@ def test_coolant_priority_and_cap():
 
 
 def test_oxygen_balance_value():
-    """氧平衡锁定当前建龙口径: Σ(Si/C/V/Ti 氧化)×系数 ÷0.9 效率"""
+    """氧平衡锁定当前专家B口径: Σ(Si/C/V/Ti 氧化)×系数 ÷0.9 效率"""
     res = calculate_initial_charge(_make(Si=0.20, V=0.28))
     assert res.oxygen_total_m3 == 836.9
 

@@ -299,7 +299,7 @@ body.fs footer{flex:0 0 auto;margin-top:0}
   <div class="header-row">
     <div>
       <h1>提钒冶炼智能体 · 分角色驾驶舱 <span class="v">v0.8</span></h1>
-      <div class="sub">攀钢「四大平衡」机理引擎 · 黄金回归对照 Excel 703 公式 · 同一引擎，三层角色视图</div>
+      <div class="sub">专家A「四大平衡」机理引擎 · 黄金回归对照 Excel 703 公式 · 同一引擎，三层角色视图</div>
     </div>
     <div class="hdr-right">
       <span class="status"><span class="dot"></span>离线运行中</span>
@@ -342,7 +342,7 @@ body.fs footer{flex:0 0 auto;margin-top:0}
       <label for="inT"><b>铁水温度</b><span class="val" id="vT" aria-live="polite"></span></label>
       <input type="range" id="inT" min="1250" max="1350" step="5" value="1300" aria-label="铁水温度（摄氏度）">
       <div class="scale"><span>1250</span><span>1300</span><span>1350</span></div>
-      <div class="dh-line">计算口径：<b id="dhLine">攀钢经验口径 2777 kJ/kg</b>（专家审定中 · 切换权限在工艺工作台）<span id="arbEcho"></span></div>
+      <div class="dh-line">计算口径：<b id="dhLine">专家A经验口径 2777 kJ/kg</b>（专家审定中 · 切换权限在工艺工作台）<span id="arbEcho"></span></div>
       <button class="btn-mini" id="mockPush" style="margin-top:var(--s2)" title="通过预留接口 VERO_API.applyHeat 推送一炉模拟开吹条件，验证外部系统对接链路">⇪ 模拟外部推送（走预留接口）</button>
     </div>
 
@@ -350,7 +350,7 @@ body.fs footer{flex:0 0 auto;margin-top:0}
     <div class="col-stack">
       <div class="panel">
         <h2><span class="num m">02</span>本炉配吃建议
-          <span class="hint">依据：pangang/base.yaml v1.0.0（试用）</span>
+          <span class="hint">依据：plant_a/base.yaml v1.0.0（试用）</span>
           <span class="badge b-g" id="confBadge"><span class="sq"></span>绿灯</span></h2>
 
         <div class="gauges">
@@ -428,7 +428,7 @@ body.fs footer{flex:0 0 auto;margin-top:0}
         <fieldset style="border:none;padding:0;margin-bottom:var(--s2)">
           <legend style="font-size:var(--fs-cap);color:var(--t2)"><b>口径选择</b>（切换后全视图生效）</legend>
           <div class="radios">
-            <label class="on" id="lb2777"><input type="radio" name="dh" value="2777" checked>经验口径 · 攀钢 <b>2777 kJ/kg</b></label>
+            <label class="on" id="lb2777"><input type="radio" name="dh" value="2777" checked>经验口径 · 专家A <b>2777 kJ/kg</b></label>
             <label id="lb15000"><input type="radio" name="dh" value="15000">文献口径 · 热力学 <b>15000 kJ/kg</b></label>
           </div>
         </fieldset>
@@ -459,7 +459,7 @@ body.fs footer{flex:0 0 auto;margin-top:0}
   <div class="grid2">
     <div class="col-stack">
       <div class="panel">
-        <h2><span class="num">A</span>黄金回归自检 <span class="hint">JS 引擎 vs 攀钢 Excel 基准</span>
+        <h2><span class="num">A</span>黄金回归自检 <span class="hint">JS 引擎 vs 专家A Excel 基准</span>
           <button class="btn-mini s" id="recheckBtn" style="margin-left:auto">重新自检</button></h2>
         <div class="gold-sum" id="goldSum"></div>
         <details id="goldDetail" style="margin-top:var(--s2)">
@@ -468,8 +468,8 @@ body.fs footer{flex:0 0 auto;margin-top:0}
         </details>
       </div>
       <div class="gov">
-        <h3>知识包溯源（pangang/base.yaml）</h3>
-        <div class="mono">v1.0.0（试用）· 31 类参数 → 攀钢 Excel 单元格<br>状态：draft 待专家批准 · 与 pangang_reference.py 一致性由 pangang_pack.py 校验</div>
+        <h3>知识包溯源（plant_a/base.yaml）</h3>
+        <div class="mono">v1.0.0（试用）· 31 类参数 → 专家A Excel 单元格<br>状态：draft 待专家批准 · 与 plant_a_reference.py 一致性由 plant_a_pack.py 校验</div>
       </div>
     </div>
     <div class="col-stack">
@@ -502,7 +502,7 @@ body.fs footer{flex:0 0 auto;margin-top:0}
 
 <script>
 "use strict";
-/* ============ 攀钢四大平衡引擎（JS 同源移植自 pangang_reference.py，与 v0.2–v0.6 完全一致） ============ */
+/* ============ 专家A四大平衡引擎（JS 同源移植自 plant_a_reference.py，与 v0.2–v0.6 完全一致） ============ */
 const K={cF:1.157,hmSlag:5e-4,co:.90,co2:.10,feo:.42,feOx2:.03,beads:.10,spit:.003,
  dust:.002,dFeo:.70,dFeOx2:.20,liningR:17e-5,
  Lin:{CaO:.02,SiO2:.02,MgO:.81,Al2O3:.01,C:.14},fO2:.005,pur:.998,
@@ -622,7 +622,7 @@ function nearH(Si,V){
 
 /* ============ 氧枪枪位推荐（JS 同源移植自 backend/app/tools/lance_profile.py） ============
    模式逻辑 = 行业基线(industry/base.yaml)：标准「低-高-低」+ 高Si保持下限（CF-006 已定案）
-   阈值 0.20% 与枪位值 900/1200mm = 厂级默认参数（jianlong/base.yaml，可被厂级包覆盖） */
+   阈值 0.20% 与枪位值 900/1200mm = 厂级默认参数（plant_b/base.yaml，可被厂级包覆盖） */
 const LANCE_P={siTh:0.20,low:900,high:1200,lowUntil:2.0,endPressS:40,totalBlow:5.5};
 function lanceProfile(Si){
   const P=LANCE_P;
@@ -631,12 +631,12 @@ function lanceProfile(Si){
     return {mode:"low_high_low",label:"低-高-低",
       steps:[{a:0,b:P.lowUntil,h:P.low},{a:P.lowUntil,b:ep,h:P.high},{a:ep,b:P.totalBlow,h:P.low}],
       action:"吹氧结束前 "+P.endPressS+" 秒压枪至 "+P.low+" mm，降低渣中 FeO。",
-      basis:"点火/前期低枪位 → 主吹高枪位（软吹化渣、保碳）→ 终点压枪低枪位（行业通用：攀钢综述 / 讲课稿 / 黑龙江建龙 p22）"};
+      basis:"点火/前期低枪位 → 主吹高枪位（软吹化渣、保碳）→ 终点压枪低枪位（行业通用：专家A综述 / 讲课稿 / 黑龙江专家B p22）"};
   }
   return {mode:"constant_low",label:"全程低枪位",
     steps:[{a:0,b:P.totalBlow,h:P.low}],
     action:"高硅（Si ≥ "+P.siTh+"%）吹炼全程保持低枪位 "+P.low+" mm，抑制脱碳、保钒。",
-    basis:"高 Si 枪位保持下限（行业通用：黑龙江建龙 p16/p22 · 下钢综述）"};
+    basis:"高 Si 枪位保持下限（行业通用：黑龙江专家B p16/p22 · 下钢综述）"};
 }
 function renderLance(inp){
   const lp=lanceProfile(inp.Si), T=LANCE_P.totalBlow;
@@ -862,13 +862,13 @@ function drawSweep(inp,cur,rebuild){
 }
 function arb(inp,r){
   const alt=_cache.altModel;
-  let s="<tr><th></th><th>经验口径 · 攀钢<br>2777 kJ/kg</th><th>文献口径 · 热力学<br>15000 kJ/kg</th></tr>";
+  let s="<tr><th></th><th>经验口径 · 专家A<br>2777 kJ/kg</th><th>文献口径 · 热力学<br>15000 kJ/kg</th></tr>";
   s+="<tr><td><b>冷却剂配吃量</b></td><td>"+fmt(inp.dhV===2777?r.pl/1000:alt.pl/1000,2)+" t</td><td>"+fmt(inp.dhV===15000?r.pl/1000:alt.pl/1000,2)+" t</td></tr>";
   s+="<tr><td><b>预测精钒渣品位</b></td><td>"+fmtGrade(inp.dhV===2777?r.grade:alt.grade)+"%</td><td>"+fmtGrade(inp.dhV===15000?r.grade:alt.grade)+"%</td></tr>";
   s+="<tr><td><b>热量富余</b></td><td>"+fmt((inp.dhV===2777?r:alt).surplus/1e6,1)+" GJ</td><td>"+fmt((inp.dhV===15000?r:alt).surplus/1e6,1)+" GJ</td></tr>";
   $("arb").innerHTML=s;
   const dA=_cache.rmseA,dB=_cache.rmseB,better=Math.min(dA,dB),worse=Math.max(dA,dB);
-  $("arbnote").innerHTML="证据（16 日回放 · 精钒渣 RMSE）：攀钢口径 2777 → <b>"+fmt(dA,3)+"</b>；文献 15000 → <b>"+fmt(dB,3)+"</b>"+
+  $("arbnote").innerHTML="证据（16 日回放 · 精钒渣 RMSE）：专家A口径 2777 → <b>"+fmt(dA,3)+"</b>；文献 15000 → <b>"+fmt(dB,3)+"</b>"+
    "（RMSE 单位即品位百分点，相当于平均偏差 ±"+fmt(better,1)+"pp / ±"+fmt(worse,1)+"pp，越小越贴近实绩）。"+
    "系统只呈证据，不代裁决：下方按钮由专家决断，裁决结果全视图回写并记入留痕。";
 }
@@ -904,7 +904,7 @@ function drawReplay(rebuild){
 }
 function explainTB(inp,r,risky){
   $("explain").innerHTML=
-    "<div><span class='hl-k'>知识口径</span>：pangang/base.yaml v1.0.0（试用）· 31 类参数溯源至攀钢 Excel 单元格</div>"+
+    "<div><span class='hl-k'>知识口径</span>：plant_a/base.yaml v1.0.0（试用）· 31 类参数溯源至专家A Excel 单元格</div>"+
     "<div><span class='hl-k'>机理依据</span>：四大平衡全链路，物料收支校验差 <b>"+(r.balPct*100).toFixed(4)+"%</b>（≤0.02% 为通过）</div>"+
     "<div><span class='hl-k'>相似炉次判例</span>："+nearH(inp.Si,inp.V).map(x=>"第"+x.h.day+"日（Si "+x.h.si.toFixed(2)+"/V "+x.h.v.toFixed(2)+"，实绩精钒渣 "+x.h.fine+"%）").join("；")+"</div>"+
     (risky?"<div style='margin-top:6px'><span class='badge b-y'><span class='sq'></span>建议对照高硅预案：全程低枪位，并按例外流程记录本炉</span></div>":"");
@@ -920,7 +920,7 @@ function traceTB(inp){
    "<div>输入：铁水 "+fmt(inp.W/1000,1)+" t／Si "+inp.Si.toFixed(3)+"%／V "+inp.V.toFixed(3)+"%／"+inp.T+" ℃；氧化热口径 "+inp.dhV+" kJ/kg</div>"+
    "<div>链路：物料平衡 → 热量平衡 → 冷料配吃 → 钒平衡 → 品位预测（单次 <1ms）</div>"+
    "<div>枪位推荐："+lp.label+"（"+lp.steps.map(s=>fmt(s.a,1)+"–"+fmt(s.b,2)+"min@"+s.h+"mm").join(" → ")+"）</div>"+
-   "<div>口径：pangang/base.yaml v1.0.0（试用）· 31 类工程参数（<b style='color:var(--ok)'>全部计算在本页浏览器内完成，零网络请求</b>）</div>";
+   "<div>口径：plant_a/base.yaml v1.0.0（试用）· 31 类工程参数（<b style='color:var(--ok)'>全部计算在本页浏览器内完成，零网络请求</b>）</div>";
 }
 let _goldCache=null;
 function goldTB(){
@@ -935,7 +935,7 @@ function goldTB(){
   html+="</table>";
   _goldCache={bad,maxErr,html};
   $("goldSum").innerHTML=(bad===0?
-    "<span class='ok-t'>✓ 11/11 全部通过</span><span class='note'>最大相对误差 "+(maxErr*100).toFixed(4)+"%（门限 0.01%）· 基准：攀钢 Excel 公式缓存（Python 复现 75/75）</span>":
+    "<span class='ok-t'>✓ 11/11 全部通过</span><span class='note'>最大相对误差 "+(maxErr*100).toFixed(4)+"%（门限 0.01%）· 基准：专家A Excel 公式缓存（Python 复现 75/75）</span>":
     "<span style='color:var(--danger);font-weight:700'>有 "+bad+" 项超差！</span><span class='note'>请展开明细核查</span>");
   $("goldbox").innerHTML=html;
 }
@@ -959,7 +959,7 @@ function update(){
   /* 数据台：可见才渲染 */
   if(activeView==="data"){traceTB(inp);renderOpLog();}
   /* 口径行（炉长侧只读） */
-  $("dhLine").textContent=inp.dhV===2777?"攀钢经验口径 2777 kJ/kg":"文献口径 15000 kJ/kg";
+  $("dhLine").textContent=inp.dhV===2777?"专家A经验口径 2777 kJ/kg":"文献口径 15000 kJ/kg";
   renderArbState();
 }
 
@@ -1208,7 +1208,7 @@ renderArbState();
 setHeatNo(nextHeatNo());
 </script>
 
-<!-- ===== VERO BRIDGE：v0.8 单文件 → 真实后端 /api/pangang/charge =====
+<!-- ===== VERO BRIDGE：v0.8 单文件 → 真实后端 /api/plant_a/charge =====
      设计：本地 JS 引擎保持同步渲染（无闪烁），后端结果异步回灌覆盖 grade/pl；
            后端不可达时自动回退离线引擎并在角标明示。未改动原稿任何计算逻辑。 -->
 <script>
@@ -1251,7 +1251,7 @@ setHeatNo(nextHeatNo());
     try{ inp=readInput(); }catch(e){ return; }
     var my=++_seq;
     try{
-      var res=await fetch(BACKEND+"/api/pangang/charge",{
+      var res=await fetch(BACKEND+"/api/plant_a/charge",{
         method:"POST",headers:{"Content-Type":"application/json"},
         body:JSON.stringify(payload(inp))});
       if(!res.ok) throw new Error("HTTP "+res.status);

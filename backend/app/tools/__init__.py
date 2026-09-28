@@ -62,7 +62,7 @@ class KnowledgePackQueryInputs(BaseModel):
         default="",
         description="点分参数路径，如 'l1_charge.target_temp_c.value'；留空则返回顶层参数分组键列表",
     )
-    plant: str | None = Field(default=None, description="厂级包名（默认 jianlong，可传 pangang/industry 等）")
+    plant: str | None = Field(default=None, description="厂级包名（默认 plant_b，可传 plant_a/industry 等）")
 
 
 class EmptyInputs(BaseModel):
@@ -76,13 +76,13 @@ class EmptyInputs(BaseModel):
 
 def query_knowledge_pack(param_path: str = "", plant: str | None = None) -> dict[str, Any]:
     """
-    查询知识包参数（单一事实来源）。参数按「行业基线(industry) → 厂级包(默认 jianlong)」合并。
+    查询知识包参数（单一事实来源）。参数按「行业基线(industry) → 厂级包(默认 plant_b)」合并。
 
     - param_path 为空: 返回顶层参数分组键列表
     - param_path 命中叶子节点: 返回 {"found": True, "value": ..., "unit":..., "source":...}
     - 未命中: 返回 {"found": False, "available_keys": [...]}
     """
-    from .pangang_pack import resolve_parameters  # 惰性导入（yaml 仅在调用时加载）
+    from .plant_a_pack import resolve_parameters  # 惰性导入（yaml 仅在调用时加载）
 
     merged = resolve_parameters(plant)
     node: Any = merged
@@ -120,7 +120,7 @@ def list_conflicts() -> dict[str, Any]:
     列出知识包内部的已知冲突（known_conflicts）以及「包内常数 vs 复现代码常数」的不一致项。
     用于人工/仲裁环节判断某条建议是否踩在文献冲突区间上。
     """
-    from .pangang_pack import load_pack, pack_discrepancies  # 惰性导入
+    from .plant_a_pack import load_pack, pack_discrepancies  # 惰性导入
 
     pack = load_pack()
     meta = pack.get("pack", {})
@@ -200,7 +200,7 @@ _SKILL_DECLARATIONS: List[Dict[str, Any]] = [
         ),
         "input_schema": InitialChargeInputs,
         "output_schema": InitialChargeResult,
-        "knowledge_pack_deps": ["industry", "jianlong"],
+        "knowledge_pack_deps": ["industry", "plant_b"],
         "category": "charge",
         "call_style": "model",
     },
@@ -215,7 +215,7 @@ _SKILL_DECLARATIONS: List[Dict[str, Any]] = [
         ),
         "input_schema": LanceProfileInputs,
         "output_schema": LanceProfile,
-        "knowledge_pack_deps": ["industry", "jianlong"],
+        "knowledge_pack_deps": ["industry", "plant_b"],
         "category": "lance",
         "call_style": "kwargs",
     },
@@ -304,7 +304,7 @@ _SKILL_DECLARATIONS: List[Dict[str, Any]] = [
         ),
         "input_schema": KnowledgePackQueryInputs,
         "output_schema": Dict[str, Any],
-        "knowledge_pack_deps": ["industry", "jianlong"],
+        "knowledge_pack_deps": ["industry", "plant_b"],
         "category": "knowledge",
         "call_style": "kwargs",
     },
@@ -318,7 +318,7 @@ _SKILL_DECLARATIONS: List[Dict[str, Any]] = [
         ),
         "input_schema": EmptyInputs,
         "output_schema": Dict[str, Any],
-        "knowledge_pack_deps": ["pangang"],
+        "knowledge_pack_deps": ["plant_a"],
         "category": "knowledge",
         "call_style": "kwargs",
     },

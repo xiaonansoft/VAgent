@@ -193,7 +193,7 @@ footer{margin-top:var(--s6);padding-top:var(--s4);border-top:1px solid var(--lin
   <p><b>1. 市场空白真实存在且被官方证实。</b>国内外均无钒冶炼专用工业软件。国内钒钛产线 2018 年前全流程数字化为零，鞍钢 2024 年仍承认「自动化基础较差」；国外 Largo、Bushveld 等钒企的过程控制选型完全不公开——钒厂软件栈是「不公开宣传的同质化基础设施」。</p>
   <p><b>2. 界面繁琐的根因不是设计水平，而是设计立场。</b>现有系统按「工程师/管理者」视角设计（让操作工选 Pattern 配方、跨屏核对数据、7 步报工），而 ISA-101 高性能 HMI 运动 20 年的量化研究证明：不良 HMI 使操作员响应时间延长 <b>40%</b>、误操作率提高 <b>300%</b>。问题不在屏幕，在「系统回答的是画图工程师的问题，不是操作员的问题」。</p>
   <p><b>3. 对话式交互已被国际巨头验证，且位置明确。</b>Siemens Industrial Copilot（200+ 客户，号称效率提升最高 50%）、ABB Genix Copilot、AVEVA AI Assistant 均在 2024-2026 落地——共同模式是 <b>LLM 坐在 L2/L3 之上做「翻译器+检索器+建议器」，不直接控回路</b>。这与 VERO「只决策不执行」的定位完全一致。</p>
-  <p><b>4. VERO 的独特优势在于「机理引擎已产品级」。</b>攀钢四大平衡引擎 75/75 黄金回归、三层知识包 CF-001~008 口径全部登记仲裁、v0.8 界面已具备炉次号/枪位推荐/外部接口预留——底盘比所有竞品都扎实。差距在模型层（无 LLM、无 RAG、无自学习闭环），恰好是可用 18 个月追赶的部分。</p>
+  <p><b>4. VERO 的独特优势在于「机理引擎已产品级」。</b>专家A四大平衡引擎 75/75 黄金回归、三层知识包 CF-001~008 口径全部登记仲裁、v0.8 界面已具备炉次号/枪位推荐/外部接口预留——底盘比所有竞品都扎实。差距在模型层（无 LLM、无 RAG、无自学习闭环），恰好是可用 18 个月追赶的部分。</p>
 </div>
 
 <!-- ======================== 1. 项目资产盘点 ======================== -->
@@ -204,16 +204,16 @@ footer{margin-top:var(--s6);padding-top:var(--s4);border-top:1px solid var(--lin
 <h3 class="sub"><span class="no">1.1</span>核心引擎（产品级）</h3>
 <div class="tbl-wrap"><table class="tb">
   <tr><th>模块</th><th>职责</th><th>成熟度</th><th>关键验证</th></tr>
-  <tr><td><b>pangang_reference.py</b></td><td>攀钢四大平衡机理引擎（物料/热量/冷料/钒平衡）</td><td><span class="badge b-g">产品级</span></td><td>黄金回归 75/75（Python）· 11/11（JS 移植）</td></tr>
-  <tr><td><b>initial_charge.py</b></td><td>L1 静态模型：开吹配料 + 冷却剂查表 + 氧量 + 渣量</td><td><span class="badge b-g">产品级</span></td><td>建龙查表口径锁定，测试覆盖</td></tr>
+  <tr><td><b>plant_a_reference.py</b></td><td>专家A四大平衡机理引擎（物料/热量/冷料/钒平衡）</td><td><span class="badge b-g">产品级</span></td><td>黄金回归 75/75（Python）· 11/11（JS 移植）</td></tr>
+  <tr><td><b>initial_charge.py</b></td><td>L1 静态模型：开吹配料 + 冷却剂查表 + 氧量 + 渣量</td><td><span class="badge b-g">产品级</span></td><td>专家B查表口径锁定，测试覆盖</td></tr>
   <tr><td><b>lance_profile.py</b></td><td>枪位推荐：低-高-低 / 高Si全程低枪位</td><td><span class="badge b-g">产品级</span></td><td>CF-006 定案，行业通用+厂级覆盖</td></tr>
   <tr><td><b>kinetics_simulator.py</b></td><td>动力学仿真：Tc=1361℃ 碳钒转化 + 冷却剂系数</td><td><span class="badge b-g">产品级</span></td><td>CF-007 定案，口径统一</td></tr>
   <tr><td><b>diagnose_process_quality.py</b></td><td>过程质量诊断：V/(Si+Ti) 判据 + 异常检测</td><td><span class="badge b-g">产品级</span></td><td>CF-008 定案，阈值统一 1.0</td></tr>
-  <tr><td><b>pangang_pack.py</b></td><td>知识包加载器：行业基线 → 厂级覆盖合并</td><td><span class="badge b-g">产品级</span></td><td>resolve_parameters() 分层解析</td></tr>
+  <tr><td><b>plant_a_pack.py</b></td><td>知识包加载器：行业基线 → 厂级覆盖合并</td><td><span class="badge b-g">产品级</span></td><td>resolve_parameters() 分层解析</td></tr>
 </table></div>
 
 <h3 class="sub"><span class="no">1.2</span>知识包体系（行业唯一）</h3>
-<p class="body">三层 scope 分层：<b>industry（行业基线）→ plant（厂级覆盖：建龙/攀钢）→ workshop/furnace（预留）</b>。口径冲突 CF-001~CF-008 全部登记在案并有仲裁结论（Tc=1361℃、V/(Si+Ti)=1.0、枪位低-高-低+高Si保下限等），构成VERO最核心的<b>不可复制资产</b>。</p>
+<p class="body">三层 scope 分层：<b>industry（行业基线）→ plant（厂级覆盖：专家B/专家A）→ workshop/furnace（预留）</b>。口径冲突 CF-001~CF-008 全部登记在案并有仲裁结论（Tc=1361℃、V/(Si+Ti)=1.0、枪位低-高-低+高Si保下限等），构成VERO最核心的<b>不可复制资产</b>。</p>
 
 <h3 class="sub"><span class="no">1.3</span>前端界面（v0.3 → v0.8 六轮迭代）</h3>
 <div class="tbl-wrap"><table class="tb">
@@ -226,7 +226,7 @@ footer{margin-top:var(--s6);padding-top:var(--s4);border-top:1px solid var(--lin
 </table></div>
 
 <h3 class="sub"><span class="no">1.4</span>数据接口（已预留）</h3>
-<p class="body"><b>window.VERO_API</b> 前端适配器（applyHeat/getState）已预留外部系统对接路径；DATA_INTERFACE_SPEC.md §3.1-3.6 覆盖化验室/PLC/副枪/烟气/台账五类数据源 + 前端适配器规范。POST /api/pangang/charge 服务化已打通（bridged 版）。</p>
+<p class="body"><b>window.VERO_API</b> 前端适配器（applyHeat/getState）已预留外部系统对接路径；DATA_INTERFACE_SPEC.md §3.1-3.6 覆盖化验室/PLC/副枪/烟气/台账五类数据源 + 前端适配器规范。POST /api/plant_a/charge 服务化已打通（bridged 版）。</p>
 
 <h3 class="sub"><span class="no">1.5</span>「智能体」要素：已有 vs 纯规划</h3>
 <div class="tbl-wrap"><table class="tb">
@@ -252,9 +252,9 @@ footer{margin-top:var(--s6);padding-top:var(--s4);border-top:1px solid var(--lin
   <tr><th>系统/厂商</th><th>核心功能模块</th><th>技术架构</th><th>界面特点</th><th>公开痛点</th></tr>
   <tr><td><b>宝信 MES（BM2→4.0）</b><br>宝信软件</td><td>工厂建模、合同/质量管理、作业计划、物料跟踪、能源、工序成本</td><td>C/S 三层+中间件，私有部署，MMS+PES 双层架构</td><td>面向「全体系质量业务人员」的专业化界面</td><td>单产线架构→接口复杂、信息传递效率低；建设维护成本高</td></tr>
   <tr><td><b>中冶赛迪「水土云」</b><br>赛迪信息</td><td>智能炼铁、智慧集控、智慧管控</td><td>自主扁平化架构，云+IoT+大数据+AI</td><td>平台化 App 应用</td><td>官方口径反证：传统 L1-L4 架构存在纵向数据衰减、横向孤岛</td></tr>
-  <tr><td><b>海星 XYZLink</b><br>星云智联（攀钢子公司）</td><td>L2 模型定制、集控中心、设备诊断、MOM/能源/安全环保</td><td>数据集成+工业大数据+AI 四类平台，兼容 224 种工业协议</td><td>操作室集控+可视化大屏，建有 2629 个模型+5835 个工业 APP</td><td>钒钛产线「工序界面断点多」「操作靠机旁手动」「数据自动采集度不高」</td></tr>
+  <tr><td><b>海星 XYZLink</b><br>星云智联（专家A子公司）</td><td>L2 模型定制、集控中心、设备诊断、MOM/能源/安全环保</td><td>数据集成+工业大数据+AI 四类平台，兼容 224 种工业协议</td><td>操作室集控+可视化大屏，建有 2629 个模型+5835 个工业 APP</td><td>钒钛产线「工序界面断点多」「操作靠机旁手动」「数据自动采集度不高」</td></tr>
   <tr><td><b>承德钒钛提钒全自动系统</b><br>河钢（企业自研，2024-11 投运）</td><td>静态模型（热力学+专家经验）、动态模型（烟气终点判断）、冷料自动配加、自动出钢</td><td>L2 过程控制级，150t 转炉</td><td>岗位人员按「自动出钢启动」按钮完成整炉；语音播报替代盯屏</td><td>立项原因即「人工经验操作导致半钢条件波动大」</td></tr>
-  <tr><td><b>攀钢×阿里 ET 工业大脑</b><br>阿里云（2018 起）</td><td>提钒/脱硫/转炉/精炼/连铸五工序建模、冷轧表检 AI</td><td>阿里云工业大数据平台，模型推荐回嵌现有系统</td><td>AI 辅助人工判定，不改变原 L2 界面</td><td>质检员 5-10 分钟识别几百个缺陷、判定不稳定；老师傅经验碎片化</td></tr>
+  <tr><td><b>专家A×阿里 ET 工业大脑</b><br>阿里云（2018 起）</td><td>提钒/脱硫/转炉/精炼/连铸五工序建模、冷轧表检 AI</td><td>阿里云工业大数据平台，模型推荐回嵌现有系统</td><td>AI 辅助人工判定，不改变原 L2 界面</td><td>质检员 5-10 分钟识别几百个缺陷、判定不稳定；老师傅经验碎片化</td></tr>
   <tr><td><b>南钢×华为「元冶」大模型</b><br>华为（2025-06 发布）</td><td>高炉炉温预测（90%+）、智能配矿、排产智能体、200+ AI 模型</td><td>「左脑机理+右脑 AI」群智能架构，42 米管控屏+数字孪生</td><td><b>明确以自然语言交互为卖点</b>：「新手通过自然语言提问就能获得 AI 操作建议」</td><td>立项痛点：「合格高炉操作员要培养五六年」「老师傅经验难复制传承」</td></tr>
   <tr><td><b>转炉 L2 通用范式</b><br>（以湛江 350t 为例）</td><td>静态模型（装入→氧量/副原料）、动态模型（副枪→终点修正）、自学习</td><td>L1(PLC)—L2(过程机)—L3/L4 四层</td><td>操作工在 HMI 上<b>人工选 5 种流量 Pattern + 5 种枪位 Pattern</b></td><td>模式/配方选择依赖操作工对 Pattern 表的理解——工艺知识门槛转嫁操作工</td></tr>
 </table></div>
@@ -307,8 +307,8 @@ footer{margin-top:var(--s6);padding-top:var(--s4);border-top:1px solid var(--lin
   </div>
   <div class="fish-card">
     <div class="fc-t">根因四：手工录入负担重 → 数据质量恶性循环</div>
-    <div class="fc-b">攀钢钒钛「每天化检验数据上百个」靠人工跑腿送样；报工需 7 步点击导致「先纸质记录、下班补录」；钒钛产线「数据自动采集度不高」。录入负担 → 数据延迟/缺失 → 模型不准 → 操作工不信任系统 → 更依赖手工经验 → 恶性循环。</div>
-    <div class="fc-ev">证据：攀钢钒钛远程检化验系统改造前（gtjia.com）；星云智联钒钛产线五大问题（csteelnews.cn）；MES 报工 7 步点击（toutiao.com）</div>
+    <div class="fc-b">专家A钒钛「每天化检验数据上百个」靠人工跑腿送样；报工需 7 步点击导致「先纸质记录、下班补录」；钒钛产线「数据自动采集度不高」。录入负担 → 数据延迟/缺失 → 模型不准 → 操作工不信任系统 → 更依赖手工经验 → 恶性循环。</div>
+    <div class="fc-ev">证据：专家A钒钛远程检化验系统改造前（gtjia.com）；星云智联钒钛产线五大问题（csteelnews.cn）；MES 报工 7 步点击（toutiao.com）</div>
   </div>
   <div class="fish-card">
     <div class="fc-t">根因五：报警「被积累」而非「被设计」</div>
@@ -437,7 +437,7 @@ footer{margin-top:var(--s6);padding-top:var(--s4);border-top:1px solid var(--lin
 │   <i>「这炉怎么吹？」「确认照单执行」「生成本班摘要」</i>          │
 ├─────────────────────────────────────────────────────────┤
 │                    <b>认知层（RAG + 推理）</b>                │
-│   知识包向量检索（industry/jianlong/pangang YAML）       │
+│   知识包向量检索（industry/plant_b/plant_a YAML）       │
 │   操作规程 PDF 检索 · 历史炉次判例检索                   │
 │   根因分析（CF 冲突登记 + 相似炉次 + 机理推导）           │
 ├─────────────────────────────────────────────────────────┤
@@ -491,7 +491,7 @@ footer{margin-top:var(--s6);padding-top:var(--s4);border-top:1px solid var(--lin
   <li>星云智联钒钛产线五大问题：csteelnews.cn/xwzx/znzz/202207/t20220728_65717.html</li>
   <li>承德钒钛提钒全自动系统：worldmetals.com.cn/viscms/xingyeyaowen3686/265831.jhtml；thj.mysteel.com/a/24111409</li>
   <li>南钢×华为「元冶」大模型：news.cn/20260625/0bf0e1eca4b34fc0934fa08cbb02681b/c.html</li>
-  <li>攀钢×阿里 ET 工业大脑：developer.aliyun.com/article/780659</li>
+  <li>专家A×阿里 ET 工业大脑：developer.aliyun.com/article/780659</li>
   <li>承德钒钛排产员跨屏核对：csteelnews.com/xwzx/znzz/202502/t20250219_97284.html</li>
   <li>社科院工经所钢铁数智化：gjs.cass.cn/kydt/kydt_kycg/202609/t20260907_6066229.shtml</li>
   <li>宝信 MES：ruanfujia.com/post/11696776/；中冶赛迪水土云：cisdiinfo.com</li>

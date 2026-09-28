@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """V 氧化热历史炉次反演 (V Heat Calibration)
 
-问题: 攀钢 Excel 取 ΔH_V = 2777 kJ/kg (热量!E18), 仓库 MODEL_ALGORITHM.md
+问题: 专家A Excel 取 ΔH_V = 2777 kJ/kg (热量!E18), 仓库 MODEL_ALGORITHM.md
 取 15000 MJ/t (≈热力学 V2O5 生成焓)。两者差 5.4 倍, 直接影响热量富余 →
 冷料配吃量 → 渣稀释程度 → 钒渣品位。
 
@@ -13,7 +13,7 @@
 
 from typing import Dict, List
 
-from app.tools import pangang_reference as pr
+from app.tools import plant_a_reference as pr
 
 # --- 历史数据 (源: Excel 工作表"钒渣钒品位情况" B3:Q6, 日期1-16) ---
 # (铁水Si%, 铁水V%, 粗钒渣装车样V2O5%, 精钒渣V2O5%); None=Excel缺样
@@ -37,7 +37,7 @@ HEATS: List[Dict] = [
 ]
 
 SCENARIOS = {
-    "A: 攀钢Excel 2777 kJ/kg": 2777.0,
+    "A: 专家AExcel 2777 kJ/kg": 2777.0,
     "B: 仓库文献 15000 kJ/kg": 15000.0,
 }
 

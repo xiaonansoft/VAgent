@@ -232,7 +232,7 @@ class HandoffEnvelope(BaseModel):
     confidence: float | None = Field(default=None, ge=0.0, le=1.0, description="结论置信度 0~1")
     warnings: list[str] = Field(default_factory=list, description="交接时携带的告警/注意事项")
     knowledge_versions: dict[str, str] = Field(
-        default_factory=dict, description="所用知识包版本, 如 {'industry':'1.0.0','jianlong':'0.3.0'}")
+        default_factory=dict, description="所用知识包版本, 如 {'industry':'1.0.0','plant_b':'0.3.0'}")
     skill_versions: dict[str, str] = Field(
         default_factory=dict, description="所用技能版本, 如 {'calculate_initial_charge':'0.1.0'}")
     created_at: datetime = Field(

@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from ..schemas import InitialChargeInputs, InitialChargeResult
-from .pangang_pack import resolve_parameters
+from .plant_a_pack import resolve_parameters
 
 
 def _get(node, *path):
@@ -13,9 +13,9 @@ def _get(node, *path):
 
 def calculate_initial_charge(inp: InitialChargeInputs) -> InitialChargeResult:
     """
-    L1 静态模型 (提钒冶炼 行业通用逻辑 + 厂级参数覆盖): 基于建龙现场工艺规程查表法
-    计算开吹配料与冷却剂策略。参考: 黑龙江建龙转炉提钒技术材料--修改--2020.6.13(1).pdf
-    参数由 resolve_parameters() 按「行业基线(industry) → 厂级包(默认 jianlong)」合并,
+    L1 静态模型 (提钒冶炼 行业通用逻辑 + 厂级参数覆盖): 基于专家B现场工艺规程查表法
+    计算开吹配料与冷却剂策略。参考: 黑龙江专家B转炉提钒技术材料--修改--2020.6.13(1).pdf
+    参数由 resolve_parameters() 按「行业基线(industry) → 厂级包(默认 plant_b)」合并,
     单一事实来源: 冷却剂查表/氧量/渣量系数为厂级参数, V/(Si+Ti) 判据为行业基线。
     """
 
@@ -26,12 +26,12 @@ def calculate_initial_charge(inp: InitialChargeInputs) -> InitialChargeResult:
     slag = P["slag"]
 
     # --- 1. 基础热计算 (用于校验) ---
-    # 仍保留基础物理热计算作为底座，但主要逻辑转向建龙查表法
+    # 仍保留基础物理热计算作为底座，但主要逻辑转向专家B查表法
 
     # 目标: 半钢温度 1360-1400 (Target 1380)
     target_temp = _get(l1, "target_temp_c", "value")
 
-    # --- 2. 冷却剂计算 (建龙查表法) ---
+    # --- 2. 冷却剂计算 (专家B查表法) ---
     # 规则:
     # 基准: 铁水温度 1280 vs 1300, Si 分档
     # 铁水温度每上升 10度, 冷却剂增加 1.8 kg/t
@@ -71,7 +71,7 @@ def calculate_initial_charge(inp: InitialChargeInputs) -> InitialChargeResult:
     total_coolant_kg_t = base_coolant_kg_t + temp_correction
 
     # 限制范围 (最大不超过 2.5吨/炉 -> ~25kg/t for 100t)
-    # 建龙文档说 "提钒冷却剂加入量最多不超过 2.5 吨" (针对120t炉? 文档提到了120t炉)
+    # 专家B文档说 "提钒冷却剂加入量最多不超过 2.5 吨" (针对120t炉? 文档提到了120t炉)
     # 2.5t / 120t = 20.8 kg/t.
     # 但表里有 48 kg/t. 可能 2.5t 是单种限制? 或者总限制?
     # 文档: "提钒冷却剂加入量最多不超过 2.5 吨" (P16).

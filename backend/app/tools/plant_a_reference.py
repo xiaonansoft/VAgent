@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""攀钢提钒四大平衡参考实现 (Pangang Four-Balance Reference Model)
+"""专家A提钒四大平衡参考实现 (PlantA Four-Balance Reference Model)
 
 从专家 Excel《提钒预算测算钒品位低原因说明(1).xlsx》(8 表 703 公式) 逐公式
 翻译而来。计算链路:
@@ -14,7 +14,7 @@
    同时提供 `corrected=True` 的修正口径, 供仲裁对照。
 3. 纯标准库实现, 无第三方依赖, 便于在任何环境验证。
 
-已发现的 Excel 引用怪癖 (详见 PANGANG_EXCEL_DECODED.md §5):
+已发现的 Excel 引用怪癖 (详见 PLANT_A_EXCEL_DECODED.md §5):
 - Q1: 物料平衡!D89 (渣带铁珠) 用 D88=0.1 直接相乘, 而冷料表金属铁 D9 用
       D88% (=0.001), 两者口径不一致; 仅影响金属铁冷料。
 - Q2: 冷料"弃渣/铬渣球"的渣量增加未除以 (1-FeO%-Fe2O3%), 与球团口径不一致。
@@ -30,7 +30,7 @@ from dataclasses import dataclass, field
 from typing import Dict, Optional
 
 # ============================================================================
-# 专家常数 (源: 攀钢 Excel, 单元格溯源见注释)
+# 专家常数 (源: 专家A Excel, 单元格溯源见注释)
 # ============================================================================
 
 # --- 成分修正 ---
@@ -171,8 +171,8 @@ class MetalAnalysis:
 
 
 @dataclass
-class PangangInputs:
-    """攀钢模型输入 (默认值 = Excel 黄金用例: 基表!N14/15, 行15/16/17)"""
+class PlantAInputs:
+    """专家A模型输入 (默认值 = Excel 黄金用例: 基表!N14/15, 行15/16/17)"""
     iron_weight: float = 80000.0                 # 基表!N14 铁水装入量 kg
     pig_iron_weight: float = 0.0                 # 基表!N15 生铁块量 kg
     iron: MetalAnalysis = field(default_factory=lambda: MetalAnalysis(
@@ -195,7 +195,7 @@ class PangangInputs:
 # 一、物料平衡 (物料平衡推算表)
 # ============================================================================
 
-def material_balance(inp: PangangInputs) -> Dict:
+def material_balance(inp: PlantAInputs) -> Dict:
     mw = MW
     fixed_C = inp.iron.C * IRON_C_LAB_FACTOR                       # !C8
     iron_fixed = MetalAnalysis(
@@ -338,7 +338,7 @@ def steel_freezing_point(steel: MetalAnalysis) -> float:
                      + steel.P * 30 + steel.S * 25) - 7
 
 
-def heat_balance(inp: PangangInputs, mat: Dict) -> Dict:
+def heat_balance(inp: PlantAInputs, mat: Dict) -> Dict:
     cp_i, cp_s, cp_sl = CP["iron"], CP["steel"], CP["slag"]
     ep = inp.semi_steel
     tf_i = iron_freezing_point(MetalAnalysis(
@@ -403,7 +403,7 @@ def heat_balance(inp: PangangInputs, mat: Dict) -> Dict:
 # 三、冷料边际响应 (3/4、冷料配吃表) —— 模型精华
 # ============================================================================
 
-def coolant_marginal(inp: PangangInputs, heat: Dict) -> Dict[str, Dict]:
+def coolant_marginal(inp: PlantAInputs, heat: Dict) -> Dict[str, Dict]:
     """每 kg 冷料对物料/热平衡的边际影响 (Excel 以 1kg 为例推导, 表3.1/4.1)"""
     ep = inp.semi_steel
     chem_loss_coef = SLAG_FEO * FE_IN_FEO + SLAG_FE2O3 * FE_IN_FE2O3
@@ -457,7 +457,7 @@ def coolant_marginal(inp: PangangInputs, heat: Dict) -> Dict[str, Dict]:
     return out
 
 
-def solve_coolants(inp: PangangInputs, heat: Dict, marginal: Dict) -> Dict[str, float]:
+def solve_coolants(inp: PlantAInputs, heat: Dict, marginal: Dict) -> Dict[str, float]:
     """确定各冷料量: 显式给定, 或按 热量富余/单位吸热 自动求解 (!H35)"""
     return {key: (heat["surplus"] / marginal[key]["absorption"] if w is None else w)
             for key, w in inp.coolant_weights.items()}
@@ -467,7 +467,7 @@ def solve_coolants(inp: PangangInputs, heat: Dict, marginal: Dict) -> Dict[str, 
 # 四、冷料后终态 + 钒平衡/原料标准
 # ============================================================================
 
-def after_coolant(inp: PangangInputs, mat: Dict, heat: Dict,
+def after_coolant(inp: PlantAInputs, mat: Dict, heat: Dict,
                   marginal: Dict, weights: Dict[str, float]) -> Dict:
     steel_add = slag_add = beads_add = o2_cut = gas_add = 0.0
     h_income_add = h_outlay_replica = h_outlay_correct = 0.0
@@ -509,7 +509,7 @@ def after_coolant(inp: PangangInputs, mat: Dict, heat: Dict,
     }
 
 
-def vanadium_and_product_balance(inp: PangangInputs, mat: Dict, after: Dict) -> Dict:
+def vanadium_and_product_balance(inp: PlantAInputs, mat: Dict, after: Dict) -> Dict:
     """钒元素平衡 + 吨半钢原料标准 + 精钒渣成分反算 (提钒转炉原料标准表)"""
     ep = inp.semi_steel
     den = after["hot_metal_slag"] + after["slag"]                   # !(G106+G107)
@@ -588,7 +588,7 @@ def vanadium_and_product_balance(inp: PangangInputs, mat: Dict, after: Dict) -> 
 # ============================================================================
 
 @dataclass
-class PangangResults:
+class PlantAResults:
     material: Dict
     heat: Dict
     marginal: Dict
@@ -601,31 +601,31 @@ class PangangResults:
         return self.product["slag_grade"]["V2O5"]
 
 
-def run_pangang_model(inp: Optional[PangangInputs] = None) -> PangangResults:
-    inp = inp or PangangInputs()
+def run_plant_a_model(inp: Optional[PlantAInputs] = None) -> PlantAResults:
+    inp = inp or PlantAInputs()
     mat = material_balance(inp)
     heat = heat_balance(inp, mat)
     marginal = coolant_marginal(inp, heat)
     weights = solve_coolants(inp, heat, marginal)
     after = after_coolant(inp, mat, heat, marginal, weights)
     product = vanadium_and_product_balance(inp, mat, after)
-    return PangangResults(mat, heat, marginal, after, product)
+    return PlantAResults(mat, heat, marginal, after, product)
 
 
 def predict_v2o5_grade(iron_C: float, iron_Si: float, iron_V: float,
                        iron_T: float = 1300.0,
                        iron_weight: float = 80000.0) -> float:
     """给定铁水条件预测精钒渣 V2O5 品位 (品位归因场景, 对应工作表1 的用法)"""
-    base = PangangInputs()
+    base = PlantAInputs()
     base.iron_weight = iron_weight
     base.iron = MetalAnalysis(
         C=iron_C, Si=iron_Si, Mn=base.iron.Mn, P=base.iron.P, S=base.iron.S,
         V=iron_V, Cr=base.iron.Cr, Ti=base.iron.Ti, temp=iron_T)
-    return run_pangang_model(base).v2o5_grade
+    return run_plant_a_model(base).v2o5_grade
 
 
 if __name__ == "__main__":
-    r = run_pangang_model()
+    r = run_plant_a_model()
     print(f"铁水C修正       : {r.material['iron_C_fixed']:.4f} %")
     print(f"渣总量          : {r.material['slag_total']:.1f} kg")
     print(f"物料收支差      : {r.material['balance_diff_pct']*100:.4f} %")

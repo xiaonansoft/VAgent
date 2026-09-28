@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from ..schemas import LanceMode, LanceProfile, LanceStep
-from .pangang_pack import resolve_parameters
+from .plant_a_pack import resolve_parameters
 
 
 def _get(node, *path):
@@ -16,8 +16,8 @@ def recommend_lance_profile(*, si_content_pct: float) -> LanceProfile:
       · 标准模式「低-高-低」: 点火/前期低枪位 → 主吹高枪位(软吹化渣、保碳)
         → 终点压枪低枪位(降渣中 FeO)。
       · 高 Si: 枪位保持下限(全程低枪位), 抑制脱碳、保钒。
-    依据: 攀钢综述「枪位 低→高→低」、铁水预处理提钒讲课稿「低—高—低」、
-          黑龙江建龙 p22「Si<0.2% 低-高-低 / Si>0.2% 全过程低枪位」、
+    依据: 专家A综述「枪位 低→高→低」、铁水预处理提钒讲课稿「低—高—低」、
+          黑龙江专家B p22「Si<0.2% 低-高-低 / Si>0.2% 全过程低枪位」、
           下钢(苏联)综述「高硅时整个冶炼期枪位保持下限」。
     模式逻辑取自行业基线(industry), 阈值(0.2%)与枪位值(900/1200mm)为厂级默认参数,
     由 resolve_parameters() 按「行业基线 → 厂级覆盖」合并得到, 可被厂级包覆盖。

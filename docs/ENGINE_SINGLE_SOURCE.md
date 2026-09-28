@@ -8,7 +8,7 @@
 
 ## 0. 一句话结论
 
-**唯一计算权威 = Python 后端 `backend/app/tools/pangang_reference.py`。
+**唯一计算权威 = Python 后端 `backend/app/tools/plant_a_reference.py`。
 HTML 演示页里的 JS 引擎自 2026-09-27 起单向冻结、自然死亡，不再迭代模型，Python 侧的新机理永不回移 JS。**
 
 ---
@@ -27,7 +27,7 @@ HTML 演示页里的 JS 引擎自 2026-09-27 起单向冻结、自然死亡，�
 
 | 项 | 内容 |
 |---|---|
-| 冻结对象 | `VERO_MVP_v*.html` 中第一段内联 `<script>` 内的攀钢四大平衡引擎（`runModel` 及其常量 `K`/`COOL`/`EP`） |
+| 冻结对象 | `VERO_MVP_v*.html` 中第一段内联 `<script>` 内的专家A四大平衡引擎（`runModel` 及其常量 `K`/`COOL`/`EP`） |
 | 冻结日期 | **2026-09-27** |
 | 冻结范围 | 全部**计算模型**：物料平衡、热量平衡、冷料边际响应、钒平衡、品位反算 |
 | 冻结后允许 | **只修 bug**（崩溃、NaN、渲染错误、单位显示错误），且修复后数值必须与冻结基准一致 |
@@ -40,7 +40,7 @@ HTML 演示页里的 JS 引擎自 2026-09-27 起单向冻结、自然死亡，�
 
 ## 3. 唯一计算权威（Python）
 
-- **权威实现**：`backend/app/tools/pangang_reference.py`（`run_pangang_model`）
+- **权威实现**：`backend/app/tools/plant_a_reference.py`（`run_plant_a_model`）
 - **权威输出**：所有对外数值（API / MCP 工具 / 前端 / 报告）必须源自该模块或由其派生的服务层。
 - **参数来源**：机理常数与厂级参数逐步下沉到 `knowledge/packs/**/base.yaml`，
   代码中的专家常数保留 Excel 单元格溯源注释作为 provenance。
@@ -128,7 +128,7 @@ python -m pytest backend/tests/test_engine_parity.py -q -s
 4. **删除 JS 引擎**：移除 `VERO_MVP_v*.html` 第一段的 `runModel` 引擎脚本，页面改为调用后端 API；
    历史 HTML 版本作为快照归档，不再维护。
 5. **文档更新**：本文档 §2 状态改为「已退役」，注明退役日期与替代入口。
-6. **CI 校验**：CI 中增加一条检查——`frontend/` 与 `web/` 源码中不得出现攀钢平衡公式常量
+6. **CI 校验**：CI 中增加一条检查——`frontend/` 与 `web/` 源码中不得出现专家A平衡公式常量
    （`1.157` / `29177` / `0.42` 等特征常数），防止引擎复活。
 
 ---

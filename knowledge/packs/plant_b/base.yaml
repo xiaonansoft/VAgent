@@ -1,22 +1,22 @@
 # =====================================================================
-# 建龙提钒 L1 配料知识包 (VERO Knowledge Pack)
+# 专家B提钒 L1 配料知识包 (VERO Knowledge Pack)
 # =====================================================================
-# 来源: 黑龙江建龙转炉提钒技术材料--修改--2020.6.13(1).pdf (规程查表法)
-# 对应引擎: backend/app/tools/initial_charge.py (L1 静态配料, 建龙查表口径)
-# 作用域: plant=jianlong —— 厂级包, 由 resolve_parameters() 以「行业基线(industry)打底」
-#         合并覆盖; 产品本身面向提钒冶炼行业, 建龙仅为当前默认部署厂。
+# 来源: 黑龙江专家B转炉提钒技术材料--修改--2020.6.13(1).pdf (规程查表法)
+# 对应引擎: backend/app/tools/initial_charge.py (L1 静态配料, 专家B查表口径)
+# 作用域: plant=plant_b —— 厂级包, 由 resolve_parameters() 以「行业基线(industry)打底」
+#         合并覆盖; 产品本身面向提钒冶炼行业, 专家B仅为当前默认部署厂。
 #
 # 每个参数必备字段: value(值) / unit(单位) / source(溯源)
-# 与攀钢包的已知冲突见 pangang/base.yaml 的 known_conflicts (CF-001~CF-005)
+# 与专家A包的已知冲突见 plant_a/base.yaml 的 known_conflicts (CF-001~CF-005)
 # =====================================================================
 
 schema: vero.knowledge-pack/v1
 pack:
-  plant: jianlong
+  plant: plant_b
   scope: plant
-  name: 建龙提钒L1配料知识包
+  name: 专家B提钒L1配料知识包
   version: 1.0.0
-  source_pdf: "黑龙江建龙转炉提钒技术材料--修改--2020.6.13(1).pdf (查表法)"
+  source_pdf: "黑龙江专家B转炉提钒技术材料--修改--2020.6.13(1).pdf (查表法)"
   status: draft
   approved_by: []
 
@@ -29,33 +29,33 @@ parameters:
     target_temp_c:
       value: 1380.0
       unit: "°C"
-      source: "建龙规程: 半钢温度 1360-1400 (取中值 1380)"
+      source: "专家B规程: 半钢温度 1360-1400 (取中值 1380)"
       desc: "半钢目标温度 (当前代码未参与计算, 仅作口径记录)"
     temp_base_c:
       value: 1300.0
       unit: "°C"
-      source: "建龙规程: 查表基准温度"
+      source: "专家B规程: 查表基准温度"
     coolant_lookup_kg_t:                 # 1300°C 基准冷却剂 kg/t, 按 Si 分档
       si_le_015:
         value: 22.5
         unit: "kg/t"
-        source: "建龙规程 Si<=0.15% 档 (15-30 取中值)"
+        source: "专家B规程 Si<=0.15% 档 (15-30 取中值)"
       si_015_020:
         value: 33.0
         unit: "kg/t"
-        source: "建龙规程 0.15<Si<=0.20% 档 (30-36 取中值)"
+        source: "专家B规程 0.15<Si<=0.20% 档 (30-36 取中值)"
       si_020_025:
         value: 39.0
         unit: "kg/t"
-        source: "建龙规程 0.20<Si<=0.25% 档 (36-42 取中值)"
+        source: "专家B规程 0.20<Si<=0.25% 档 (36-42 取中值)"
       si_gt_025:
         value: 45.0
         unit: "kg/t"
-        source: "建龙规程 Si>0.25% 档 (42-48 取中值)"
+        source: "专家B规程 Si>0.25% 档 (42-48 取中值)"
     temp_correction_kg_t_per_c:
       value: 0.18
       unit: "kg/t/°C"
-      source: "建龙规程: 每 +10°C 增 1.8 kg/t"
+      source: "专家B规程: 每 +10°C 增 1.8 kg/t"
     lining_heat_correction_c_per_unit:
       value: 0.5
       unit: "°C/单位蓄热"
@@ -66,7 +66,7 @@ parameters:
   # -------------------------------------------------------------------
   coolant_distribution:
     v_slag_iron:
-      si_threshold: {value: 0.20, unit: "%", source: "建龙规程: Si>=0.20% 配加返铁调温"}
+      si_threshold: {value: 0.20, unit: "%", source: "专家B规程: Si>=0.20% 配加返铁调温"}
       share:        {value: 0.5,  unit: "fraction", desc: "占总冷却剂比例上限"}
       cap_t:        {value: 2.0,  unit: "t", desc: "钒渣铁上限"}
     scale:
@@ -75,7 +75,7 @@ parameters:
     pellet_cap_t:
       value: 2.5
       unit: "t"
-      source: "建龙规程: 球返加入量不超过 2.5t"
+      source: "专家B规程: 球返加入量不超过 2.5t"
       desc: "超过触发警告, 建议检查铁水温度或增加废钢/生铁"
 
   # -------------------------------------------------------------------
@@ -108,30 +108,30 @@ parameters:
     si_threshold_pct:
       value: 0.20
       unit: "%"
-      source: "行业通用: 高Si保持下限; 建龙 p22 阈值 0.2% 为厂级默认值"
+      source: "行业通用: 高Si保持下限; 专家B p22 阈值 0.2% 为厂级默认值"
     low_lance_mm:
       value: 900
       unit: "mm"
-      source: "黑龙江建龙 p22/p16: 低枪位 900~1000mm; 高硅时枪位保持下限(=900)"
+      source: "黑龙江专家B p22/p16: 低枪位 900~1000mm; 高硅时枪位保持下限(=900)"
     high_lance_mm:
       value: 1200
       unit: "mm"
-      source: "黑龙江建龙 p22: 高枪位 1100~1400mm (取代表值)"
+      source: "黑龙江专家B p22: 高枪位 1100~1400mm (取代表值)"
     low_high_low_timing:
-      low_until_min: {value: 2.0, unit: "min", source: "黑龙江建龙 p22: 吹炼0~2分钟低枪位"}
-      end_press_s:   {value: 40,   unit: "s",   source: "黑龙江建龙 p22: 吹氧结束前40秒低枪位"}
+      low_until_min: {value: 2.0, unit: "min", source: "黑龙江专家B p22: 吹炼0~2分钟低枪位"}
+      end_press_s:   {value: 40,   unit: "s",   source: "黑龙江专家B p22: 吹氧结束前40秒低枪位"}
       total_blow_min: {value: 5.5, unit: "min", source: "讲课稿: 纯供氧5~6.5min (取5.5)"}
 
 # ---------------------------------------------------------------------
-# 建龙内部口径冲突 (原代码与规程/PRD 三方不一致)
+# 专家B内部口径冲突 (原代码与规程/PRD 三方不一致)
 # ---------------------------------------------------------------------
 known_conflicts:
   - id: CF-006
     topic: "枪位控制策略"
     sources:
       prd_v6: "高Si(>0.20%) → 恒定低枪位 900-1000mm; 低Si(≤0.20%) → 低-高-低"
-      code_original: "恒压变枪 高→低, 三档 Si<0.15/0.15-0.30/>0.30 → 过程枪位 1.5/1.4/1.3m (实为承德建龙 p30 表)"
+      code_original: "恒压变枪 高→低, 三档 Si<0.15/0.15-0.30/>0.30 → 过程枪位 1.5/1.4/1.3m (实为承德专家B p30 表)"
       chengde_p30: "单流道四孔拉瓦尔, 恒压变枪, Si<0.15/0.15-0.30/>0.30 → 过程枪位 1.5/1.4/1.3m"
       heilongjiang_p22: "328氧枪, Si<0.2% 低-高-低(低900-1000/高1100-1400); Si>0.2% 全过程低枪位"
-    arbitration: "枪位模式(低-高-低 + 高Si保持下限)为行业通用, 攀钢综述/讲课稿/建龙/专利多方一致; 阈值0.2%与枪位值900/1200mm为厂级默认参数(参考建龙), 可被厂级包覆盖"
+    arbitration: "枪位模式(低-高-低 + 高Si保持下限)为行业通用, 专家A综述/讲课稿/专家B/专利多方一致; 阈值0.2%与枪位值900/1200mm为厂级默认参数(参考专家B), 可被厂级包覆盖"
     resolved_by: "2026-09-23 文献核对"

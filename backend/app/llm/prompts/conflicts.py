@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """知识包口径冲突 → Prompt 注入 (口径仲裁表)
 
-把 knowledge/packs/{industry,jianlong,pangang}/base.yaml 里的 `known_conflicts`
+把 knowledge/packs/{industry,plant_b,plant_a}/base.yaml 里的 `known_conflicts`
 (CF-001 ~ CF-008) 读取出来, 渲染成一段 Markdown「口径仲裁表」注入系统提示词,
 **防止 LLM 在冲突数值上自由发挥** (例如把 Tc 说成 1360/1380, 或把 V/(Si+Ti)
 阈值说成 1.01/1.05)。
@@ -26,7 +26,7 @@ DEFAULT_PACKS_DIR = Path(
     os.getenv("VERO_KNOWLEDGE_PACKS", str(_REPO_ROOT / "knowledge" / "packs"))
 )
 
-PACK_ORDER = ["industry", "jianlong", "pangang"]
+PACK_ORDER = ["industry", "plant_b", "plant_a"]
 
 # 关键冲突: 渲染后必须包含这些值 (用于自检, 防 YAML 结构变化导致静默丢失)
 KEY_CONFLICT_TOKENS: Dict[str, List[str]] = {
@@ -63,14 +63,14 @@ def _load_yaml(path: Path) -> Dict[str, Any]:
 def _to_record(item: Dict[str, Any], pack: str) -> Optional[ConflictRecord]:
     if not isinstance(item, dict) or not item.get("id"):
         return None
-    # pangang 包为扁平结构: 除元字段外均为来源口径
+    # plant_a 包为扁平结构: 除元字段外均为来源口径
     skip = {"id", "topic", "arbitration", "resolved_by", "note"}
     src = item.get("sources")
     return ConflictRecord(
         id=str(item.get("id")),
         topic=str(item.get("topic", "")),
         pack=pack,
-        # pangang 包为扁平结构: 除元字段外均为来源口径; industry/jianlong 为 sources 嵌套
+        # plant_a 包为扁平结构: 除元字段外均为来源口径; industry/plant_b 为 sources 嵌套
         sources=({str(k): str(v) for k, v in src.items()} if isinstance(src, dict)
                  else {str(k): str(v) for k, v in item.items() if k not in skip}),
         # 无显式仲裁时退到 note (如 CF-005「建议并存」)
@@ -81,7 +81,7 @@ def _to_record(item: Dict[str, Any], pack: str) -> Optional[ConflictRecord]:
 
 
 def load_known_conflicts(packs_dir: Optional[Path] = None) -> List[ConflictRecord]:
-    """按 industry → jianlong → pangang 顺序加载 known_conflicts。
+    """按 industry → plant_b → plant_a 顺序加载 known_conflicts。
 
     加载失败 (目录缺失 / 缺 pyyaml) 返回空列表, 不抛异常。
     """

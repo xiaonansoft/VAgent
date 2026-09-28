@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """VERO 知识包加载器 (Knowledge Pack Loader)
 
-加载厂级 YAML 知识包 (如 knowledge/packs/pangang/base.yaml), 并提供:
+加载厂级 YAML 知识包 (如 knowledge/packs/plant_a/base.yaml), 并提供:
 1. load_pack()           —— 读取并做 schema 基本校验
 2. assert_pack_matches() —— 校验包内常数与复现代码常数一致 (防"两处真相")
 3. coolant_specs_from_pack() —— 从包构建冷料规格对象
@@ -15,16 +15,16 @@ from typing import Dict, List
 
 import yaml
 
-from .pangang_reference import COOLANTS, CoolantSpec
+from .plant_a_reference import COOLANTS, CoolantSpec
 
 DEFAULT_PACK = os.path.join(
-    os.path.dirname(__file__), "..", "..", "..", "knowledge", "packs", "pangang", "base.yaml")
+    os.path.dirname(__file__), "..", "..", "..", "knowledge", "packs", "plant_a", "base.yaml")
 
 INDUSTRY_PACK = os.path.join(
     os.path.dirname(__file__), "..", "..", "..", "knowledge", "packs", "industry", "base.yaml")
 
-# 部署厂 (默认建龙; 可用环境变量 VERO_PLANT 覆盖)。产品本身面向行业, 厂级仅作参数覆盖源。
-DEFAULT_PLANT = os.environ.get("VERO_PLANT", "jianlong")
+# 部署厂 (默认专家B; 可用环境变量 VERO_PLANT 覆盖)。产品本身面向行业, 厂级仅作参数覆盖源。
+DEFAULT_PLANT = os.environ.get("VERO_PLANT", "plant_b")
 
 VALID_SCOPES = {"industry", "plant", "workshop", "furnace"}
 
@@ -34,7 +34,7 @@ def load_pack(path: str = DEFAULT_PACK) -> Dict:
     if not os.path.exists(path):
         return {
             "schema": "vero.knowledge-pack/v1",
-            "pack": {"scope": "plant", "plant": "pangang"},
+            "pack": {"scope": "plant", "plant": "plant_a"},
             "parameters": {},
             "known_conflicts": [],
             "_missing": True,
@@ -56,8 +56,8 @@ def _p(pack: Dict, *path):
 
 
 def pack_discrepancies(pack: Dict) -> List[str]:
-    """逐项核对包内常数与 pangang_reference 模块常数, 返回不一致清单"""
-    from app.tools import pangang_reference as ref
+    """逐项核对包内常数与 plant_a_reference 模块常数, 返回不一致清单"""
+    from app.tools import plant_a_reference as ref
     issues: List[str] = []
 
     # 知识包缺失/为空 (保密资产未随仓库分发) 时, 无可核对项, 直接返回空清单。
@@ -150,7 +150,7 @@ def resolve_parameters(plant: str | None = None) -> Dict:
     """
     按 scope 分层合并参数: 行业基线(industry, 行业通用规则) → 厂级包(plant, 覆盖/补充)。
 
-    - plant=None 时使用 DEFAULT_PLANT (默认 jianlong, 可用 VERO_PLANT 覆盖)。
+    - plant=None 时使用 DEFAULT_PLANT (默认 plant_b, 可用 VERO_PLANT 覆盖)。
     - 返回合并后的 parameters dict, 供 initial_charge / lance_profile 等引擎统一取值。
     单一事实来源: 行业基线定「行业通用逻辑」, 厂级包定「厂级参数值」。
     """

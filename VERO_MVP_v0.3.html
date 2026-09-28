@@ -77,7 +77,7 @@ footer{margin-top:26px;padding:16px 28px;background:#141d2b;color:#93a2b8;font-s
 
 <header class="header">
   <h1>提钒冶炼智能体 · 分角色驾驶舱 <span style="font-weight:400;opacity:.65">v0.3</span></h1>
-  <div class="sub">攀钢「四大平衡」机理引擎 · 黄金回归对照 Excel 703 公式 · 同一引擎，三层角色视图</div>
+  <div class="sub">专家A「四大平衡」机理引擎 · 黄金回归对照 Excel 703 公式 · 同一引擎，三层角色视图</div>
   <div class="tabs" id="tabs">
     <button class="tab on" data-v="furnace">炉长驾驶舱<small>生产 · 10 秒读配吃</small></button>
     <button class="tab" data-v="process">工艺工作台<small>工艺专家 · 复核仲裁</small></button>
@@ -104,7 +104,7 @@ footer{margin-top:26px;padding:16px 28px;background:#141d2b;color:#93a2b8;font-s
       <fieldset style="border:none;margin-top:16px">
         <legend style="font-size:12.5px"><b>口径选择</b><span style="font-weight:400;color:#8a94a6">（V 氧化反应热 · 专家审定中）</span></legend>
         <div class="radios">
-          <label class="on" id="lb2777"><input type="radio" name="dh" value="2777" checked>经验口径 · 攀钢<br><b>2777 kJ/kg</b></label>
+          <label class="on" id="lb2777"><input type="radio" name="dh" value="2777" checked>经验口径 · 专家A<br><b>2777 kJ/kg</b></label>
           <label id="lb15000"><input type="radio" name="dh" value="15000">文献口径 · 热力学<br><b>15000 kJ/kg</b></label>
         </div>
       </fieldset>
@@ -114,7 +114,7 @@ footer{margin-top:26px;padding:16px 28px;background:#141d2b;color:#93a2b8;font-s
     <div style="display:grid;gap:16px;align-content:start">
       <div class="panel">
         <h2><span style="background:var(--molten);color:#fff;font-size:11px;border-radius:6px;padding:1px 8px">02</span>本炉配吃建议
-          <span class="hint">依据：pangang/base.yaml v1.0.0（试用）</span>
+          <span class="hint">依据：plant_a/base.yaml v1.0.0（试用）</span>
           <span class="badge b-g" id="confBadge">绿灯</span></h2>
         <div class="kpis">
           <div class="kpi hl"><div class="l">冷却剂配吃量 · 球团（t）<span class="tip"> 现场称「球返」</span></div><div class="v" id="kPel">--</div><div class="u">配吃量 = 富余热量 ÷ 单位吸热</div></div>
@@ -187,12 +187,12 @@ footer{margin-top:26px;padding:16px 28px;background:#141d2b;color:#93a2b8;font-s
   <div class="grid2">
     <div style="display:grid;gap:16px;align-content:start">
       <div class="panel">
-        <h2><span style="background:var(--steel);color:#fff;font-size:11px;border-radius:6px;padding:1px 8px">A</span>黄金回归自检 <span class="hint">JS 引擎 vs 攀钢 Excel 基准</span></h2>
+        <h2><span style="background:var(--steel);color:#fff;font-size:11px;border-radius:6px;padding:1px 8px">A</span>黄金回归自检 <span class="hint">JS 引擎 vs 专家A Excel 基准</span></h2>
         <div id="goldbox"></div>
       </div>
       <div class="gov">
-        <h3>知识包溯源（pangang/base.yaml）</h3>
-        <div class="mono">v1.0.0（试用）· 31 类参数 → 攀钢 Excel 单元格<br>状态：draft 待专家批准 · 与 pangang_reference.py 一致性由 pangang_pack.py 校验</div>
+        <h3>知识包溯源（plant_a/base.yaml）</h3>
+        <div class="mono">v1.0.0（试用）· 31 类参数 → 专家A Excel 单元格<br>状态：draft 待专家批准 · 与 plant_a_reference.py 一致性由 plant_a_pack.py 校验</div>
       </div>
     </div>
     <div style="display:grid;gap:16px;align-content:start">
@@ -211,13 +211,13 @@ footer{margin-top:26px;padding:16px 28px;background:#141d2b;color:#93a2b8;font-s
 </div>
 
 <footer style="display:flex;flex-wrap:wrap;gap:10px">
-  <span>VERO MVP v0.3 · 引擎移植自 pangang_reference.py（Python 侧 75/75 黄金回归全绿）· 分角色视图，v0.2 验收基线保留</span>
+  <span>VERO MVP v0.3 · 引擎移植自 plant_a_reference.py（Python 侧 75/75 黄金回归全绿）· 分角色视图，v0.2 验收基线保留</span>
   <span class="glossary">术语：配吃=冷料加入 · 球返=球团矿返矿 · 品位=V₂O₅ 质量分数 · 富余=热量富余 · 留痕=全量计算记录</span>
 </footer>
 
 <script>
 "use strict";
-/* ============ 攀钢四大平衡引擎（JS 同源移植自 pangang_reference.py，与 v0.2 完全一致） ============ */
+/* ============ 专家A四大平衡引擎（JS 同源移植自 plant_a_reference.py，与 v0.2 完全一致） ============ */
 const K={cF:1.157,hmSlag:5e-4,co:.90,co2:.10,feo:.42,feOx2:.03,beads:.10,spit:.003,
  dust:.002,dFeo:.70,dFeOx2:.20,liningR:17e-5,
  Lin:{CaO:.02,SiO2:.02,MgO:.81,Al2O3:.01,C:.14},fO2:.005,pur:.998,
@@ -357,7 +357,7 @@ function update(){
     "建议配吃 <b>"+fmt(r.pl/1000,2)+" t</b> 球团，预测品位 <b>"+fmt(r.grade,2)+"%</b>。参数逼近适用边界，建议对照高硅预案并按例外流程记录本炉。":
     "建议配吃 <b>"+fmt(r.pl/1000,2)+" t</b> 球团，预测品位 <b>"+fmt(r.grade,2)+"%</b>，落在常用区间，照单执行。");
   $("explain").innerHTML=
-    "<div>🧭 知识口径：pangang/base.yaml v1.0.0（试用）· 31 类参数溯源至攀钢 Excel 单元格</div>"+
+    "<div>🧭 知识口径：plant_a/base.yaml v1.0.0（试用）· 31 类参数溯源至专家A Excel 单元格</div>"+
     "<div>⚙️ 机理依据：四大平衡全链路，物料收支校验差 <b>"+(r.balPct*100).toFixed(4)+"%</b>（≤0.05% 为通过）</div>"+
     "<div>📘 相似炉次判例："+nearH(inp.Si,inp.V).map(x=>"第"+x.h.day+"日（Si "+x.h.si.toFixed(2)+"/V "+x.h.v.toFixed(2)+"，实绩精渣 "+x.h.fine+"%）").join("；")+"</div>"+
     (risky?"<div style='margin-top:6px'><span class='badge b-y'>建议对照高硅预案，并按例外流程记录本炉</span></div>":"");
@@ -388,12 +388,12 @@ function simTB(inp){
 function arb(inp,r){
   const other=inp.dhV===2777?15000:2777;
   const alt=runModel(Object.assign({},inp,{dhV:other}));
-  let s="<tr><th></th><th>经验口径 · 攀钢<br>2777 kJ/kg</th><th>文献口径 · 热力学<br>15000 kJ/kg</th></tr>";
+  let s="<tr><th></th><th>经验口径 · 专家A<br>2777 kJ/kg</th><th>文献口径 · 热力学<br>15000 kJ/kg</th></tr>";
   s+="<tr><td><b>冷却剂配吃量</b></td><td>"+fmt(inp.dhV===2777?r.pl/1000:alt.pl/1000,2)+" t</td><td>"+fmt(inp.dhV===15000?r.pl/1000:alt.pl/1000,2)+" t</td></tr>";
   s+="<tr><td><b>预测品位</b></td><td>"+fmt(inp.dhV===2777?r.grade:alt.grade,2)+"%</td><td>"+fmt(inp.dhV===15000?r.grade:alt.grade,2)+"%</td></tr>";
   s+="<tr><td><b>热量富余</b></td><td>"+fmt((inp.dhV===2777?r:alt).surplus/1e6,1)+" MJ</td><td>"+fmt((inp.dhV===15000?r:alt).surplus/1e6,1)+" MJ</td></tr>";
   $("arb").innerHTML=s;
-  $("arbnote").innerHTML="📊 证据（16 日回放·精渣）：攀钢口径 2777 → "+fmt(rmse(2777),3)+"；文献 15000 → "+fmt(rmse(15000),3)+
+  $("arbnote").innerHTML="📊 证据（16 日回放·精渣）：专家A口径 2777 → "+fmt(rmse(2777),3)+"；文献 15000 → "+fmt(rmse(15000),3)+
    "（均方根误差 RMSE，越小越贴近实绩）。系统只呈证据，不代裁决：[采用 A] [采用 B] [本炉例外] [挂起待议] 由专家决断，结果记入判例库。";
 }
 function drawSweep(inp,cur){
@@ -444,7 +444,7 @@ function goldTB(){
   let bad=0,html="<table class='gold'><tr><th>检查项</th><th>浏览器内引擎</th><th>Excel/Python 基准</th><th>相对误差</th></tr>";
   cmp.forEach(c=>{const a=c[1],e=c[2];const err=Math.abs(a-e)/Math.abs(e);const p=err<1e-4;if(!p)bad++;
     html+="<tr><td>"+c[0]+"</td><td>"+fmt(a,4)+"</td><td>"+fmt(e,4)+"</td><td style='color:"+(p?"#2b8a3e":"#c92a2a")+"'>"+(err*100).toFixed(4)+"%</td></tr>";});
-  html+="</table><div class='note' style='margin-top:5px'>门限 0.01%。基准值来自攀钢 Excel 公式缓存（Python 复现 75/75，最大误差 0.0002%）—— "+
+  html+="</table><div class='note' style='margin-top:5px'>门限 0.01%。基准值来自专家A Excel 公式缓存（Python 复现 75/75，最大误差 0.0002%）—— "+
    (bad===0?"<b style='color:#2b8a3e'>全部通过</b>":"<b style='color:#c92a2a'>有 "+bad+" 项超差！</b>")+"</div>";
   $("goldbox").innerHTML=html;
 }
@@ -453,7 +453,7 @@ function traceTB(inp){
    "<div>时间："+new Date().toLocaleString()+"</div>"+
    "<div>输入：铁水 "+fmt(inp.W/1000,1)+" t／Si "+inp.Si.toFixed(3)+"%／V "+inp.V.toFixed(3)+"%／"+inp.T+" ℃；氧化热口径 "+inp.dhV+" kJ/kg</div>"+
    "<div>链路：物料平衡 → 热量平衡 → 冷料配吃 → 钒平衡 → 品位预测（单次 <1ms）</div>"+
-   "<div>口径：pangang/base.yaml v1.0.0（试用）· 31 类工程参数（<b>全部计算在本页浏览器内完成，零网络请求</b>；导出：整页复制，P2 升级 JSONL）</div>";
+   "<div>口径：plant_a/base.yaml v1.0.0（试用）· 31 类工程参数（<b>全部计算在本页浏览器内完成，零网络请求</b>；导出：整页复制，P2 升级 JSONL）</div>";
 }
 /* 角色视图切换 */
 document.getElementById("tabs").addEventListener("click",e=>{

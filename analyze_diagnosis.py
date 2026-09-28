@@ -27,7 +27,7 @@ def extract_text_with_keywords(file_path, keywords, max_pages=50):
 def main():
     base_path = "/Users/wenqing/Desktop/VAgent"
     files = [
-        "黑龙江建龙转炉提钒技术材料--修改--2020.6.13(1).pdf",
+        "黑龙江专家B转炉提钒技术材料--修改--2020.6.13(1).pdf",
         "铁水预处理提钒讲课稿[整理版](1).pdf"
     ]
     

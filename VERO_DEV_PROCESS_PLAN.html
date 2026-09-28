@@ -124,7 +124,7 @@
 <div class="flow">
   <div class="stp done"><b>S0 决策立项</b>多角色研讨→裁决采用/试点/拒绝<span class="st">产出：两轮研讨纪要 ✅</span></div>
   <div class="stp done"><b>S1 规格先行</b>Spec → PRD → 任务拆解（to-spec/to-prd）<span class="st">spec-kit / to-spec 技能</span></div>
-  <div class="stp done"><b>S2 知识资产</b>Excel/PDF → 知识包+校验器<span class="st">产出：pangang.yaml **已完成 ✅**</span></div>
+  <div class="stp done"><b>S2 知识资产</b>Excel/PDF → 知识包+校验器<span class="st">产出：plant_a.yaml **已完成 ✅**</span></div>
   <div class="stp done"><b>S3 引擎+黄金用例</b>机理复现+黄金回归<span class="st">产出：75/75 0.0002% ✅</span></div>
   <div class="stp"><b>S4 编排+工具</b>单Agent+MCP工具集<span class="st">LangGraph 已有雏形</span></div>
   <div class="stp"><b>S5 驾驶舱界面</b>三要素回答+置信度<span class="st">MVP 当前冲刺</span></div>
@@ -169,7 +169,7 @@
   <tr><td><b>10. 供应商对照表</b></td><td>自研 vs 宝信类全厂平台 vs 按需采购的边界（我们做提钒专精，不重造全厂平台）</td><td><span class="pill pill-todo">待讨论</span></td><td class="role">产品+技术</td></tr>
   <tr><td><b>11. 发布与回滚手册</b></td><td>知识包/引擎/Agent提示词 三类变更的独立版本管理与回滚程序</td><td><span class="pill pill-todo">P2 前</span></td><td class="role">技术</td></tr>
   <tr><td><b>12. 多厂扩展协议书</b></td><td>迁移学习冷启动 SOP（T7 已裁决：结构迁移+50炉shadow）</td><td><span class="pill pill-todo">P3 前</span></td><td class="role">技术+数据</td></tr>
-  <tr><td><b>13. 复现与审计报告</b></td><td>已有工件汇编成正式版，供攀钢专家签字背书用</td><td><span class="pill pill-run">材料已备</span></td><td class="role">产品</td></tr>
+  <tr><td><b>13. 复现与审计报告</b></td><td>已有工件汇编成正式版，供专家A专家签字背书用</td><td><span class="pill pill-run">材料已备</span></td><td class="role">产品</td></tr>
   <tr><td><b>14. 合规清单</b></td><td>备案要求/数据出境/模型许可（TabPFN v2.5 token 教训已记录）</td><td><span class="pill pill-todo">P3 前完成</span></td><td class="role">安全</td></tr>
 </table>
 
@@ -184,7 +184,7 @@
 <table>
   <tr><th style="width:6%">天</th><th style="width:24%">任务</th><th>具体内容</th><th style="width:10%">Owner</th><th style="width:19%">验收</th></tr>
   <tr><td>D1</td><td><b>规格先行</b></td><td>用 spec 流程写死 MVP 验收单：①输入7 个参数 ②输出 5 张卡 ③三要素解释模板 ④ΔH 仲裁动画⑤16 炉回放图⑥JS 引擎与 Python 黄金值误差&lt;0.01%</td><td>产品</td><td>PRD 草案签认</td></tr>
-  <tr><td>D2-3</td><td><b>JS 引擎移植</b></td><td>四大平衡→ TypeScript/JS 单文件实现，从 knowledge/pack/pangang YAML 自动生成常数（单一事实来源），内置黄金值自检面板</td><td>技术</td><td>自检 75 点全绿</td></tr>
+  <tr><td>D2-3</td><td><b>JS 引擎移植</b></td><td>四大平衡→ TypeScript/JS 单文件实现，从 knowledge/pack/plant_a YAML 自动生成常数（单一事实来源），内置黄金值自检面板</td><td>技术</td><td>自检 75 点全绿</td></tr>
   <tr><td>D4-5</td><td><b>驾驶舱 UI</b></td><td>左输入滑杆/中结果大数字卡+富余热量/Si-V 扫描曲线/右三要素解释卡；ui-ux-pro-max 技能辅助视觉</td><td>产品+技术</td><td>操作工 5 分钟 understand</td></tr>
   <tr><td>D6-7</td><td><b>16炉回放集成</b></td><td>实绩 vs 预测 SVG 曲线 + RMSE 面板 + 相似炉次检索（换算 T2 仲裁展示）</td><td>数据</td><td>RMSE 与 Python 一致</td></tr>
   <tr><td>D8</td><td><b>安全护栏预演</b></td><td>红黄绿三色置信度输出 + "未经核实"标注逻辑 + 全程 trace_id 日志（本地导出 JSON）</td><td>安全</td><td>红线用例通过</td></tr>
@@ -225,7 +225,7 @@
 
 <footer>
   VERO 提钒冶炼智能体 · 第三轮：开发方法论与行动计划 · 2026-09-22<br>
-  前序材料：第一轮 VERO_AGENT_BRAINSTORM.html · 第二轮 VERO_TECH_DEEPDIVE.html · 证据工件 PANGANG_EXCEL_DECODED.md / ARBITRATION_DEMO.md
+  前序材料：第一轮 VERO_AGENT_BRAINSTORM.html · 第二轮 VERO_TECH_DEEPDIVE.html · 证据工件 PLANT_A_EXCEL_DECODED.md / ARBITRATION_DEMO.md
 </footer>
 
 </div>

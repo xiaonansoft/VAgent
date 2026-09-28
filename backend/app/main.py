@@ -320,13 +320,13 @@ async def run_simulation_endpoint(inputs: SimulationInputs):
 
 
 # ---------------------------------------------------------------------------
-# Pangang 四大平衡配吃顾问端点 (B 路：MVP 服务化桥接)
+# PlantA 四大平衡配吃顾问端点 (B 路：MVP 服务化桥接)
 # 对齐 MVP 的 runModel() 与 arb() 卡：输入铁水条件 → 配吃量 + 精钒渣 V2O5 品位 + ΔH 仲裁双案
 # ---------------------------------------------------------------------------
-from app.tools.pangang_reference import run_pangang_model, PangangInputs, MetalAnalysis
-import app.tools.pangang_reference as _pg_ref
+from app.tools.plant_a_reference import run_plant_a_model, PlantAInputs, MetalAnalysis
+import app.tools.plant_a_reference as _pg_ref
 
-class PangangChargeRequest(BaseModel):
+class PlantAChargeRequest(BaseModel):
     C: float
     Si: float
     V: float
@@ -340,8 +340,8 @@ class PangangChargeRequest(BaseModel):
     is_one_can: bool = True
     dh_v: float | None = None  # 覆盖 V 氧化热；默认引擎 2777，可传 15000 触发仲裁对照
 
-def _build_pangang_inputs(req: PangangChargeRequest, dh_v: float) -> PangangInputs:
-    base = PangangInputs()
+def _build_plant_a_inputs(req: PlantAChargeRequest, dh_v: float) -> PlantAInputs:
+    base = PlantAInputs()
     base.iron_weight = req.iron_weight_kg
     base.iron = MetalAnalysis(
         C=req.C, Si=req.Si,
@@ -355,12 +355,12 @@ def _build_pangang_inputs(req: PangangChargeRequest, dh_v: float) -> PangangInpu
     )
     return base
 
-def _run_pangang_case(req: PangangChargeRequest, dh_v: float) -> dict:
+def _run_plant_a_case(req: PlantAChargeRequest, dh_v: float) -> dict:
     saved = _pg_ref.DH_V
     try:
         _pg_ref.DH_V = dh_v
-        r = run_pangang_model(_build_pangang_inputs(req, dh_v))
-        ti = req.Ti if req.Ti is not None else PangangInputs().iron.Ti
+        r = run_plant_a_model(_build_plant_a_inputs(req, dh_v))
+        ti = req.Ti if req.Ti is not None else PlantAInputs().iron.Ti
         return {
             "dh_v": dh_v,
             "v2o5_grade_pct": round(r.v2o5_grade, 4),
@@ -373,15 +373,15 @@ def _run_pangang_case(req: PangangChargeRequest, dh_v: float) -> dict:
     finally:
         _pg_ref.DH_V = saved
 
-@app.post("/api/pangang/charge")
-async def pangang_charge(req: PangangChargeRequest):
+@app.post("/api/plant_a/charge")
+async def plant_a_charge(req: PlantAChargeRequest):
     primary_dh = req.dh_v if req.dh_v is not None else _pg_ref.DH_V
     return {
-        "rule_version": "pangang four-balance v7.0.0 (golden regression 75/75, max err 0.0002%)",
-        "primary": _run_pangang_case(req, primary_dh),
+        "rule_version": "plant_a four-balance v7.0.0 (golden regression 75/75, max err 0.0002%)",
+        "primary": _run_plant_a_case(req, primary_dh),
         "arbitration": {
-            "case_2777": _run_pangang_case(req, 2777.0),
-            "case_15000": _run_pangang_case(req, 15000.0),
+            "case_2777": _run_plant_a_case(req, 2777.0),
+            "case_15000": _run_plant_a_case(req, 15000.0),
         },
     }
 

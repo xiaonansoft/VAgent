@@ -3,7 +3,7 @@
     "name": "VERO 提钒四大平衡引擎 · 黄金基准集",
     "version": "1.0.0",
     "frozen_date": "2026-09-27",
-    "source": "专家 Excel《提钒预算测算钒品位低原因说明(1).xlsx》(8 表 703 公式) 公式缓存全精度值; 与 backend/app/tools/pangang_reference.py 默认用例 (PangangInputs 默认值 = 基表!N14/15 行15/16/17) 逐项对齐",
+    "source": "专家 Excel《提钒预算测算钒品位低原因说明(1).xlsx》(8 表 703 公式) 公式缓存全精度值; 与 backend/app/tools/plant_a_reference.py 默认用例 (PlantAInputs 默认值 = 基表!N14/15 行15/16/17) 逐项对齐",
     "note": "本文件是 Python 引擎与 JS(HTML 演示页) 引擎共同的唯一判定基线。期望值以本文件为准, 不得为了让测试通过而修改期望值。Python 侧机理迭代若导致本文件失败, 必须由专家评审后修订本文件的期望值并同步 ENGINE_SINGLE_SOURCE.md, 严禁反向迁就代码。",
     "policy": "docs/ENGINE_SINGLE_SOURCE.md",
     "cases_count": 11,
@@ -38,7 +38,7 @@
       "Ti": 0.00833024691358023, "temp": 1370.0
     },
     "coolant_weights": { "pellet": null, "metal_fe": 0.0, "ore_block": 0.0, "waste_slag_ball": 0.0 },
-    "desc": "黄金用例未显式给出的成分取 pangang_reference.PangangInputs 默认值; null 表示该冷料量按『热量富余 / 单位吸热』自动求解"
+    "desc": "黄金用例未显式给出的成分取 plant_a_reference.PlantAInputs 默认值; null 表示该冷料量按『热量富余 / 单位吸热』自动求解"
   },
 
   "mapping": {

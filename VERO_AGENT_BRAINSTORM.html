@@ -151,7 +151,7 @@
 <!-- ================= HERO ================= -->
 <header class="hero">
   <h1>提钒冶炼智能体到底怎么建？<br>—— 一场 AI 专家 × 冶炼专家 × 工艺专家的正面交锋</h1>
-  <div class="sub">围绕攀钢提钒四大平衡专家模型（703 公式 Excel）与现有 VERO v7.0 代码库的落地路径研讨</div>
+  <div class="sub">围绕专家A提钒四大平衡专家模型（703 公式 Excel）与现有 VERO v7.0 代码库的落地路径研讨</div>
   <div class="tagline">会议结论先行：LLM 负责认知与解释，确定性内核负责数字，知识包负责经验，人负责拍板</div>
   <div class="meta">
     <span>日期：<b>2026-09-22</b></span>
@@ -167,21 +167,21 @@
 <div class="grid g3">
   <div class="card">
     <div class="kicker">工件一 · 模型解码</div>
-    <h3>攀钢秘诀 Excel 完全解码</h3>
+    <h3>专家A秘诀 Excel 完全解码</h3>
     <p>8 张工作表、703 个公式逐格提取：物料平衡 → 热量平衡 → 冷料边际响应 → 钒平衡/品位预测。发现铁水 C 差异系数 <b>1.157</b>、Ti 冷却效应折算比、凝固点双公式等教科书外专家知识，以及 6 处引用怪癖（Q1–Q6）。</p>
-    <p style="margin-top:8px"><code>PANGANG_EXCEL_DECODED.md</code></p>
+    <p style="margin-top:8px"><code>PLANT_A_EXCEL_DECODED.md</code></p>
   </div>
   <div class="card">
     <div class="kicker">工件二 · 黄金复现</div>
     <h3>Python 参考实现 75/75 通过</h3>
     <p>四大平衡全链路翻译为代码，对照 Excel 缓存值最大误差 <b>0.0002%</b>；修正一处表格漏项（Q5）后热平衡闭合至机器精度。专家模型被证明物理自洽——这是后续一切讨论的信任基础。</p>
-    <p style="margin-top:8px"><code>backend/app/tools/pangang_reference.py</code></p>
+    <p style="margin-top:8px"><code>backend/app/tools/plant_a_reference.py</code></p>
   </div>
   <div class="card">
     <div class="kicker">工件三 · 数据仲裁</div>
     <h3>16 炉次反演 + 冲突清单</h3>
-    <p>V 氧化热之争（2777 vs 15000）用生产实绩回放给出证据；双引擎对照生成 6 条冲突（CF-001~006），含建龙文档自查出的内部矛盾。知识包 YAML 化完成，31 类参数一致性校验通过。</p>
-    <p style="margin-top:8px"><code>ARBITRATION_DEMO.md</code> · <code>knowledge/packs/pangang/base.yaml</code></p>
+    <p>V 氧化热之争（2777 vs 15000）用生产实绩回放给出证据；双引擎对照生成 6 条冲突（CF-001~006），含专家B文档自查出的内部矛盾。知识包 YAML 化完成，31 类参数一致性校验通过。</p>
+    <p style="margin-top:8px"><code>ARBITRATION_DEMO.md</code> · <code>knowledge/packs/plant_a/base.yaml</code></p>
   </div>
 </div>
 
@@ -275,7 +275,7 @@
   <div class="speech s-dat"><div class="who">赵数<span class="tag">数据科学</span></div>
     <p>反对。样本量支撑不起端到端，而且外推必崩——原料一变模型就哑。正确姿势是<b>灰箱三层</b>：①机理打底（守恒方程）②数据只学残差修正（RLS 更新热效率因子）③按 Si/温度聚类维护参数库。我们 16 炉次反演也证明了：光调一个 ΔH_V，RMSE 只能从 1.47 降到 1.00，剩下的偏差要靠逐炉工况数据，不是靠换模型结构。</p></div>
   <div class="speech s-met"><div class="who">高韧<span class="tag">冶炼专家</span></div>
-    <p>同意，加一条硬约束：<b>任何学习结果必须通过守恒校验才能上线</b>——物料差、热差、钒平衡三道关。攀钢那个 93 MJ"富余"最后查出是表格漏项，就是守恒校验的价值。数据修正不许破坏物理。</p></div>
+    <p>同意，加一条硬约束：<b>任何学习结果必须通过守恒校验才能上线</b>——物料差、热差、钒平衡三道关。专家A那个 93 MJ"富余"最后查出是表格漏项，就是守恒校验的价值。数据修正不许破坏物理。</p></div>
   <div class="speech s-dat"><div class="who">赵数<span class="tag">数据科学</span></div>
     <p>再补个数据基建提醒：现在 Excel 只有 16 天的日均值，粒度太粗。要接<b>炉次级</b>数据（TSC/TSO 副枪、烟气分析、氧枪曲线），否则残差学习没有训练对。时序库选型先别激进，PostgreSQL 分区表够用一年。</p></div>
   <div class="verdict"><b>会议结论（强共识）</b>
@@ -310,9 +310,9 @@
 
 <div class="topic">
   <h3><span class="badge b-open">开放</span>议题六 · 多厂多车间的终局形态？</h3>
-  <div class="q">攀钢、建龙、未来其他厂——一套系统还是各起炉灶？</div>
+  <div class="q">专家A、专家B、未来其他厂——一套系统还是各起炉灶？</div>
   <div class="speech s-km"><div class="who">苏呈<span class="tag">知识工程</span></div>
-    <p>架构上已经准备好答案：知识包级联让"新厂 = 一份 override YAML + 历史回放验证"。真正的难题是<b>数据与 IP 治理</b>：攀钢的秘诀包和建龙的经验包能不能放同一个实例？我建议物理隔离（每厂独立知识库）+ 仲裁判例脱敏共享（只共享冲突类型与决策模式，不共享参数值）。</p></div>
+    <p>架构上已经准备好答案：知识包级联让"新厂 = 一份 override YAML + 历史回放验证"。真正的难题是<b>数据与 IP 治理</b>：专家A的秘诀包和专家B的经验包能不能放同一个实例？我建议物理隔离（每厂独立知识库）+ 仲裁判例脱敏共享（只共享冲突类型与决策模式，不共享参数值）。</p></div>
   <div class="speech s-dat"><div class="who">赵数<span class="tag">数据科学</span></div>
     <p>学习层同理：参数库按厂隔离，但<b>漂移检测的统计方法</b>、<b>聚类策略</b>可以共享。跨厂联合建模是远期选项，前提是拿到双方数据授权。</p></div>
   <div class="verdict"><b>会议结论（方向共识，细节待定）</b>
@@ -340,7 +340,7 @@
   <div class="arrow">▲ 经验参数 / ▼ 规则匹配</div>
   <div class="layer">
     <h4>L1 机理内核 —— 确定性计算 <span class="en">MECHANISM CORE</span><span class="pill">Python · scipy ODE</span></h4>
-    <p>攀钢四大平衡参考实现（75/75 黄金用例）· ODE 动力学仿真 · 软测量 + 卡尔曼滤波 · 三道守恒关（物料/热量/钒平衡）</p>
+    <p>专家A四大平衡参考实现（75/75 黄金用例）· ODE 动力学仿真 · 软测量 + 卡尔曼滤波 · 三道守恒关（物料/热量/钒平衡）</p>
   </div>
   <div class="arrow">▲ 炉次实绩 / ▼ 设定建议</div>
   <div class="layer">
@@ -358,10 +358,10 @@
   <tr><td><b>工具协议</b></td><td class="rec">MCP 工具服务器（已有雏形）</td><td>配料/仿真/诊断/平衡 已是天然工具边界；协议标准化利于换模型</td><td>工具粒度需评审：过细则 LLM 决策负担重</td></tr>
   <tr><td><b>知识存储</b></td><td class="rec">YAML 知识包 + Git 版本化 + 校验器</td><td>专家可读可审；溯源/审批/级联字段完备；已跑通 31 类参数</td><td class="risk">规模大后查询效率 → 届时再加编译缓存，现在不上数据库</td></tr>
   <tr><td><b>RAG 检索</b></td><td class="rec">混合检索（向量+BM25+规则路由）</td><td>规程 PDF/讲课稿/审批后条目；IP 分级过滤前置到检索层</td><td class="risk">禁止索引原始 Excel；防对话套取配方</td></tr>
-  <tr><td><b>机理计算</b></td><td class="rec">Python 双引擎并存</td><td>攀钢四大平衡（已复现）+ 建龙查表（快速场景）+ Danieli 平衡（交叉校验）</td><td class="risk">三引擎结果必须定期互审，防止各自漂移</td></tr>
+  <tr><td><b>机理计算</b></td><td class="rec">Python 双引擎并存</td><td>专家A四大平衡（已复现）+ 专家B查表（快速场景）+ Danieli 平衡（交叉校验）</td><td class="risk">三引擎结果必须定期互审，防止各自漂移</td></tr>
   <tr><td><b>时序数据</b></td><td class="rec">PostgreSQL 分区表起步</td><td>仓库已用 PG；炉次级数据量可控；少一个组件少一分运维</td><td class="risk">副枪高频数据上来后评估 TDengine/Timescale（P3 决策）</td></tr>
   <tr><td><b>LLM 模型</b></td><td class="rec">云端强模型交互 + 厂内小模型兜底</td><td>断网可用是厂内刚需；IP 不出厂</td><td class="risk">不做冶炼语料微调（性价比低），保工具调用与长上下文</td></tr>
-  <tr><td><b>仿真推演</b></td><td class="rec">scipy ODE（已有 kinetics）+ 攀钢边际响应法</td><td>"1kg 边际响应 + 线性叠加 + 迭代修正"模式可复用到枪位优化</td><td class="risk">L2 实时性预算：10s 步长内完成，LLM 不在此回路</td></tr>
+  <tr><td><b>仿真推演</b></td><td class="rec">scipy ODE（已有 kinetics）+ 专家A边际响应法</td><td>"1kg 边际响应 + 线性叠加 + 迭代修正"模式可复用到枪位优化</td><td class="risk">L2 实时性预算：10s 步长内完成，LLM 不在此回路</td></tr>
   <tr><td><b>部署</b></td><td class="rec">Docker Compose 厂内私有化</td><td>已有 docker-compose.yml；知识包/判例库随实例隔离</td><td class="risk">多厂实例的升级与规则包分发流程待定义（P3）</td></tr>
   <tr><td><b>前端交互</b></td><td class="rec">现有 frontend + 新增仲裁工作台</td><td>三视图：炉次驾驶舱 / 冲突仲裁台 / 规则治理台</td><td class="risk">沈工否决权：任何页面缺"规则版本+相似炉次+物理依据"不算完工</td></tr>
 </table>
@@ -369,10 +369,10 @@
 <!-- ================= 实证 ================= -->
 <h2 class="sec" id="evidence"><span class="no">06</span>会前实证墙：本次研讨的可信度来源</h2>
 <div class="evid">
-  <div class="card"><div class="num">75/75</div><div class="lbl">黄金用例通过，攀钢 703 公式复现最大误差 <b>0.0002%</b></div></div>
+  <div class="card"><div class="num">75/75</div><div class="lbl">黄金用例通过，专家A 703 公式复现最大误差 <b>0.0002%</b></div></div>
   <div class="card"><div class="num">1.2e-16</div><div class="lbl">修正口径热平衡相对闭合差（机器精度），确认 Excel 93MJ"富余"系表格漏项</div></div>
   <div class="card"><div class="num">31 类</div><div class="lbl">专家常数 YAML 入库，溯源到单元格，一致性校验通过</div></div>
-  <div class="card"><div class="num">6+1 条</div><div class="lbl">双引擎冲突清单（CF-001~006），含建龙文档内部矛盾自查</div></div>
+  <div class="card"><div class="num">6+1 条</div><div class="lbl">双引擎冲突清单（CF-001~006），含专家B文档内部矛盾自查</div></div>
   <div class="card"><div class="num">16 炉次</div><div class="lbl">实绩回放：15000 假设 RMSE 占优（0.999 vs 1.466），但系统性偏高待解</div></div>
   <div class="card"><div class="num">6 处</div><div class="lbl">Excel 引用怪癖（Q1-Q6）全部标注并修复口径分歧</div></div>
 </div>
@@ -382,9 +382,9 @@
 <p class="sec-desc">系统只呈证据不代决策——以下每条都需要对应专家拍板后写入知识包。</p>
 <div class="card">
   <ol class="open">
-    <li><b>[冶炼·高]</b> V 氧化热终审：16 炉次证据倾向 15000，但需解释攀钢 2777 的推导原文与产物形态假设（V₂O₅ vs V₂O₃/尖晶石）。<code>CF-001</code></li>
+    <li><b>[冶炼·高]</b> V 氧化热终审：16 炉次证据倾向 15000，但需解释专家A 2777 的推导原文与产物形态假设（V₂O₅ vs V₂O₃/尖晶石）。<code>CF-001</code></li>
     <li><b>[冶炼·高]</b> 铁水 C 差异系数 1.157 是否随铁水来源（承钢/西昌/外购）变化？适用边界写进知识包。<code>composition_corrections</code></li>
-    <li><b>[工艺·沈]</b> 建龙"基准 45 kg/t vs 上限 25 kg/t"内部矛盾澄清。<code>CF-006</code></li>
+    <li><b>[工艺·沈]</b> 专家B"基准 45 kg/t vs 上限 25 kg/t"内部矛盾澄清。<code>CF-006</code></li>
     <li><b>[冶炼·高]</b> 冷料"金属铁"成分行映射到弃渣球行（SiO₂ 16.4%、Fe₂O₃ 77.1%）是否有意？还是 Excel 引用手误？<code>Q1/Q3/Q6</code></li>
     <li><b>[工艺·沈]</b> 品位归因口径：14 日高硅条件专家算得 12.48%，参考实现得 12.91%，差 0.43pp——当时用了什么冷却制度假设？</li>
     <li><b>[知识·苏]</b> 规则审批流程定义：谁有签字权？仲裁判例怎么脱敏跨厂共享？</li>
@@ -447,7 +447,7 @@
 
 <footer>
   VERO 提钒冶炼智能体 · 多专家研讨纪要 · 由会前实证工件支撑生成 · 2026-09-22<br>
-  证据文件：PANGANG_EXCEL_DECODED.md · ARBITRATION_DEMO.md · backend/tests/test_pangang_reference.py · knowledge/packs/pangang/base.yaml
+  证据文件：PLANT_A_EXCEL_DECODED.md · ARBITRATION_DEMO.md · backend/tests/test_plant_a_reference.py · knowledge/packs/plant_a/base.yaml
 </footer>
 
 </div>

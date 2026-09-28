@@ -5,7 +5,7 @@
 
 ## 1. 形态裁决（已定稿）
 - **单一智能体 + 工具集**（编排线一条；Actor/Validator/Reprompter 三角作为 v2 内该线的演进形态，不分布式）
-- **交付形态**: 本地单文件 HTML（浏览器即跑、离线可用、IP 不出厂）——冶炼模型引擎由 Python `pangang_reference.py` 忠实移植为 JS，常数仍由 `knowledge/packs/pangang/base.yaml` 单一事实来源人工同步（yml 漂移风险记录在案）
+- **交付形态**: 本地单文件 HTML（浏览器即跑、离线可用、IP 不出厂）——冶炼模型引擎由 Python `plant_a_reference.py` 忠实移植为 JS，常数仍由 `knowledge/packs/plant_a/base.yaml` 单一事实来源人工同步（yml 漂移风险记录在案）
 - **MVP 不做**: 多用户/联网/大模型接入/写库；这些在 P2，用本 MVP 验收后接
 
 ## 2. 角色

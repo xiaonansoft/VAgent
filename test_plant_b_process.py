@@ -6,8 +6,8 @@ from app.tools.initial_charge import calculate_initial_charge
 from app.tools.lance_profile import recommend_lance_profile
 from app.schemas import InitialChargeInputs, IronInitialAnalysis
 
-def test_jianlong_process():
-    print("--- Testing Jianlong Process Logic ---")
+def test_plant_b_process():
+    print("--- Testing PlantB Process Logic ---")
     
     # Case 1: Low Si (<0.15)
     print("\nCase 1: Low Si (0.12%), Temp 1280")
@@ -39,4 +39,4 @@ def test_jianlong_process():
     print("Lance Steps:", [(s.lance_height_mm) for s in prof_high.steps])
 
 if __name__ == "__main__":
-    test_jianlong_process()
+    test_plant_b_process()

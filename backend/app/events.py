@@ -212,7 +212,7 @@ def _knowledge_versions() -> Dict[str, str]:
     try:
         import yaml  # 惰性导入
 
-        from app.tools.pangang_pack import DEFAULT_PLANT, INDUSTRY_PACK
+        from app.tools.plant_a_pack import DEFAULT_PLANT, INDUSTRY_PACK
 
         def _meta(path: str) -> Optional[Dict[str, Any]]:
             with open(path, "r", encoding="utf-8") as f:

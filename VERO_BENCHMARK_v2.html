@@ -59,7 +59,7 @@ code{background:#1f2733;padding:1px 6px;border-radius:4px;font-size:13px;color:v
 </div>
 
 <div class="lead">
-<b>结论先行：</b>中铝数的文章<b>方法论骨架值得借鉴，但 VERO 已吸收了其中八成</b>——真正剩下的价值不在"学什么"，而在"学的时候留下了什么内伤"。本轮实跑核查发现一个此前未被记录的结构性问题：VERO 借鉴中铝「岗位能力包 / Skill 技能化」时，<b>把包装做完了，把内核漏了</b>——技能注册表 <code>SKILL_REGISTRY</code> 已注册 9 个技能，但被 <code>docs/ENGINE_SINGLE_SOURCE.md</code> 定为"唯一计算权威"的 <code>pangang_reference.py</code>（四大平衡，75/75 黄金回归）<b>根本不在注册表内</b>，导致系统实际并行存在三条互不一致的计算路径。文章全文最危险的一句"联动更新全部控制参数"，VERO 用代码级红线挡住了（<code>ProductionControlWriter</code> 三个写方法全部 <code>raise NotImplementedError("SAFETY LOCK")</code>）——这是 VERO 对这篇文章最强的差异化，应当写进所有对外材料。
+<b>结论先行：</b>中铝数的文章<b>方法论骨架值得借鉴，但 VERO 已吸收了其中八成</b>——真正剩下的价值不在"学什么"，而在"学的时候留下了什么内伤"。本轮实跑核查发现一个此前未被记录的结构性问题：VERO 借鉴中铝「岗位能力包 / Skill 技能化」时，<b>把包装做完了，把内核漏了</b>——技能注册表 <code>SKILL_REGISTRY</code> 已注册 9 个技能，但被 <code>docs/ENGINE_SINGLE_SOURCE.md</code> 定为"唯一计算权威"的 <code>plant_a_reference.py</code>（四大平衡，75/75 黄金回归）<b>根本不在注册表内</b>，导致系统实际并行存在三条互不一致的计算路径。文章全文最危险的一句"联动更新全部控制参数"，VERO 用代码级红线挡住了（<code>ProductionControlWriter</code> 三个写方法全部 <code>raise NotImplementedError("SAFETY LOCK")</code>）——这是 VERO 对这篇文章最强的差异化，应当写进所有对外材料。
 </div>
 
 <h2>01 · 文章核心内容解析</h2>
@@ -82,7 +82,7 @@ code{background:#1f2733;padding:1px 6px;border-radius:4px;font-size:13px;color:v
 
 <table>
 <tr><th style="width:22%">文章的借鉴点</th><th style="width:12%">VERO 落地状态</th><th>证据</th></tr>
-<tr><td>岗位能力包 / Skill 技能化</td><td><span class="tag t-warn">部分落地·有内伤</span></td><td><code>backend/app/tools/__init__.py</code> 已建 <code>SKILL_REGISTRY</code>，注册 9 个技能；<b>但 <code>pangang_reference</code> 零引用，权威引擎未入包</b></td></tr>
+<tr><td>岗位能力包 / Skill 技能化</td><td><span class="tag t-warn">部分落地·有内伤</span></td><td><code>backend/app/tools/__init__.py</code> 已建 <code>SKILL_REGISTRY</code>，注册 9 个技能；<b>但 <code>plant_a_reference</code> 零引用，权威引擎未入包</b></td></tr>
 <tr><td>结构化上下文交接</td><td><span class="tag t-warn">已定义·未接入</span></td><td><code>schemas.py:217 HandoffEnvelope</code> 字段完备；<code>core.py:97 append_handoff()</code> 已封装，但<b>全项目零调用点</b>——节点仍回自由 dict，信封是"空转的漂亮契约"</td></tr>
 <tr><td>事件驱动重算</td><td><span class="tag t-warn">已写·未接线</span></td><td><code>events.py</code> 8 个事件枚举 + <code>recompute_on_constraint_change()</code>，实测返回 <code>requires_human_confirm=True</code>、<code>control_write=forbidden</code>；<b>但全项目零 import，属孤儿模块</b></td></tr>
 <tr><td>不碰控制回路</td><td><span class="tag t-ok">代码级红线</span></td><td><code>mode_control.py:125 ProductionControlWriter</code> 的 set_lance_height / set_oxygen_flow / add_coolant 全部 <code>raise NotImplementedError("SAFETY LOCK")</code></td></tr>
@@ -94,17 +94,17 @@ code{background:#1f2733;padding:1px 6px;border-radius:4px;font-size:13px;color:v
 <tr><td>"双飞轮"话术</td><td><span class="tag t-bad">空档</span></td><td><code>VERO_NARRATIVE_KIT.html</code> 中「双飞轮」命中 <b>0</b>，「确定性内环 / 协同外环」命中 <b>0</b></td></tr>
 <tr><td>回放（飞轮要件）</td><td><span class="tag t-bad">空档</span></td><td>验收白皮书中「回放」命中 <b>0</b>；回放能力目前只存在于 MVP 前端 JS 与 <code>arbitration_demo.py</code>，<b>无服务端 API</b></td></tr>
 <tr><td>工具 schema 一致性</td><td><span class="tag t-bad">三处分裂</span></td><td>实测：<code>SKILL_REGISTRY</code> <b>9</b> 个 / <code>mcp.tools_server._tool_schemas()</code> <b>6</b> 个 / <code>router.fallback_tool_schemas()</code> <b>6</b> 个 —— 新增技能需同步改三处，漏一处即静默降级</td></tr>
-<tr><td>DH_V 仲裁入参</td><td><span class="tag t-warn">潜伏缺陷</span></td><td><code>main.py:358 _run_pangang_case</code> 通过<b>覆写模块全局 <code>DH_V</code></b> 实现 2777/15000 双案。当前端点内无 <code>await</code>、同步调用阻塞事件循环，<b>暂不会串值</b>；但一旦端点内出现任一 <code>await</code> 或改线程池执行，并发请求即互相污染（本项目自建，须修）</td></tr>
+<tr><td>DH_V 仲裁入参</td><td><span class="tag t-warn">潜伏缺陷</span></td><td><code>main.py:358 _run_plant_a_case</code> 通过<b>覆写模块全局 <code>DH_V</code></b> 实现 2777/15000 双案。当前端点内无 <code>await</code>、同步调用阻塞事件循环，<b>暂不会串值</b>；但一旦端点内出现任一 <code>await</code> 或改线程池执行，并发请求即互相污染（本项目自建，须修）</td></tr>
 <tr><td>会话持久化</td><td><span class="tag t-bad">内存态</span></td><td><code>agents/core.py</code> 用 <code>MemorySaver</code>：重启即丢全部会话与待确认 interrupt，炉次链路不可恢复</td></tr>
 <tr><td>数据库迁移</td><td><span class="tag t-warn">手写 ALTER</span></td><td><code>db/models.py:12–47</code> 手写 ALTER SQL，无迁移工具保障，多环境部署易结构漂移</td></tr>
 </table>
 
 <div class="lead" style="border-left-color:var(--bad)">
 <b>本轮最重要的新发现 —— 三条计算路径并存，单一真相源在技能层被架空：</b><br>
-① <code>/api/pangang/charge</code> → <code>pangang_reference.run_pangang_model</code>（权威，黄金用例球团 3529.6 kg、V₂O₅ 13.299%）<br>
+① <code>/api/plant_a/charge</code> → <code>plant_a_reference.run_plant_a_model</code>（权威，黄金用例球团 3529.6 kg、V₂O₅ 13.299%）<br>
 ② <code>SKILL_REGISTRY.calculate_initial_charge</code>（事件重算走此路）→ 实测输出 <code>{钒渣铁 1.56, 氧化铁皮 0.47, 球返/球团 1.09}</code>，与 ① <b>口径不同、结果不同</b><br>
 ③ MVP v0.9 前端 <code>runModel()</code>（已声明冻结，<b>但页面至今仍在调用</b>，第 1385 行）<br>
-而 <code>main.py:326</code> 直接 <code>from app.tools.pangang_reference import ...</code>，<b>绕开了技能注册表</b>。结论：借鉴中铝"Skill 化"时包装完成度 100%，但唯一权威引擎未入包——这正是"抄其形、未守其神"的具体部位。
+而 <code>main.py:326</code> 直接 <code>from app.tools.plant_a_reference import ...</code>，<b>绕开了技能注册表</b>。结论：借鉴中铝"Skill 化"时包装完成度 100%，但唯一权威引擎未入包——这正是"抄其形、未守其神"的具体部位。
 </div>
 
 <h2>03 · 七角色独立评审</h2>
@@ -229,9 +229,9 @@ code{background:#1f2733;padding:1px 6px;border-radius:4px;font-size:13px;color:v
 <div class="clash">
 <div class="ch">冲突 ⑤　权威引擎：直接调用 vs 走技能注册表（本轮新增·最高优先级）</div>
 <div class="cb">
-<span class="vs">架构师</span>：<code>main.py</code> 直接 import <code>pangang_reference</code>，绕开 <code>SKILL_REGISTRY</code>——技能层与权威层是两套。事件重算走 <code>calculate_initial_charge</code>，与权威口径不一致。<br>
+<span class="vs">架构师</span>：<code>main.py</code> 直接 import <code>plant_a_reference</code>，绕开 <code>SKILL_REGISTRY</code>——技能层与权威层是两套。事件重算走 <code>calculate_initial_charge</code>，与权威口径不一致。<br>
 <span class="vs">开发工程师</span>：注册进去即可，改动小；但需保证 75/75 回归不破，且 <code>events.py</code> 目前没人调用，接线优先级高于重构。
-<div class="conv"><b>收敛</b>：<b>先补注册，再谈接线</b>。① 把 <code>run_pangang_model</code> 注册为 <code>pangang_charge</code> 技能（标注 <code>authoritative: true</code>），事件重算与 HTTP 端点统一改调它；② 明确 <code>calculate_initial_charge</code> 降级为通用/非攀钢口径路径，禁止与权威口径混用；③ 三条路径收敛为一条权威 + 一条通用，且 UI 明示当前走的是哪条。</div>
+<div class="conv"><b>收敛</b>：<b>先补注册，再谈接线</b>。① 把 <code>run_plant_a_model</code> 注册为 <code>plant_a_charge</code> 技能（标注 <code>authoritative: true</code>），事件重算与 HTTP 端点统一改调它；② 明确 <code>calculate_initial_charge</code> 降级为通用/非专家A口径路径，禁止与权威口径混用；③ 三条路径收敛为一条权威 + 一条通用，且 UI 明示当前走的是哪条。</div>
 </div>
 </div>
 
@@ -249,7 +249,7 @@ code{background:#1f2733;padding:1px 6px;border-radius:4px;font-size:13px;color:v
 <h3>A · 值得借鉴的核心要点（按优先级）</h3>
 <table>
 <tr><th style="width:5%">#</th><th style="width:24%">借鉴点</th><th>对 VERO 的落地方式</th><th style="width:12%">优先级</th></tr>
-<tr><td>A1</td><td>岗位能力包方法论（Skill + 知识库资产化，"先拆后组"）</td><td>已落地但缺内核 → <b>把 <code>pangang_reference</code> 注册为权威技能</b>，统一三条计算路径；知识包对外称"提钒岗位能力包"</td><td><span class="tag t-bad">P0·立即</span></td></tr>
+<tr><td>A1</td><td>岗位能力包方法论（Skill + 知识库资产化，"先拆后组"）</td><td>已落地但缺内核 → <b>把 <code>plant_a_reference</code> 注册为权威技能</b>，统一三条计算路径；知识包对外称"提钒岗位能力包"</td><td><span class="tag t-bad">P0·立即</span></td></tr>
 <tr><td>A2</td><td>事件驱动重算（约束变化→剔除受限项→全链路重算→生成建议）</td><td>已写好 <code>events.py</code>（8 事件、<code>requires_human_confirm=True</code>、<code>control_write=forbidden</code>）→ <b>接线</b>：在 <code>main.py</code> 安装 handler 并暴露端点</td><td><span class="tag t-bad">P0·立即</span></td></tr>
 <tr><td>A3</td><td>人机边界清单化（机做读取/运算/交接/核算，人做决策确认）</td><td>写进白皮书与合同附件；技术用 LangGraph interrupt 硬保证——影响工艺参数的建议节点后必须挂确认门，CI 静态检查拒绝跳过路径</td><td><span class="tag t-bad">P0·立即</span></td></tr>
 <tr><td>A4</td><td>分层人格化叙事</td><td>投标/演示视频全人格化；一线界面与留痕零人格化，证据链永远非人化（"化验系统·L2接口·09:41"，永不写"数字化验员小张"）</td><td><span class="tag t-bad">P0·立即</span></td></tr>
@@ -262,7 +262,7 @@ code{background:#1f2733;padding:1px 6px;border-radius:4px;font-size:13px;color:v
 <table>
 <tr><th style="width:5%">#</th><th style="width:22%">陷阱</th><th>危害</th><th style="width:30%">规避动作</th></tr>
 <tr><td>B1</td><td>"联动更新全部控制参数"直写控制回路</td><td>脏数据获得改工艺设定权限；分布式写无事务，写一半失败 = 炉子处于未定义参数组合</td><td>VERO 红线已用代码守住（<code>SAFETY LOCK</code>）；此文当<b>反面教材</b>写进架构红线文档</td></tr>
-<tr><td>B2</td><td>权威引擎未入技能包（<b>VERO 现存</b>）</td><td>三条计算路径并存，事件重算与 HTTP 端点口径不一致；单一真相源在技能层被架空</td><td>注册 <code>pangang_charge</code> 为权威技能并统一入口；通用路径显式标注口径</td></tr>
+<tr><td>B2</td><td>权威引擎未入技能包（<b>VERO 现存</b>）</td><td>三条计算路径并存，事件重算与 HTTP 端点口径不一致；单一真相源在技能层被架空</td><td>注册 <code>plant_a_charge</code> 为权威技能并统一入口；通用路径显式标注口径</td></tr>
 <tr><td>B3</td><td>Live 演示页仍跑已冻结的 JS 引擎（<b>VERO 现存</b>）</td><td>页面标注"精度以服务端为准"却本地计算，自相矛盾；演示数字不可信</td><td>v0.9 改为后端取数，或强制加"模型快照·仅供演示"显著角标并禁用导出</td></tr>
 <tr><td>B4</td><td>确认键一键即留痕（<b>VERO 现存</b>）</td><td>确认与证据阅读无强制关系 → 操作工被训练成橡皮图章，AI 错误被洗白成人决策</td><td>信任锚上移为确认前必经信息块；证据区未展开时确认键不可用</td></tr>
 <tr><td>B5</td><td>化验闭环包装成实时闭环</td><td>滞后 40min–2h + 取样代表性缺失，闭环越快错得越快</td><td>降格为低频校准环；在线判断交给多源信号</td></tr>
@@ -274,7 +274,7 @@ code{background:#1f2733;padding:1px 6px;border-radius:4px;font-size:13px;color:v
 <tr><td>B11</td><td>版本治理漂移（<b>VERO 现存</b>）</td><td>9/27 深夜大批产物（v0.9、白皮书、叙事包、经验沉淀、引擎单一源、events.py、llm/、golden_cases）全部未入库；仓库最新提交仍为 <code>5d087f6</code></td><td>立即分逻辑提交锁定；<code>.workbuddy/</code> 与 <code>vagent.db</code> 加入 .gitignore</td></tr>
 <tr><td>B12</td><td>"定义了就算落地"（<b>VERO 现存</b>）</td><td><code>append_handoff</code> 零调用、<code>ADVICE_OVER_TURNED</code> 零 publish、<code>events.py</code> 零 import —— 四份漂亮契约同时空转，审计时会被当成已完成</td><td>立判据：<b>无真实调用点即不得标记"已落地"</b>；CI 增加"契约调用点存在性"检查</td></tr>
 <tr><td>B13</td><td>工具 schema 三处分裂（<b>VERO 现存</b>）</td><td>9 / 6 / 6 三份并存，新增技能漏改即静默降级，且 MCP 与 LLM 路由看到的工具集不一致</td><td>改为单一注册表派生 MCP schema 与 function-calling schema（3–4 人日）</td></tr>
-<tr><td>B14</td><td>全局常量覆写做参数化（<b>VERO 现存·本项目引入</b>）</td><td><code>main.py:358</code> 覆写模块全局 <code>DH_V</code>；当前因无 await 暂不串值，但属潜伏缺陷，接口一异步化即污染并发请求</td><td>改为 <code>run_pangang_model(..., dh_v=)</code> 显式入参，或加 <code>asyncio.Lock</code> 串行化（0.5 人日）</td></tr>
+<tr><td>B14</td><td>全局常量覆写做参数化（<b>VERO 现存·本项目引入</b>）</td><td><code>main.py:358</code> 覆写模块全局 <code>DH_V</code>；当前因无 await 暂不串值，但属潜伏缺陷，接口一异步化即污染并发请求</td><td>改为 <code>run_plant_a_model(..., dh_v=)</code> 显式入参，或加 <code>asyncio.Lock</code> 串行化（0.5 人日）</td></tr>
 <tr><td>B15</td><td>内存态会话 + 手写 ALTER（<b>VERO 现存</b>）</td><td>重启丢全部会话与待确认 interrupt；多环境结构漂移</td><td>MemorySaver → SQLite checkpointer；引入迁移工具替代手写 ALTER</td></tr>
 <tr><td>B16</td><td>"失败关闭"式兜底</td><td><code>agents/team.py:306</code> 硬编码"安全"数值兜底，把错误伪装成正常输出，比显式报错更危险</td><td>工具失败必须显式抛出并标"建议不完整，请勿采纳"（<code>events.py</code> 已做对，需推广）</td></tr>
 </table>
@@ -283,7 +283,7 @@ code{background:#1f2733;padding:1px 6px;border-radius:4px;font-size:13px;color:v
 <table>
 <tr><th style="width:10%">时间窗</th><th style="width:8%">#</th><th>行动</th><th style="width:14%">责任侧</th></tr>
 <tr><td rowspan="6">立即<br>（本周）</td><td>1</td><td><b>提交锁定现场</b>：分 3 个逻辑提交（①引擎单一源+parity；②技能注册表+事件总线+HandoffEnvelope/OverturnRecord；③v0.9+白皮书+叙事包+经验沉淀），排除 <code>.workbuddy/</code>、<code>vagent.db</code>、<code>__pycache__</code></td><td>开发</td></tr>
-<tr><td>2</td><td><b>权威引擎入包</b>：把 <code>run_pangang_model</code> 注册为 <code>pangang_charge</code> 技能（authoritative），事件重算与 HTTP 端点统一改调它，跑 75/75 回归确认不破</td><td>开发/架构</td></tr>
+<tr><td>2</td><td><b>权威引擎入包</b>：把 <code>run_plant_a_model</code> 注册为 <code>plant_a_charge</code> 技能（authoritative），事件重算与 HTTP 端点统一改调它，跑 75/75 回归确认不破</td><td>开发/架构</td></tr>
 <tr><td>3</td><td><b>事件总线接线</b>：<code>main.py</code> 调用 <code>install_default_handlers()</code> 并暴露 <code>POST /api/events/constraint-change</code>，让"联动"从孤儿模块变可运行能力</td><td>开发</td></tr>
 <tr><td>4</td><td><b>v0.9 确认门禁整改</b>：<code>trustAnchor</code> 上移为必经信息块，证据未展开时确认键禁用；推翻维持无弹窗</td><td>UX/开发</td></tr>
 <tr><td>5</td><td><b>补推翻写入端点</b>（约 5 人日）：<code>POST /api/advice/{id}/overturn</code> 落库 + <code>publish(ADVICE_OVER_TURNED)</code>，让推翻从 localStorage 进飞轮</td><td>开发</td></tr>

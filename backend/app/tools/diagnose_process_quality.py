@@ -13,13 +13,13 @@ def diagnose_process_quality(
     炉后诊断 (Skill 3): 基于 v6.0 PRD 逻辑对提钒过程质量进行评估。
     
     Ref: 
-    1. 黑龙江建龙转炉提钒技术材料--修改--2020.6.13(1).pdf
+    1. 黑龙江专家B转炉提钒技术材料--修改--2020.6.13(1).pdf
     2. 铁水预处理提钒讲课稿[整理版](1).pdf
     """
     findings: list[DiagnoseFinding] = []
 
     # 1. 钒渣品位偏低 (Low V2O5)
-    # Ref: 建龙技术材料 P22 "铁水Si含量在0.18%左右时，钒渣理论品位只能达到13%左右"
+    # Ref: 专家B技术材料 P22 "铁水Si含量在0.18%左右时，钒渣理论品位只能达到13%左右"
     if slag.V2O5 is not None and slag.V2O5 < 12.5:
         findings.append(
             DiagnoseFinding(
@@ -82,7 +82,7 @@ def diagnose_process_quality(
             )
 
     # 4. 返干 (Dry Slag / Reversion)
-    # Ref: 建龙 P22 "渣中低熔点相过高，渣态过稀...但在铁水Si偏高时..." 
+    # Ref: 专家B P22 "渣中低熔点相过高，渣态过稀...但在铁水Si偏高时..." 
     # Actually 'Dry Slag' usually happens with Low FeO + High Melting Point components.
     # In V-extraction, V-spinel has high melting point. If FeO is reduced by C, slag becomes dry (thick).
     # Rule: FeO < 10% and Temp > 1380 (C reduces FeO)
@@ -125,7 +125,7 @@ def diagnose_process_quality(
         si_ti_sum = iron_analysis.Si + iron_analysis.Ti
         ratio = iron_analysis.V / si_ti_sum if si_ti_sum > 0 else 99.0
         # V/(Si+Ti) 阈值统一为 1.0 (行业基线 quality.v_si_ti_ratio_min, 见 CF-008):
-        # 钒少于脉石(Si+Ti) 即难富集; 建龙生产数据 1.01 已属偏低, 1.2 以上良好。
+        # 钒少于脉石(Si+Ti) 即难富集; 专家B生产数据 1.01 已属偏低, 1.2 以上良好。
         if ratio < 1.0:
             findings.append(
                 DiagnoseFinding(

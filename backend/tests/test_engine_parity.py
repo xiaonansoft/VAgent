@@ -57,26 +57,26 @@ def _load_golden() -> dict:
         return json.load(f)
 
 
-def _load_pangang_reference():
+def _load_plant_a_reference():
     """导入 Python 权威引擎模块。
 
     优先按包路径导入; 若因并行开发导致 app 包暂时不可用, 退化为按文件路径
-    直接加载 pangang_reference.py (该模块为纯标准库实现, 无包内依赖)。
+    直接加载 plant_a_reference.py (该模块为纯标准库实现, 无包内依赖)。
     """
     try:
-        from app.tools import pangang_reference  # noqa: WPS433
-        return pangang_reference
+        from app.tools import plant_a_reference  # noqa: WPS433
+        return plant_a_reference
     except Exception:
         import importlib.util
-        path = os.path.join(BACKEND_DIR, "app", "tools", "pangang_reference.py")
-        spec = importlib.util.spec_from_file_location("_pangang_reference", path)
+        path = os.path.join(BACKEND_DIR, "app", "tools", "plant_a_reference.py")
+        spec = importlib.util.spec_from_file_location("_plant_a_reference", path)
         mod = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(mod)
         return mod
 
 
 GOLDEN = _load_golden()
-pr = _load_pangang_reference()
+pr = _load_plant_a_reference()
 
 
 # ============================================================================
@@ -93,7 +93,7 @@ def run_python_engine(case: dict) -> dict:
         V=inp["V"], Cr=d["Cr"], Ti=d["Ti"], temp=inp["T"])
     semi = pr.MetalAnalysis(**d["semi_steel"])
 
-    pg_inp = pr.PangangInputs(
+    pg_inp = pr.PlantAInputs(
         iron_weight=inp["W"],
         pig_iron_weight=d.get("pig_iron_weight", 0.0),
         iron=iron,
@@ -108,7 +108,7 @@ def run_python_engine(case: dict) -> dict:
     try:
         if inp.get("dhV") is not None:
             pr.DH_V = float(inp["dhV"])
-        r = pr.run_pangang_model(pg_inp)
+        r = pr.run_plant_a_model(pg_inp)
     finally:
         pr.DH_V = original_dhv
 
@@ -250,7 +250,7 @@ def test_golden_case_file_is_sane():
 def test_python_engine_matches_golden():
     """① Python 权威引擎 11 项黄金基准"""
     actual = run_python_engine(GOLDEN)
-    assert_golden(actual, "Python 权威引擎 (backend/app/tools/pangang_reference.py)")
+    assert_golden(actual, "Python 权威引擎 (backend/app/tools/plant_a_reference.py)")
 
 
 def test_js_engine_matches_golden():

@@ -1,7 +1,7 @@
 # VERO 数据接口规范（DATA_INTERFACE_SPEC）v0.2
 
 > 版本 v0.2 · 2026-09-27 · 在 v0.1 基础上，依据 backend 实际代码
-> （`schemas.py` / `data_server.py` / `simulator.py` / `pangang_reference.py` / `main.py`）校对并落地 MVP 服务化契约。
+> （`schemas.py` / `data_server.py` / `simulator.py` / `plant_a_reference.py` / `main.py`）校对并落地 MVP 服务化契约。
 > 性质：**只读采集 + 证据回流**，不写回控制回路。所有字段基于现有实现，未凭空新增。
 
 ---
@@ -11,7 +11,7 @@
 | # | 变更 | 说明 |
 |---|---|---|
 | 1 | 校对 §3 字段与 backend 实际 schema 的**漂移** | `IronInitialAnalysis` 无 `Mn`、烟气命名、`IronInitialAnalysis` 范围宽松 |
-| 2 | 新增 §3.0 四大平衡服务化契约 `POST /api/pangang/charge` | B 路产物，**已实跑验证**：黄金用例 13.299% 与 Excel 一致 |
+| 2 | 新增 §3.0 四大平衡服务化契约 `POST /api/plant_a/charge` | B 路产物，**已实跑验证**：黄金用例 13.299% 与 Excel 一致 |
 | 3 | 新增 §5 统一 `resource://` URI 注册表 | 区分「已实装 / 规划」 |
 | 4 | 新增 §8 MVP↔后端 能力映射与缺口 | 副枪/软测量/置信/三元素在 v0.7 未落地 |
 | 5 | D6-1~5 转为 §7 决策登记册 | 给出 interim 默认值，使 P3 可启动而不阻塞 |
@@ -33,7 +33,7 @@
 |---|---|
 | 方向 | **只读**：从 PLC/DCS/化验室**采集**，永不反向写控制回路（对齐「只决策不执行」） |
 | 位置 | 内网部署，**数据不出厂**（对齐 MVP 验收 A6 离线条款） |
-| IP 分级 | 攀钢 Excel 专家常数（`knowledge/packs/pangang/base.yaml`）与现场台账均为**机密 IP**，不入公网、不提交 |
+| IP 分级 | 专家A Excel 专家常数（`knowledge/packs/plant_a/base.yaml`）与现场台账均为**机密 IP**，不入公网、不提交 |
 | 采集模式 | 实时高频走 SSE/内网总线；化验室走批量导入；副枪走离散事件 |
 | 降级 | 采集断链时软测量兜底（`soft_sensor.py`），界面标注 `correction_source` 与置信度 |
 
@@ -43,7 +43,7 @@
 
 ### 3.0 四大平衡配吃服务（新增，MVP 主通道）★ 已实装
 
-端点 `POST /api/pangang/charge`。这是 B 路把 `pangang_reference` 四大平衡引擎服务化的结果，直接对齐 MVP 的 `runModel()` 与 `arb()` 卡。
+端点 `POST /api/plant_a/charge`。这是 B 路把 `plant_a_reference` 四大平衡引擎服务化的结果，直接对齐 MVP 的 `runModel()` 与 `arb()` 卡。
 
 **请求示例**
 ```json
@@ -53,7 +53,7 @@
 **响应示例（黄金用例，与 Excel 一致）**
 ```json
 {
-  "rule_version": "pangang four-balance v7.0.0 (golden regression 75/75, max err 0.0002%)",
+  "rule_version": "plant_a four-balance v7.0.0 (golden regression 75/75, max err 0.0002%)",
   "primary": {
     "dh_v": 2777.0,
     "v2o5_grade_pct": 13.299,
@@ -98,7 +98,7 @@
 | `is_one_can` | bool | — | 有 |
 | `prev_lining_heat` / `prev_slag_status` | — | 可选（L1 记忆修正） | 有 |
 
-**结论**：以 v0.1 的工艺范围作为数据接口**强校验层**；代码当前宽松，待 P3 收紧。接口层补 `Mn`（引擎 `PangangInputs.iron` 含 Mn，默认 0.18），否则 Mn 走默认。
+**结论**：以 v0.1 的工艺范围作为数据接口**强校验层**；代码当前宽松，待 P3 收紧。接口层补 `Mn`（引擎 `PlantAInputs.iron` 含 Mn，默认 0.18），否则 Mn 走默认。
 
 ### 3.2 PLC 实时过程量（高频，SSE 1s tick）— 已验证对齐 `simulator._build_payload`
 
@@ -150,7 +150,7 @@
 | 通道 | 协议 | 端点 | 用途 | 状态 |
 |---|---|---|---|---|
 | 实时流 | SSE | `GET /api/stream` | 1s 过程数据 | ✅ 200 |
-| **四大平衡** | **JSON** | **`POST /api/pangang/charge`** | **MVP 配吃/品位/仲裁** | **✅ 200（新增）** |
+| **四大平衡** | **JSON** | **`POST /api/plant_a/charge`** | **MVP 配吃/品位/仲裁** | **✅ 200（新增）** |
 | MCP 资源 | JSON-RPC | `POST /api/mcp/data` | `resources/list/read/subscribe` + `control/stop/resume` | ✅ 200 |
 | 工具调用 | JSON-RPC | `POST /api/mcp/tools` | 配料/仿真/诊断等 | （沿用） |
 | 炉次 | REST | `GET /api/heats` | 16 炉实绩 | ✅ 200 |
@@ -200,7 +200,7 @@
 
 | MVP 功能 | 后端现状 | 桥接方式 |
 |---|---|---|
-| 配吃量 | ✅ `/api/pangang/charge` → `recipe_kg` | `fetch` 替换 `runModel()` |
+| 配吃量 | ✅ `/api/plant_a/charge` → `recipe_kg` | `fetch` 替换 `runModel()` |
 | V 渣品位 | ✅ 同上 `v2o5_grade_pct` | 同上 |
 | ΔH 仲裁 | ✅ `arbitration` 双案 | 同上 |
 | 三元素解释 | ⚠️ 后端未返回，仍由 MVP JS 渲染（输入来自后端） | 保留前端渲染 |
@@ -214,14 +214,14 @@
 
 > **桥接目标更新**：最新产物为 **`VERO_MVP_v0.8.html`**（20:50，71,972 B，检索 `fetch/localhost//api/` 均为 0），**非 v0.7**。桥接应以 v0.8 为基线，产出新副本 `VERO_MVP_v0.8_bridged.html`，不覆盖原稿。
 
-> 下一步桥接（Task #3）：在 v0.8 的重算入口注入 `fetch('/api/pangang/charge', readInput())`，用后端返回覆盖品位/配吃，渲染器 `explainTB/arb/drawReplay` 保留；离线 JS 引擎作降级。已知风险：`file://` 的 origin 为 `null`，需先验证 CORS（后端已 `allow_origins=["*"]`，但 `allow_credentials=True` 与 `*` 并存可能被浏览器拒），必要时改由后端静态目录托管该 HTML。
+> 下一步桥接（Task #3）：在 v0.8 的重算入口注入 `fetch('/api/plant_a/charge', readInput())`，用后端返回覆盖品位/配吃，渲染器 `explainTB/arb/drawReplay` 保留；离线 JS 引擎作降级。已知风险：`file://` 的 origin 为 `null`，需先验证 CORS（后端已 `allow_origins=["*"]`，但 `allow_credentials=True` 与 `*` 并存可能被浏览器拒），必要时改由后端静态目录托管该 HTML。
 
 ---
 
 ## 9. 开放问题（更新）
 
 - D6-1~5 已转入 §7，给出 interim 默认。
-- **B-1**：`/api/pangang/charge` 的 `Mn/Cr` 入参已开放，需确认默认 0.18/0.09 是否随铁水来源变化（对齐 CF-001 边界）。
+- **B-1**：`/api/plant_a/charge` 的 `Mn/Cr` 入参已开放，需确认默认 0.18/0.09 是否随铁水来源变化（对齐 CF-001 边界）。
 - **B-2**：`arbitration` 每次请求跑 3 次模型，高频场景需缓存（响应已 <100ms，单炉场景可暂缓）。
 
-*对齐：`schemas.py` / `data_server.py` / `simulator.py` / `pangang_reference.py` / `main.py`（v0.2 新增端点）；`HANDOVER.md` §6 #7；`MVP_SPEC.md` A1–A8。*
+*对齐：`schemas.py` / `data_server.py` / `simulator.py` / `plant_a_reference.py` / `main.py`（v0.2 新增端点）；`HANDOVER.md` §6 #7；`MVP_SPEC.md` A1–A8。*

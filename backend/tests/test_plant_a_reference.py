@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
-"""攀钢四大平衡参考实现 —— 黄金用例测试
+"""专家A四大平衡参考实现 —— 黄金用例测试
 
 黄金值取自专家 Excel《提钒预算测算钒品位低原因说明(1).xlsx》的公式缓存
 计算结果 (data_only=True 提取, 全精度)。验收标准: 相对误差 < 0.5%。
 
-可直接运行:  python3 tests/test_pangang_reference.py
-或 pytest:   pytest tests/test_pangang_reference.py -v
+可直接运行:  python3 tests/test_plant_a_reference.py
+或 pytest:   pytest tests/test_plant_a_reference.py -v
 """
 
 import os
@@ -13,9 +13,9 @@ import sys
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
-from app.tools.pangang_reference import run_pangang_model, predict_v2o5_grade  # noqa: E402
+from app.tools.plant_a_reference import run_plant_a_model, predict_v2o5_grade  # noqa: E402
 
-R = run_pangang_model()
+R = run_plant_a_model()
 _M = R.material
 _H = R.heat
 _A = R.after

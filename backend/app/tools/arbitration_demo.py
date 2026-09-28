@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 """双引擎冲突仲裁演示 (Arbitration Demo)
 
-左案 A = 攀钢机理引擎 (pangang_reference, 源: 攀钢专家 Excel)
-右案 B = 建龙查表引擎 (MODEL_ALGORITHM.md §1 / initial_charge.py 口径)
+左案 A = 专家A机理引擎 (plant_a_reference, 源: 专家A专家 Excel)
+右案 B = 专家B查表引擎 (MODEL_ALGORITHM.md §1 / initial_charge.py 口径)
 
 演示仲裁三要素:
 1. 双方案对照 —— 同一输入下两套引擎各自输出, 含溯源
@@ -18,14 +18,14 @@
 import os
 from typing import Dict, List
 
-from app.tools import pangang_reference as pr
+from app.tools import plant_a_reference as pr
 from app.tools.v_heat_calibration import HEATS, SCENARIOS, predict_all, stats
 
 # ---------------------------------------------------------------------------
-# 引擎 B: 建龙查表法 (源: MODEL_ALGORITHM.md §1, initial_charge.py 同口径)
+# 引擎 B: 专家B查表法 (源: MODEL_ALGORITHM.md §1, initial_charge.py 同口径)
 # ---------------------------------------------------------------------------
 
-def jianlong_coolant_kg_per_t(si: float, temp: float) -> Dict:
+def plant_b_coolant_kg_per_t(si: float, temp: float) -> Dict:
     """基准查表 + 温度修正 + 文档上限"""
     if si <= 0.15:
         base = 22.5
@@ -39,7 +39,7 @@ def jianlong_coolant_kg_per_t(si: float, temp: float) -> Dict:
     return {"base": base, "uncapped": w, "capped": min(w, 25.0)}
 
 
-def jianlong_allocation(w_total_t: float, si: float) -> Dict:
+def plant_b_allocation(w_total_t: float, si: float) -> Dict:
     """冷却剂分配优先级: 钒渣铁 → 氧化铁皮 → 球团 (MODEL_ALGORITHM.md §1.2)"""
     v_slag = min(2.0, 0.5 * w_total_t) if si >= 0.20 else 0.0
     scale = min(1.0, 0.5 / w_total_t) if w_total_t > 2.0 else 1.0  # 超2.5t上限按比例缩
@@ -51,7 +51,7 @@ def jianlong_allocation(w_total_t: float, si: float) -> Dict:
     return {"钒渣铁": v_slag, "氧化铁皮": oxide, "球团": pellet}
 
 
-def jianlong_slag_simple(si: float, v: float, metal_kg: float) -> float:
+def plant_b_slag_simple(si: float, v: float, metal_kg: float) -> float:
     """简化渣量: W = 2.14ΔSi + 1.79ΔV (kg/kg氧化元素), 仅计 SiO2+V2O5"""
     d_si = (si - 0.006) / 100.0 * metal_kg
     d_v = (v - 0.025) / 100.0 * metal_kg
@@ -62,11 +62,11 @@ def jianlong_slag_simple(si: float, v: float, metal_kg: float) -> float:
 # 仲裁执行
 # ---------------------------------------------------------------------------
 
-def engine_a(pangang_dh_v: float = 2777.0) -> Dict:
-    pr.DH_V = pangang_dh_v
-    r = pr.run_pangang_model()
+def engine_a(plant_a_dh_v: float = 2777.0) -> Dict:
+    pr.DH_V = plant_a_dh_v
+    r = pr.run_plant_a_model()
     return {
-        "name": f"A 攀钢机理引擎 (ΔH_V={pangang_dh_v:.0f})",
+        "name": f"A 专家A机理引擎 (ΔH_V={plant_a_dh_v:.0f})",
         "coolant": {k: w for k, w in r.after["coolant_weights"].items() if w},
         "coolant_kg_per_t_iron": r.after["coolant_weights"]["pellet"] / 80000 * 1000,
         "slag_total": r.after["slag"],
@@ -74,22 +74,22 @@ def engine_a(pangang_dh_v: float = 2777.0) -> Dict:
         "heat_surplus_mj": r.heat["surplus"] / 1e6,
         "grade": r.v2o5_grade,
         "grade_capable": True,
-        "provenance": "攀钢Excel 8表703公式, 复现误差0.0002%",
+        "provenance": "专家AExcel 8表703公式, 复现误差0.0002%",
     }
 
 
 def engine_b(si: float = 0.215, temp: float = 1300.0, v: float = 0.284) -> Dict:
-    c = jianlong_coolant_kg_per_t(si, temp)
+    c = plant_b_coolant_kg_per_t(si, temp)
     w_t = c["uncapped"] * 80 / 1000
-    slag = jianlong_slag_simple(si, v, 80000)
+    slag = plant_b_slag_simple(si, v, 80000)
     return {
-        "name": "B 建龙查表引擎 (MODEL_ALGORITHM.md §1)",
+        "name": "B 专家B查表引擎 (MODEL_ALGORITHM.md §1)",
         "coolant_base": c["base"], "coolant_uncapped": c["uncapped"],
         "coolant_capped": c["capped"],
-        "allocation_t": jianlong_allocation(w_t, si),
+        "allocation_t": plant_b_allocation(w_t, si),
         "slag_simple": slag,
         "grade_capable": False,
-        "provenance": "建龙规程查表 (Source 106/95), 硬编码于 initial_charge.py",
+        "provenance": "专家B规程查表 (Source 106/95), 硬编码于 initial_charge.py",
     }
 
 
@@ -111,7 +111,7 @@ CONF_LIST = [
     ("CF-003", "渣量算法", "渣成分反推, 非铁氧化物 1141.8 kg", "2.14ΔSi+1.79ΔV ≈ 728.7 kg (漏Mn/Ti/Cr/P)"),
     ("CF-004", "冷却剂基准", "机理: 富余热量/单位吸热", "查表 22.5-45 kg/t + 0.18kg/t/°C"),
     ("CF-005", "半钢残钒", "0.0375% (预算)", "≤0.03% (硬约束)"),
-    ("CF-006", "建龙文档内部矛盾", "—", "基准表最高45 kg/t vs 上限25 kg/t (自查发现)"),
+    ("CF-006", "专家B文档内部矛盾", "—", "基准表最高45 kg/t vs 上限25 kg/t (自查发现)"),
 ]
 
 
@@ -128,7 +128,7 @@ def main() -> None:
     emit()
     emit("## 一、双方案对照 (同一输入)")
     emit()
-    emit("| 维度 | 引擎A 攀钢机理 | 引擎B 建龙查表 |")
+    emit("| 维度 | 引擎A 专家A机理 | 引擎B 专家B查表 |")
     emit("|---|---|---|")
     emit(f"| 冷却剂需求 | 球团 {a['coolant_kg_per_t_iron']:.1f} kg/t铁水 (机理反算) "
          f"| 基准 {b['coolant_base']:.1f} kg/t → 上限后 {b['coolant_capped']:.1f} kg/t |")
@@ -151,7 +151,7 @@ def main() -> None:
     emit()
     emit("## 三、冲突清单与决策位")
     emit()
-    emit("| # | 议题 | 方案A (攀钢) | 方案B (建龙/仓库) | 决策 |")
+    emit("| # | 议题 | 方案A (专家A) | 方案B (专家B/仓库) | 决策 |")
     emit("|---|---|---|---|---|")
     for cid, topic, pa, pb in CONF_LIST:
         emit(f"| {cid} | {topic} | {pa} | {pb} | ☐采用A ☐采用B ☐例外 ☐挂起 |")
@@ -161,10 +161,10 @@ def main() -> None:
     emit(f"1. CF-001: 16炉次回放中 15000 假设 RMSE 更小 ({best_b[1]['rmse']:.3f}), "
          f"但两套假设均系统性偏高 (偏差 +{best_b[1]['bias']:.2f}pp), 说明还有未建模因素")
     emit("   (铁水C/温度逐炉变化、实际冷料制度), **建议: 仓库参数保留15000为默认, "
-         "攀钢2777挂'待复核'标签, 补齐炉次实据后再定**")
-    emit("2. CF-003: 建龙简化渣量公式漏计 Mn/Ti/Cr/P 氧化物 (~410kg, 36%),")
+         "专家A2777挂'待复核'标签, 补齐炉次实据后再定**")
+    emit("2. CF-003: 专家B简化渣量公式漏计 Mn/Ti/Cr/P 氧化物 (~410kg, 36%),")
     emit("   **建议: 查表法保留用于快速场景, 渣量计算以机理口径为准**")
-    emit("3. CF-006: 建龙文档基准45 vs 上限25 的内部矛盾, **建议: 提交建龙专家澄清**")
+    emit("3. CF-006: 专家B文档基准45 vs 上限25 的内部矛盾, **建议: 提交专家B专家澄清**")
     emit()
     emit("> 仲裁原则: 系统只呈证据不代决策; 每次人工决策作为判例入库,")
     emit("> 同类冲突再次出现时预填历史倾向, 但永远保留人工确认。")

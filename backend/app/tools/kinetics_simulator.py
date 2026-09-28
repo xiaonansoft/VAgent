@@ -220,7 +220,7 @@ def simulate_blow_path(inp: SimulationInputs) -> SimulationResult:
     #   (CP_STEEL=760 J/(kg·K), 即 1kg 冷料/1t 熔池 → 吸热 / (1000·0.76))
     # 单一事实来源(吸热 kJ/kg):
     #   config.py: 氧化铁皮 h_oxide_scale_absorption=2000, 生铁块 h_pig_iron_absorption=1200
-    #   pangang 包 coolant_marginal.specs: 球团 4673.4 / 块矿 5171.2 / 弃渣球 4676.1
+    #   plant_a 包 coolant_marginal.specs: 球团 4673.4 / 块矿 5171.2 / 弃渣球 4676.1
     COOLANT_ABSORPTION_KJ_KG = {
         "scale":      2000.0,   # 氧化铁皮
         "pellets":    4673.4,   # 球团矿 / 球返
