@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>VERO 产品规划 v0.1 · 三段式功能与界面设计</title>
+<style>
+body{font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif;line-height:1.7;color:#2C2C2A;background:#fff;max-width:960px;margin:0 auto;padding:28px 24px}
+h1{font-size:21px;font-weight:600;margin:0 0 4px}
+h2{font-size:16px;font-weight:600;margin:26px 0 8px;padding-bottom:5px;border-bottom:2px solid #185FA5;color:#0C447C}
+h3{font-size:14px;font-weight:600;margin:16px 0 6px;color:#0C447C}
+.sub{color:#5F5E5A;font-size:12.5px;margin-bottom:16px}
+table{border-collapse:collapse;width:100%;margin:10px 0;font-size:12.8px}
+th{background:#E6F1FB;color:#0C447C;text-align:left;padding:7px 9px;border:1px solid #B5D4F4;font-weight:600}
+td{padding:7px 9px;border:1px solid #D3D1C7;vertical-align:top}
+tr:nth-child(even) td{background:#FAFAF8}
+.lead{background:#E1F5EE;border-left:4px solid #0F6E56;padding:10px 14px;margin:14px 0;font-size:13.5px}
+.warn{background:#FCEBEB;border-left:4px solid #A32D2D;padding:10px 14px;margin:14px 0;font-size:13.5px}
+.amber{background:#FAEEDA;border-left:4px solid #854F0B;padding:10px 14px;margin:14px 0;font-size:13.5px}
+.info{background:#E6F1FB;border-left:4px solid #185FA5;padding:10px 14px;margin:14px 0;font-size:13.5px}
+code{background:#F1EFE8;padding:1px 5px;border-radius:3px;font-size:11.5px;font-family:ui-monospace,Menlo,monospace}
+.tag{display:inline-block;padding:1px 7px;border-radius:4px;font-size:11.5px;font-weight:600}
+.t-p0{background:#FCEBEB;color:#791F1F}
+.t-p1{background:#FAEEDA;color:#854F0B}
+.t-p2{background:#E6F1FB;color:#0C447C}
+.t-p3{background:#EEEDFE;color:#3C3489}
+.t-ok{background:#E1F5EE;color:#085041}
+.t-new{background:#EEEDFE;color:#3C3489}
+ol,ul{margin:6px 0;padding-left:20px}
+li{margin:3px 0}
+.foot{margin-top:26px;padding-top:10px;border-top:1px solid #D3D1C7;color:#888780;font-size:11.5px}
+.fn{font-size:12.5px;color:#444441}
+</style>
+</head>
+<body>
+
+<h1>VERO 提钒冶炼智能体 · 产品规划 v0.1</h1>
+<div class="sub">三段式（冶炼前预测 / 冶炼中监控并预测 / 冶炼后分析）功能与界面设计 · 2026-09-28 · 取代此前"只开吹前"的收窄口径</div>
+
+<div class="lead">
+<b>本次规划的立场修正</b>：冶炼前元素齐全、目标已定，冶炼中持续涌入过程数据——<b>不做实时推理与优化建议，等于把最值钱的一段扔掉</b>。中段必须做。<br>
+<b>红线不变</b>：建议权在人，系统不写入 DCS/PLC、不自动执行。"事中控制"（自动闭环）与"事中建议"（决策支持）是两件事，前者仍属 P3，后者现在就做。
+</div>
+
+<h2>一、今天讨论的问题 · 结论索引</h2>
+<table>
+<tr><th style="width:22%">问题</th><th style="width:44%">结论</th><th>落在本文档</th></tr>
+<tr><td>主要解决哪些业务问题</td><td>配吃决策、品位预判、提钒保碳两难、经验不可复制、口径冲突显性化</td><td>§三/四/五</td></tr>
+<tr><td>产品边界在哪</td><td><b>做</b>：三段决策支持 + 留痕；<b>不做</b>：写 PLC、自动闭环、承诺保品位保收益、代裁 CF-001、跨厂共享经验</td><td>§九</td></tr>
+<tr><td>如何推广复制</td><td>卖「通用机理引擎 + 厂级配置服务」；平台投入 40 人日不进厂报价；每厂 22~27 人日</td><td>§十 + 既有边界文档</td></tr>
+<tr><td>两厂知识怎么用</td><td>专家A 供总量与品位预测，专家B 供品种分配结构；B 的查表切勿拟合连续公式</td><td>既有边界文档 §三</td></tr>
+<tr><td>三段有哪些功能与界面</td><td>前段 7 功能 / 中段 7 功能（实时推理闭环）/ 后段 6 功能；共 14 屏</td><td>§三/四/五/六</td></tr>
+<tr><td>与"只开吹前"旧边界冲突</td><td>边界 2 修订为「<b>事中只建议不执行</b>」，边界 1（不碰执行）一字不动</td><td>§二</td></tr>
+</table>
+
+<h2>二、定位修正：边界 2 怎么改</h2>
+<div class="warn">
+<b>冲突</b>：<code>docs/PRODUCT_DEFINITION.md</code> v1.0 边界 2 写「只开吹前，不碰事中」，与本次三段式规划直接冲突。
+</div>
+<table>
+<tr><th style="width:10%">边界</th><th style="width:38%">原文</th><th>修订建议</th></tr>
+<tr><td>1</td><td>只决策支持，不碰执行——建议权在用户；系统输出永不直接下发控制回路</td><td><span class="tag t-ok">不动</span> 这条是功能安全红线，也是唯一的免责锚点</td></tr>
+<tr><td><b>2</b></td><td>只开吹前，不碰事中——吹炼动态控制属 P3，产品名片上不写</td><td><span class="tag t-new">修订</span> →「<b>事中只推理与建议，不执行</b>；过程自动闭环控制仍属 P3，名片不写」</td></tr>
+<tr><td>3</td><td>所有数字带证据链——规则版本 + 物理机理 + 相似炉次</td><td><span class="tag t-ok">不动</span> 扩展到中段：每个实时建议同样带三要素 + 置信</td></tr>
+</table>
+<div class="info">
+<b>为什么不是"另起一份 roadmap 绕开"</b>：绕开的代价是中段永远拿不到工程投入，而中段恰是数据密度最高、最能形成壁垒的一段。正确做法是<b>改边界 2 的措辞，把"不碰事中"精确化为"不碰事中<b>执行</b>"</b>——原文档的意图本来就是防越权，不是防推理。<br>
+<b>对外话术同步</b>：禁用词保留「AI 炉长 / 智能炉长 / 全自动」，新增禁用「自动提枪 / 自动配加」，改用「终点判断建议 / 优化建议 / 干预窗口提示」。
+</div>
+
+<h2>三、冶炼前预测（开吹前 30~90 秒 · 一次性求解）</h2>
+<p class="fn">现场此刻：铁水成分温度刚到、二助手报冷料、天车待命，炉长定氧量与配吃量。数据源 = 化验单 LIMS（时延 3~15 min）+ 称量斗 PLC + 人工录入。</p>
+
+<h3>功能</h3>
+<table>
+<tr><th style="width:6%">#</th><th style="width:30%">功能</th><th>说明</th></tr>
+<tr><td>F1.1</td><td><b>开吹条件校验</b></td><td>铁水 C/Si/V/Ti/温度/重量、冷料库存齐套性 → 红黄绿；<b>不合格硬拦截</b>；含「先加冷却剂后兑铁」顺序校验</td></tr>
+<tr><td>F1.2</td><td><b>配吃量计算</b></td><td>四大平衡（物料/热/氧/渣）反算冷料总量 + 分品种分配（专家A 总量 × 专家B 结构）</td></tr>
+<tr><td>F1.3</td><td><b>终点预测</b></td><td>终点温度、半钢 C、残 V、钒渣 V₂O₅ 品位、渣量、热量富余——<b>开吹前即给出本炉目标轨迹</b>，作为中段比对的基准线</td></tr>
+<tr><td>F1.4</td><td>Si 敏感性 what-if</td><td>Si 0.10~0.30 扫描 → 品位曲线实时重算</td></tr>
+<tr><td>F1.5</td><td><b>三要素证据链</b></td><td>规则版本 + 物理机理 + 相似炉次，缺一项标注"未经核实"</td></tr>
+<tr><td>F1.6</td><td>双口径对照</td><td>ΔH_V 2777 / 15000 并排，差约 520 kg/炉，待仲裁</td></tr>
+<tr><td>F1.7</td><td>开吹指令单</td><td>一键生成，自动带时间戳与规则版本，<b>零填报</b></td></tr>
+</table>
+
+<h3>界面</h3>
+<table>
+<tr><th style="width:6%">屏</th><th style="width:20%">名称</th><th style="width:14%">使用者 / 设备</th><th>一屏内容与关键读数</th></tr>
+<tr><td><b>S1</b></td><td>开吹驾驶舱</td><td>炉长 / 炉前大屏 + 平板</td><td><b>4 个大数</b>：铁水温度、Si、配吃量、预测终点 C；红黄绿置信；采纳 / 否决两个按钮。3 秒扫完</td></tr>
+<tr><td><b>S2</b></td><td>终点目标卡</td><td>炉长 / 大屏</td><td>本炉目标轨迹（温度、残V、C 三条曲线）+ 允许的波动带——<b>中段所有偏差都相对这条线定义</b></td></tr>
+<tr><td><b>S3</b></td><td>三要素解释卡</td><td>炉长 / 工艺</td><td>规则版本 / 物理机理 / 相似炉次 三栏并列</td></tr>
+<tr><td><b>S4</b></td><td>Si 敏感性 what-if</td><td>工艺工程师 / 台式机</td><td>滑杆 0.10~0.30 + 品位响应曲线</td></tr>
+<tr><td><b>S5</b></td><td>双口径仲裁台</td><td>工艺工程师 / 台式机</td><td>2777 / 15000 并排 + 配吃差 520 kg + 16 炉反演证据</td></tr>
+<tr><td><b>S6</b></td><td>开吹指令单</td><td>二助手 / 平板</td><td>冷料品种与重量、加料顺序、时间戳、规则版本、签字</td></tr>
+</table>
+
+<h2>四、冶炼中监控并预测（8~12 分钟 · 1 秒级滚动）★本次重做</h2>
+<p class="fn">现场此刻：一助手控枪位与氧流量、看火听声；<b>无在线连续测温</b>，终点只能等化验。中段的价值不是"看"，是<b>提前几分钟知会跑偏，并说清现在还来得及做什么</b>。</p>
+
+<div class="lead">
+<b>实时推理闭环（五步，每秒一轮）</b><br>
+<b>① 采集</b>：枪位、氧流量、吹氧时长（PLC 1s）＋ 副枪 TSC/TSO 离散点（1~2 次/炉，时延 30~60s）＋ 烟气 CO/CO₂（1~5s，唯一能反算 dC/dt 的硬源）＋ 称量斗实绩<br>
+<b>② 状态估计</b>：8 维 ODE 递推（C / Si / V / Ti / T / FeO / V₂O₅ / SiO₂）＋ 卡尔曼同化观测<br>
+<b>③ 滚动预测</b>：从<b>当前状态</b>前向积分到吹炼终点 → 终点温度、残 V、半钢 C、V₂O₅ 品位，<b>带置信带（KF 协方差）</b><br>
+<b>④ 偏差检测</b>：实际轨迹 vs 开吹方案（S2 那条线），偏离度红黄绿<br>
+<b>⑤ 优化建议</b>：枪位 / 氧流量 / 补加冷却剂 / 提枪时机，<b>每条附剩余干预时间窗</b>
+</div>
+
+<h3>功能</h3>
+<table>
+<tr><th style="width:6%">#</th><th style="width:26%">功能</th><th>说明</th><th style="width:10%">可解释依据</th></tr>
+<tr><td>F2.1</td><td><b>实时状态估计</b></td><td>8 状态递推 + 副枪/烟气观测同化；无观测时纯机理外推并<b>显式标注"外推中、置信下降"</b></td><td>ODE + KF 协方差</td></tr>
+<tr><td>F2.2</td><td><b>滚动终点预测</b></td><td>每 1~5 秒刷新一次终点温度 / 残 V / 半钢 C / V₂O₅，带 ±σ 带；随吹炼推进<b>置信带应收窄</b></td><td>KF 协方差，非硬编码</td></tr>
+<tr><td>F2.3</td><td><b>偏差检测</b></td><td>实测 vs 开吹方案轨迹，给出偏离度与归因方向（温度偏高 / 去钒偏慢 / 碳损偏快）</td><td>与 S2 基准线比对</td></tr>
+<tr><td>F2.4</td><td><b>枪位优化建议</b></td><td>枪位已建模进 ODE（<code>mixing_factor=(1400/H)^1.5</code>），可直接做"低枪位强化搅拌 / 高枪位保碳"的权衡建议</td><td>动力学 mixing_factor</td></tr>
+<tr><td>F2.5</td><td><b>供氧强度建议</b></td><td>调整 <code>mols_o2_per_s</code> 使终点同时落在温度窗与残 V 目标内</td><td>氧耗平衡</td></tr>
+<tr><td>F2.6</td><td><b>补加冷却剂建议</b> ★</td><td><b>仅限散状冷料</b>（走称量斗、事中可小批量补）：给<b>量 + 剩余干预时间窗</b>，窗口一过建议自动失效。<b>块状冷料（走天车）开吹前一次配足，事中不出追加建议</b>——不给做不到的建议</td><td>热平衡反算 + 加入路径约束</td></tr>
+<tr><td>F2.7</td><td><b>提枪时机建议</b></td><td>三条件同时满足才提示：残 V 达标 ∧ 温度在窗 ∧ 半钢 C 不低于下限</td><td>终点判据 + Tc=1361℃</td></tr>
+<tr><td>F2.8</td><td>Tc 越线告警</td><td>熔池超过碳钒转化温度 1361℃ 后碳大量氧化 → 保碳失败，红条告警</td><td>热力学 Tc</td></tr>
+<tr><td>F2.9</td><td>事中全程留痕</td><td>每条建议 + 采纳/否决 + 时刻 + 当时状态快照，不可删</td><td>审计</td></tr>
+</table>
+
+<h3>界面</h3>
+<table>
+<tr><th style="width:6%">屏</th><th style="width:20%">名称</th><th style="width:14%">使用者 / 设备</th><th>一屏内容与关键读数</th></tr>
+<tr><td><b>S7</b></td><td><b>吹炼驾驶舱</b></td><td>炉长 + 一助手 / 炉前大屏</td><td><b>进度条（累计氧量 %）</b>＋<b>3 个大数</b>：预测终点温度、预测残 V、预测半钢 C；红黄绿三态；看 3~5 秒</td></tr>
+<tr><td><b>S8</b></td><td>轨迹同化图</td><td>一助手 / 大屏</td><td>实测点（副枪）+ 模型轨迹 + 预测带 + 开吹方案基准线 + 相似炉次叠影</td></tr>
+<tr><td><b>S9</b></td><td><b>干预建议卡</b> ★</td><td>炉长 / 大屏</td><td>当前建议 1~2 条（枪位 xx mm / 补冷料 xx kg）＋ <b>剩余窗口倒计时</b> ＋ 采纳/否决。同屏不超 2 条</td></tr>
+<tr><td><b>S10</b></td><td>告警条</td><td>炉长 / 大屏</td><td>仅 3 类：Tc 越线 / 温度越界 / 残 V 未达标；<b>无执行按钮</b></td></tr>
+<tr><td><b>S11</b></td><td>事中留痕侧栏</td><td>自动</td><td>本炉已发生建议流水，滚动，不抢占主屏</td></tr>
+</table>
+
+<div class="amber">
+<b>F2.6 为什么是中段第一价值点</b>：提钒是"边吹边升温、靠冷料压温"的过程，遇上铁水温度偏高，开吹前的方案就需要中途修正。<b>但只有散状冷料（称量斗路径）具备事中补加的执行通道</b>；块状冷料走天车吊运 2~3 分钟、接近吹炼全程的 1/4~1/3，且有喷溅风险，<b>事中追加基本不可执行——所以块状料的正确做法是在 F1.2 开吹前一次配足，把"事中不可追加"作为约束算进配吃方案</b>。<b>没有这条，中段就只是仪表盘。</b><br>
+<b>但要诚实</b>：① 块状冷料实吊量不回传，算的量 ≠ 实际入炉量，证据链断；② 散状补料建议必须带"窗口一过自动失效"机制，<b>绝不出马后炮建议</b>。
+</div>
+
+<h2>五、冶炼后分析（等化验 30 min ~ 数小时）</h2>
+<p class="fn">现场此刻：炉长已去下一炉，本炉结果无人复盘——这是最容易被忽略、却唯一能形成复利的一段。</p>
+
+<h3>功能</h3>
+<table>
+<tr><th style="width:6%">#</th><th style="width:26%">功能</th><th>说明</th></tr>
+<tr><td>F3.1</td><td><b>预测 vs 实绩自动对照</b></td><td>按炉长 / 班次 / Si 分档统计，出<b>偏差带</b>而非单点误差</td></tr>
+<tr><td>F3.2</td><td><b>单炉复盘归因</b></td><td>定位偏差来源：化验值偏差？k 常数失配？冷料实装量不符？枪位执行偏离？</td></tr>
+<tr><td>F3.3</td><td>好炉次自动入判例库</td><td>达标炉次自动成为后续"相似炉次"证据</td></tr>
+<tr><td>F3.4</td><td><b>批次偏差带统计</b></td><td>本厂模型水平：分档 RMSE、去偏状态、置信度校准命中率</td></tr>
+<tr><td>F3.5</td><td>漂移告警与再标定建议</td><td>趋势性漂移触发告警 → 出<b>参数调整建议</b>（人工审批生效，<b>禁止在线自改</b>）</td></tr>
+<tr><td>F3.6</td><td>留痕导出</td><td>谁、何时、采纳了什么、结果如何，可导出审计</td></tr>
+</table>
+
+<h3>界面</h3>
+<table>
+<tr><th style="width:6%">屏</th><th style="width:20%">名称</th><th style="width:14%">使用者 / 设备</th><th>一屏内容与关键读数</th></tr>
+<tr><td><b>S12</b></td><td>单炉复盘</td><td>工艺工程师 / 台式机</td><td>预测-实绩偏差带 + 归因标签 + 本炉建议流水回放</td></tr>
+<tr><td><b>S13</b></td><td>批次偏差带统计</td><td>厂部 / 管理屏</td><td>基线 ±Δ、分档 RMSE、去偏状态、置信校准曲线</td></tr>
+<tr><td><b>S14</b></td><td>规则版本治理</td><td>专家委 / 台式机</td><td>版本 diff、审批流、参数溯源（谁批的、依据哪一炉）</td></tr>
+</table>
+<div class="info"><b>手机端只推一条</b>：「上一炉品位误差 +1.2pp，结论：铁水 Si 化验偏高」——班后会 5 分钟看完。绝不做"事后补录操作记录 / 打分"，那会被现场抵触。</div>
+
+<h2>六、界面总清单（14 屏）</h2>
+<table>
+<tr><th style="width:5%">屏</th><th style="width:16%">名称</th><th style="width:8%">段</th><th style="width:12%">使用者</th><th style="width:10%">设备</th><th style="width:26%">一屏回答什么问题</th><th style="width:8%">现状</th><th style="width:6%">优先级</th></tr>
+<tr><td>S1</td><td>开吹驾驶舱</td><td>前</td><td>炉长</td><td>炉前大屏+平板</td><td>这炉怎么配、能到多少</td><td><span class="tag t-ok">已有</span></td><td><span class="tag t-p0">P0</span></td></tr>
+<tr><td>S2</td><td>终点目标卡</td><td>前</td><td>炉长</td><td>大屏</td><td>本炉目标轨迹与允许波动带（中段基准线）</td><td><span class="tag t-new">新增</span></td><td><span class="tag t-p0">P0</span></td></tr>
+<tr><td>S3</td><td>三要素解释卡</td><td>前</td><td>炉长/工艺</td><td>大屏</td><td>凭什么是这个数</td><td><span class="tag t-ok">已有</span></td><td><span class="tag t-p0">P0</span></td></tr>
+<tr><td>S4</td><td>Si 敏感性 what-if</td><td>前</td><td>工艺</td><td>台式机</td><td>Si 变了会怎样</td><td><span class="tag t-ok">已有</span></td><td><span class="tag t-p1">P1</span></td></tr>
+<tr><td>S5</td><td>双口径仲裁台</td><td>前</td><td>工艺工程师</td><td>台式机</td><td>两套 ΔH 取哪个</td><td><span class="tag t-ok">已有</span></td><td><span class="tag t-p1">P1</span></td></tr>
+<tr><td>S6</td><td>开吹指令单</td><td>前</td><td>二助手</td><td>平板</td><td>冷料加什么、多少、什么顺序</td><td><span class="tag t-new">新增</span></td><td><span class="tag t-p1">P1</span></td></tr>
+<tr><td>S7</td><td><b>吹炼驾驶舱</b></td><td>中</td><td>炉长+一助手</td><td>炉前大屏</td><td>现在跑到哪、终点会落在哪</td><td><span class="tag t-p1">缺接线</span></td><td><span class="tag t-p0">P0</span></td></tr>
+<tr><td>S8</td><td>轨迹同化图</td><td>中</td><td>一助手</td><td>大屏</td><td>实测与模型差多少、往哪偏</td><td><span class="tag t-p1">缺接线</span></td><td><span class="tag t-p1">P1</span></td></tr>
+<tr><td>S9</td><td><b>干预建议卡</b></td><td>中</td><td>炉长</td><td>大屏</td><td>现在还来得及做什么（含窗口倒计时）</td><td><span class="tag t-new">新增</span></td><td><span class="tag t-p0">P0</span></td></tr>
+<tr><td>S10</td><td>告警条</td><td>中</td><td>炉长</td><td>大屏</td><td>有没有越过红线</td><td><span class="tag t-new">新增</span></td><td><span class="tag t-p1">P1</span></td></tr>
+<tr><td>S11</td><td>事中留痕侧栏</td><td>中</td><td>自动</td><td>侧栏</td><td>本炉提过哪些建议、采纳没有</td><td><span class="tag t-new">新增</span></td><td><span class="tag t-p1">P1</span></td></tr>
+<tr><td>S12</td><td>单炉复盘</td><td>后</td><td>工艺工程师</td><td>台式机</td><td>这炉差在哪</td><td><span class="tag t-p1">半成品</span></td><td><span class="tag t-p0">P0</span></td></tr>
+<tr><td>S13</td><td>批次偏差带统计</td><td>后</td><td>厂部</td><td>管理屏</td><td>模型在本厂什么水平</td><td><span class="tag t-p1">半成品</span></td><td><span class="tag t-p0">P0</span></td></tr>
+<tr><td>S14</td><td>规则版本治理</td><td>后</td><td>专家委</td><td>台式机</td><td>改了什么、谁批的、依据哪炉</td><td><span class="tag t-new">新增</span></td><td><span class="tag t-p2">P2</span></td></tr>
+</table>
+
+<h2>七、数据与算法架构</h2>
+<table>
+<tr><th style="width:8%">环节</th><th style="width:26%">冶炼前</th><th style="width:34%">冶炼中</th><th>冶炼后</th></tr>
+<tr><td><b>采</b></td><td>铁水化验单 LIMS（C/Si/V/Ti/温度，时延 3~15 min）、铁水重量、冷料库存与称量斗实绩</td><td>枪位 / 氧流量 / 吹氧时长（OPC 1s）＋ 副枪 TSC/TSO（1~2 次/炉，时延 30~60s）＋ 烟气 CO/CO₂（1~5s）＋ 称量斗</td><td>终点温度与成分、渣样 V₂O₅、钒回收率、建议采纳与否</td></tr>
+<tr><td><b>算</b></td><td>四大平衡静态求解（物料/热/氧/渣）→ 配吃量、渣量、热富余、品位</td><td><b>8 维 ODE 递推 + 卡尔曼同化 + 滚动前向积分</b>；优化建议由规则 + 权衡求解生成</td><td>残差回归 → 参数再标定建议（RLS / 分档统计），人工审批生效</td></tr>
+<tr><td><b>用</b></td><td>配吃量、品位预测、证据链、指令单</td><td>终点滚动预测 + 偏差 + <b>优化建议与干预窗口</b></td><td>偏差带、归因、判例入库、漂移告警</td></tr>
+<tr><td><b>交互</b></td><td>炉长确认 / 否决 → 留痕</td><td>炉长采纳 / 否决 → 留痕（<b>执行由人</b>）</td><td>工程师审批参数变更 → 版本治理</td></tr>
+<tr><td><b>降级</b></td><td>缺 V/Ti → 取上一炉值并标 <code>estimated</code></td><td>无副枪 → 纯机理外推，<b>显式标注"外推中、置信下降"</b>；无烟气 → 软测量反算 dC/dt 兜底</td><td>化验缺失 → 该炉不进统计，标注不参与偏差带</td></tr>
+</table>
+
+<h2>八、能力现状盘点（代码实况，非估算）</h2>
+<table>
+<tr><th style="width:22%">能力</th><th style="width:12%">现状</th><th>证据与缺口</th></tr>
+<tr><td>四大平衡引擎</td><td><span class="tag t-ok">已具备</span></td><td><code>plant_a_reference.py</code>，44 常数带 Excel 溯源，已对齐；<b>但常数硬编码在代码层，未下沉知识包</b></td></tr>
+<tr><td>8 状态动力学 ODE</td><td><span class="tag t-ok">已具备</span></td><td><code>kinetics_simulator.py</code>：<code>scipy.odeint</code> + 状态 C/Si/V/Ti/T/FeO/V₂O₅/SiO₂ + 枪位 mixing_factor 建模</td></tr>
+<tr><td>卡尔曼同化</td><td><span class="tag t-ok">已具备</span></td><td><code>KalmanFilter1D</code>（L36）+ <code>off_gas_correction</code> 分支；<b>但默认关闭</b>，且 Q/R 未整定</td></tr>
+<tr><td>实时流 SSE</td><td><span class="tag t-ok">已具备</span></td><td>后端 <code>/api/stream</code> 真实存在（<code>data_server.py:17</code>，main.py:47 挂 <code>/api</code> 前缀）；前端 <code>useProcessStream.ts</code> 已实现但<b>全仓无 import = 死代码</b></td></tr>
+<tr><td>置信度</td><td><span class="tag t-p0">造假</span></td><td>未开 KF 时 <code>uncertainty_sigma = 0.005 + (t/D)*0.05</code> 是时间的线性函数，<b>与协方差无关</b>；开了 KF 才是 <code>sqrt(P)</code>。必须默认走 KF 分支</td></tr>
+<tr><td>动力学常数标定</td><td><span class="tag t-p0">拍值</span></td><td><code>k_si=0.003</code> / <code>k_v=0.002</code> 未标定；<code>config.py</code> 另有 <code>k_si_base=2.0/k_v_base=1.2</code> 量纲不一致，<b>两套并存需清理</b></td></tr>
+<tr><td>真数据源</td><td><span class="tag t-p0">缺失</span></td><td>唯一数据源是 <code>simulator.py</code> 合成数据；<code>ValidationDataReader</code> 注释 "Mocked for now"，返回 <code>is_valid=False</code></td></tr>
+<tr><td>自学习闭环</td><td><span class="tag t-p0">造假</span></td><td><code>/api/heat/confirm</code> 返回 <code>learned_entries: 1 # Mock value</code>；simulator 里"自学习"是 <code>random.uniform(-0.02,0.02)</code></td></tr>
+<tr><td>控制写入</td><td><span class="tag t-ok">已锁死</span></td><td><code>ProductionControlWriter</code> 四方法全 <code>raise NotImplementedError(...SAFETY LOCK)</code>——<b>这条要保留</b></td></tr>
+<tr><td>假装成功</td><td><span class="tag t-p0">造假</span></td><td><code>ValidationControlWriter</code> 四方法全 <code>return True # Pretend success</code>；<code>main.py:57</code> 调异步 <code>switch_mode</code> <b>未 await</b> 却返回 ok</td></tr>
+</table>
+
+<div class="lead">
+<b>结论：中段不是从零开始，骨架大约已到位九成，缺的是三样而不是三座工程</b><br>
+① <b>接线</b>：把 <code>useProcessStream.ts</code> import 进页面并接 <code>/api/stream</code>（约 1~2 人日）<br>
+② <b>真数据源</b>：OPC/Modbus/Kafka → <code>resource://</code> URI 适配层（12 人日，即既有 P0）<br>
+③ <b>标定</b>：k 常数与 Q/R 需 ≥50 炉对齐样本（每厂标定工作，含在 22~27 人日内）
+</div>
+
+<h2>九、边界：做什么 / 不做什么（红线）</h2>
+<table>
+<tr><th style="width:50%">做（可写进合同与投标）</th><th>不做（红线，越界即责任事故）</th></tr>
+<tr><td>开吹前配吃建议与品位预测（带置信）</td><td><b>写入 DCS / PLC —— 任何形式</b></td></tr>
+<tr><td>三要素证据链、双口径对照、判例库</td><td><b>自动闭环过程控制</b>（自动提枪、自动配加、自动调氧）</td></tr>
+<tr><td><b>冶炼中实时推理：状态估计 + 滚动终点预测</b></td><td>承诺保品位、保收得率、保收益</td></tr>
+<tr><td><b>冶炼中优化建议 + 干预时间窗提示</b></td><td>代裁 CF-001（ΔH_V 2777/15000，属甲方权威裁决）</td></tr>
+<tr><td>冶炼后复盘归因、偏差带统计、漂移告警</td><td>在线自动改参数（含"自学习"字样一律不用）</td></tr>
+<tr><td>只读留痕 + 人工确认 + 版本治理，数据不出厂</td><td>跨厂共享厂级经验与标定参数</td></tr>
+</table>
+<div class="warn">
+<b>最容易踩的一句话</b>：把"优化建议"讲成"自动优化"。<b>建议 = 决策支持，自动 = 越权执行</b>。对外物料里凡是出现"自动投料 / 自动提枪 / 自动调节"，一律删除。
+</div>
+
+<h2>十、路线图与验收口径</h2>
+<table>
+<tr><th style="width:8%">阶段</th><th style="width:30%">内容</th><th style="width:12%">人日</th><th>验收判据</th></tr>
+<tr><td><b>P0</b></td><td>前段全套（S1-S6）+ 后段复盘（S12/S13）+ 留痕；中段接线跑 simulator 演示（S7-S11）</td><td>12~15</td><td>引擎黄金回归 &lt;0.01%；解释覆盖 100%；炉长 10 秒读出关键数；中段 1s 刷新不卡</td></tr>
+<tr><td><b>P1</b></td><td>数据源适配层（OPC/Modbus/Kafka → <code>resource://</code>）+ 置信度改走 KF 协方差 + 清理两套 k 常数</td><td>12</td><td>接真数据后 <code>is_valid=True</code>；<code>uncertainty_sigma</code> = <code>sqrt(P)</code>；置信带随吹炼收窄</td></tr>
+<tr><td><b>P2</b></td><td>中段带置信终点预测 + 优化建议上线（<b>影子模式，先不给炉前看</b>）</td><td>10</td><td>影子 ≥100 炉：方向/排序一致率、终点落入偏差带比例、<b>零下发</b>（无写接口）</td></tr>
+<tr><td><b>P3</b></td><td>优化建议转正 + 参数再标定流程 + 版本治理（S14）</td><td>8</td><td>采纳率与偏差带达标后放行；参数变更 100% 经人工审批留痕</td></tr>
+</table>
+<div class="amber">
+<b>验收口径三条（防 SOLUTION_PITCH 式翻车）</b><br>
+① 一律「<b>基线 ± Δ</b>」，基线 = 本厂前 N 炉人工实绩，写清样本量与统计口径；<b>无基线的绝对值无效</b>。<br>
+② 模型已知系统性偏高 0.6~1.7 pp：先去偏，去偏后残差作为判据（默认 粗渣 ≤0.9 / 精渣 ≤1.3 pp）；未去偏则把偏移<b>显式写入偏差带</b>，不得当永久容差。<br>
+③ 中段转正前只考方向性指标（趋势/排序一致率、例外炉次召回），<b>不绝度值指标先挂起</b>，直至 CF-001 终审。
+</div>
+
+<h2>十一、待拍板</h2>
+<ol>
+<li><b>边界 2 是否按 §二 修订</b>——「只开吹前不碰事中」→「事中只推理与建议、不执行」。这决定中段能否拿到工程投入。</li>
+<li><b>中段优先级是否置于 P0</b>——按 §十，中段接线只需 1~2 人日即可跑通演示，性价比最高；但带置信的正式上线仍在 P2 之后。</li>
+<li><b>三处造假是否一并修</b>（<code>learned_entries</code> mock / <code>ValidationControlWriter</code> 假装成功 / <code>switch_mode</code> 未 await）——这三处不修，中段留痕与模式切换都不可信。</li>
+<li><b>SOLUTION_PITCH.md 五条虚构主张的清理</b>——仍待您点头。</li>
+<li><b>public 仓库暴露处置</b>——16 天生产实绩 + 33 个专家常数，四类载体，仍待您拍板。</li>
+</ol>
+
+<div class="foot">
+本规划依据代码实况盘点（backend/app/tools/kinetics_simulator.py、plant_a_reference.py、backend/app/mcp/data_server.py、backend/app/main.py、frontend/src/hooks/useProcessStream.ts）与 docs/PRODUCT_DEFINITION.md、docs/MVP_SPEC.md 交叉核对；三角色（工艺/炉长、数据架构、产品商业化）并行评审后收敛。<br>
+口径：事实、判断、建议分开标注；未标定项一律标注"未标定 / 拍值"，不以估算充证据。
+</div>
+
+</body>
+</html>

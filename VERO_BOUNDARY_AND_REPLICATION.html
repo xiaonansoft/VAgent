@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>VERO 产品边界与跨厂复制方案 v0.1</title>
+<style>
+body{font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif;line-height:1.7;color:#2C2C2A;background:#fff;max-width:1080px;margin:0 auto;padding:32px 28px}
+h1{font-size:22px;font-weight:600;margin:0 0 6px}
+h2{font-size:17px;font-weight:600;margin:32px 0 12px;padding-bottom:6px;border-bottom:2px solid #185FA5;color:#0C447C}
+h3{font-size:15px;font-weight:600;margin:20px 0 8px;color:#2C2C2A}
+.sub{color:#5F5E5A;font-size:13px;margin-bottom:20px}
+table{border-collapse:collapse;width:100%;margin:12px 0;font-size:13.5px}
+th{background:#E6F1FB;color:#0C447C;text-align:left;padding:8px 10px;border:1px solid #B5D4F4;font-weight:600}
+td{padding:8px 10px;border:1px solid #D3D1C7;vertical-align:top}
+tr:nth-child(even) td{background:#FAFAF8}
+.lead{background:#E1F5EE;border-left:4px solid #0F6E56;padding:12px 16px;margin:16px 0;font-size:14px}
+.warn{background:#FCEBEB;border-left:4px solid #A32D2D;padding:12px 16px;margin:16px 0;font-size:14px}
+.amber{background:#FAEEDA;border-left:4px solid #854F0B;padding:12px 16px;margin:16px 0;font-size:14px}
+code{background:#F1EFE8;padding:1px 5px;border-radius:3px;font-size:12.5px;font-family:ui-monospace,Menlo,monospace}
+.tag{display:inline-block;padding:1px 7px;border-radius:4px;font-size:12px;font-weight:600}
+.t-ok{background:#E1F5EE;color:#085041}
+.t-no{background:#FCEBEB;color:#791F1F}
+.t-wip{background:#FAEEDA;color:#633806}
+ul{margin:8px 0;padding-left:22px}
+li{margin:4px 0}
+.foot{margin-top:36px;padding-top:12px;border-top:1px solid #D3D1C7;color:#888780;font-size:12px}
+</style>
+</head>
+<body>
+
+<h1>VERO 产品边界与跨厂复制方案 v0.1</h1>
+<div class="sub">提钒冶炼智能体 · 七角色两轮评审收敛 · 2026-09-28 · 所有数字均经实跑核查</div>
+
+<div class="lead">
+<b>一句话结论</b>：VERO 要从「引擎内嵌常数的单点系统」重构为「<b>通用引擎（可公开）+ 客户私有参数包（不出厂）</b>」，中间用 CI 强制边界。这不是整洁问题——当前连常数的一半都核对不到，复制到新厂只能靠人肉比对，成本不降反升。
+</div>
+
+<h2>一、产品边界（可写进合同的能力声明）</h2>
+
+<h3>做（5 条）</h3>
+<table>
+<tr><th style="width:32%">能力</th><th>交付形态</th></tr>
+<tr><td>开吹前配吃</td><td>冷却剂种类与配吃量，含可执行性（块状走天车 / 散状走称量斗）</td></tr>
+<tr><td>品位预测与置信</td><td>V₂O₅ 品位预测 + 偏差带，不做点估计</td></tr>
+<tr><td>双口径对照与回放</td><td>2777 / 15000 双案并排 + 16 炉回放证据</td></tr>
+<tr><td>三要素证据链</td><td>规则版本 + 物理机理 + 相似炉次，缺一项标「未经核实」</td></tr>
+<tr><td>只读留痕 + 人工确认</td><td>每炉可回放、推翻留痕、建议权在人</td></tr>
+</table>
+
+<h3>不做（5 条）——每条都有归属，不是纪律</h3>
+<table>
+<tr><th style="width:32%">不做</th><th style="width:14%">理由</th><th>说明</th></tr>
+<tr><td>直写 PLC</td><td><span class="tag t-no">责任</span></td><td>误动/拒动造成人身设备事故，供应商最多赔合同额；急停是 SIL 硬件回路，非 SIL 软件只能做旁路建议</td></tr>
+<tr><td>事中控制</td><td><span class="tag t-no">定位</span></td><td>属 P3；且吹炼 8~12min 不可逆，氧吹了冷料加了撤不回</td></tr>
+<tr><td>承诺保品位 / 保收益</td><td><span class="tag t-no">能力</span></td><td>模型系统性偏高 0.6~1.7pp，签绝对值就是赔</td></tr>
+<tr><td>代裁 CF-001</td><td><span class="tag t-no">责任</span></td><td>钒氧化热 2777 vs 15000 的终审权在专家委员会</td></tr>
+<tr><td>共享厂级经验</td><td><span class="tag t-no">IP</span></td><td>厂级常数与诀窍不得跨厂流转</td></tr>
+</table>
+
+<h3>边界必须由技术强制，不能只靠文档</h3>
+<ul>
+<li><b>AST 门禁</b>：断言 <code>ProductionControlWriter</code> 四个方法体仅含 <code>raise</code>；backend 全量禁 import <code>opcua / pymodbus / snap7</code></li>
+<li><b>路由扫描</b>：枚举 <code>main.py</code> 的 <code>app.routes</code>，断言无写控制端点，只留 resources/read</li>
+<li><b>契约锁死</b>：测试断言建议包 <code>requires_human_confirm=True</code> 且 <code>control_write=="forbidden"</code></li>
+<li><b>数据不出厂</b>：断言厂级包缺失时走降级而非崩溃</li>
+</ul>
+
+<h2>二、复制方案</h2>
+
+<h3>SKU 与计价</h3>
+<p>卖「<b>机理引擎 + 厂级配置服务</b>」——软件和知识单卖都不闭环。</p>
+<table>
+<tr><th style="width:22%">构成</th><th>说明</th></tr>
+<tr><td>许可</td><td>按站点 / 炉座，<b>与交付人日脱钩</b></td></tr>
+<tr><td>实施</td><td>三档：标准接入 <b>22~27 人日/厂</b>（理想态 10~12，<b>不作为报价基线</b>）/ 深度适配（按点表条目计价 + 工时上限，超量走变更单）/ 联合迭代（含该厂参数反演）</td></tr>
+<tr><td>年维保</td><td>知识包版本与回归门禁</td></tr>
+</table>
+<div class="amber"><b>关键</b>：一次性平台投入 <b>40 人日</b> 列<b>产品投入</b>，不进二厂报价——否则第二厂为平台买单，定价说不通。</div>
+
+<h3>人日拆解（一次性平台投入 40 人日）</h3>
+<table>
+<tr><th style="width:8%">编号</th><th style="width:38%">任务</th><th style="width:12%">人日</th><th>说明</th></tr>
+<tr><td>P0</td><td>数据源适配层（OPC/Modbus/Kafka → <code>resource://</code> URI + 点表映射配置化）</td><td>12</td><td>卡点：各厂 PLC 位号无命名标准</td></tr>
+<tr><td>P1</td><td>v0.9 前端桥接 + 后端静态托管</td><td>5</td><td>现仍在 1385 行调本机 <code>runModel()</code></td></tr>
+<tr><td>P2</td><td>服务端回放 + 影子模式 + 评测集</td><td>10</td><td>当前全无，是 R1 的唯一下手点</td></tr>
+<tr><td>P3</td><td>OverturnRecord 写入端点 + 看板</td><td>3</td><td>依赖 P2，串行</td></tr>
+<tr><td>P4</td><td><b>知识包脚手架 + 参数清单 lint</b></td><td><b>5</b></td><td><b>二厂前置 GATE，不与建包并行</b></td></tr>
+<tr><td>P4b</td><td><b>GATE-2：去生产实绩依赖（四类载体）</b></td><td><b>+5</b></td><td>见下；交付物不得携带任何厂的生产实绩</td></tr>
+</table>
+<p>一次性平台投入合计 <b>40 人日</b>。<b>蓝图 = 平台 40 + 每厂 22~27</b>。</p>
+<div class="amber">
+<b>每厂人日已上调（原 10~12 → 现 22~27，其中「标定 + 影子期」12~15）</b>，三条理由：<br>
+① <b>铁水温度软测量在接真数据前是空头承诺</b>——温度是主驱动量，冷启动前只能靠化验单/上一炉估计，<b>必然出现「估计值进模型」的降级运行期</b>；原 8~10 人日的前提是「接上真数据后再标定」，但 P0 适配层 12 人日必须先行，时间上不成立。<br>
+② 铁水化验单（C/Si/V/Ti）须等班组<b>按炉送样</b>，排班配合是强耦合项。<br>
+③ 冷启动需<b>每台班 1 人 × 2 周盯现场</b> + 每日对齐会。<br>
+<b>理想态</b>（P0/P2 就绪、点表标准化、化验排班配合）仍可回到 <b>10~12</b>。最大杠杆仍是 <b>P4 知识包 schema + 参数模板</b>。
+</div>
+
+<h3>GATE-2：交付物内不得携带任何厂的生产实绩</h3>
+<div class="warn">
+<b>已核实的扩散面——不是改一个 py，是四类载体</b>：<br>
+① <code>v_heat_calibration.py:20-37</code> 内联 16 炉逐日实绩（铁水 Si/V + 粗/精渣 V₂O₅）；<br>
+② <b>8 个 HTML 演示页各命中 4 处</b>（<code>VERO_MVP.html</code> + v0.3 / v0.5 / v0.6 / v0.7 / v0.8 / v0.9 / v0.8_bridged，实测含 <code>{day:1,si:.19}</code> 及 13.06~13.59 品位序列）——<b>这些正是给第二厂看的物料，风险高于后端脚本</b>；<br>
+③ <code>docs/DATA_INTERFACE_SPEC.md:207</code> 记录「MVP 内嵌 HEATS」；<br>
+④ <code>arbitration_demo.py:172</code> <b>会自动再生</b> <code>backend/ARBITRATION_DEMO.md</code>——属可再生暴露源，<b>必须连生成逻辑一起改</b>，否则清完下次跑又落地一份。<br>
+链路：<code>arbitration_demo.py:22</code> <code>from ... import HEATS</code> → 实绩会随复制包进入第二厂。
+</div>
+<p><b>改造方案</b>：</p>
+<ul>
+<li><code>HEATS</code> 外置为按 <code>plant_id</code> 取数的私有数据源，代码与 HTML 均不再内联任何真实样例</li>
+<li><code>arbitration_demo</code> 与反演器改为接受 <code>heats</code> 入参，<b>不再 import 具体数据集</b>；其报告生成逻辑同步去实绩</li>
+<li><b>8 个 HTML 不必逐个脱敏</b>——只保留<b>一个合成数据版本</b>作为当前演示基线，其余 7 份归档（不重复维护 8 份）</li>
+<li><b>验收项（可勾选，建议入 CI）</b>：全仓（含 HTML/JS 内联、示例数据、截图、生成报告、文档）grep 不到真实炉次数值</li>
+</ul>
+<p><b>证据批次（清点时按此逐项核）</b>：</p>
+<ul>
+<li>批次1·后端脚本：<code>v_heat_calibration.py:18</code> 自注「源: Excel 工作表『钒渣钒品位情况』B3:Q6」+ 20-37 行 16 天实绩；<code>arbitration_demo.py:22</code> 引用它，<code>:172</code> 可再生报告</li>
+<li>批次2·HTML 内联：8 个演示页均含真实炉次，特征值含粗渣 <code>14.47 / 14.06 / 15.11</code>、精渣 <code>13.25</code>、铁水 <code>V 0.319 / 0.333</code></li>
+</ul>
+<div class="warn"><b>残余风险（CI 守不住的部分）</b>：数值匹配只能覆盖明文，<b>守不住换算值、截图、带日期的曲线、流程条上的数字、报告片段</b>。这些必须<b>按仓逐仓处理</b>，且<b>接新厂前逐仓拉网一次</b>，不能只依赖 CI 通过就认定干净。</div>
+<div class="amber"><b>降级路径须输出显式降级</b>：厂级参数缺失或降级时，输出必须<b>显式标注已降级</b>，且<b>禁止用于 KPI 合同轨</b>——降级值进合同等于拿默认值冒充标定值。</div>
+<p><b>执行顺序</b>：<b>先证据保全</b>（快照 / commit / fork / 下载量留证），<b>再改内容</b>；<b>「下架/转私有」优先于「重写历史」</b>——force push 对已存在的 fork / 镜像 / 缓存无效，「以为删干净了」比「知道没删」更危险。对外通知与补救顺序交法务，不擅自发函。</p>
+<p><b>人日归属决策</b>：GATE-2 从初估 2 人日扩到四类载体 + CI 后重估为 <b>5 人日</b>，计入<b>一次性平台投入（合计 40 人日）</b>，<b>不进二厂报价</b>。理由：这是产品合规基线，不是任一厂的定制需求；若为修复历史遗留而向第二厂收费，与「平台投入不进厂报价」原则相悖。</p>
+
+<h3>参数包导出边界（可直接对外讲的商业条款）</h3>
+<div class="lead">
+合同须定义死「<b>参数包导出形态</b>」：<br>
+<b>导出</b> = 该厂参数 + 标定结果 + 证据链（客户数据及其加工物）；<br>
+<b>不导出</b> = 通用引擎、求解器、代码、跨厂方法学改进——我方对脱敏后的通用改进保留所有权。<br><br>
+一句话定位：<b>客户带走自己的知识，我们带走行业能力。</b> 它把「跨厂复制」与「卖数据」彻底分开，是逐厂谈判时最有力的一句。
+</div>
+
+<h3>标准 / 可配置 / 定制三分</h3>
+<table>
+<tr><th style="width:16%">类别</th><th>内容</th></tr>
+<tr><td><b>标准</b></td><td>引擎、schema、resolve 合并、证据链、黄金回归、只读边界</td></tr>
+<tr><td><b>可配置</b></td><td>B 类真厂级参数（见 §三）、原料与冷料、目标阈值、字段映射与权限</td></tr>
+<tr><td><b>定制</b></td><td>新炉型 / 物料机理、非标点表与报表</td></tr>
+<tr><td><b>不进包也不报价</b></td><td>A 类化学计量常数（<code>FE_IN_FEO</code>、<code>FE_IN_FE2O3</code>、<code>V2O5_PER_V</code>、<code>MW</code>）——任何厂相同，进包只会制造伪厂差异</td></tr>
+</table>
+
+<h3>客户必交清单（缺一项即无输出）</h3>
+<ol>
+<li>现行《提钒操作规程》：冷却剂按 Si 分档查表 kg/t、温度修正 kg/t/℃、冷料上限 t</li>
+<li>冷料实物化验单（Fe₂O₃ / SiO₂ / V₂O₅）</li>
+<li>铁水 C/Si/V/Ti/P/S/Mn 化验口径与送样时延</li>
+<li>半钢终点目标（温度 / 残钒上限 / 保碳下限）</li>
+<li><b>≥20 炉历史台账</b>（入炉条件 + 实际终点温度 + 渣样全成分）——没有就无法出 KPI，直接卡验收</li>
+<li>OPC/Kafka 点表与<b>只读</b>采集授权</li>
+</ol>
+
+<h2>三、两厂知识如何利用</h2>
+
+<h3>3.1 常数分类处置（44 个顶层常量）</h3>
+<table>
+<tr><th style="width:12%">类别</th><th style="width:30%">常量</th><th style="width:12%">人日</th><th>处置</th></tr>
+<tr><td><b>A 类</b><br>化学/物理不变量</td><td><code>FE_IN_FEO</code>、<code>FE_IN_FE2O3</code>、<code>V2O5_PER_V</code>、<code>MW</code></td><td>0</td><td><b>不进厂级包</b>——任何厂相同，进包制造伪厂差异</td></tr>
+<tr><td><b>B 类</b><br>真厂级且未入包核对</td><td><code>AMBIENT_TEMP</code>、<code>SLUDGE_FACTOR_A/B/ADD</code>、<code>LINING</code> 成分向量、<code>COOLANTS</code> 全字段（现仅核 fe2o3/sio2/v2o5）、<code>COOLANT_ORDER</code></td><td><b>5</b></td><td>6 个名字展开成 <b>15~20 个字段</b>；这是「复制包 vs 定制项目」的分水岭</td></tr>
+<tr><td><b>C 类</b><br>已核对</td><td>其余 34 项（含全部 <code>DH_*</code>、<code>CP</code>、配比与产物折算）</td><td>0</td><td>复制到新厂零改动</td></tr>
+</table>
+<p class="sub">注：顶层常量实测 <b>44</b> = 39 标量 + 5 个结构化表（<code>LINING / CP / MW / COOLANTS / COOLANT_ORDER</code>）；<code>pack_discrepancies()</code> 现有 34 项固定核对 + 冷却剂 3 字段循环。</p>
+
+<h3>3.2 两家知识是互补，不是替代</h3>
+<table>
+<tr><th style="width:26%">维度</th><th>专家A（机理）</th><th>专家B（查表）</th></tr>
+<tr><td>冷却剂需求</td><td>球团 44.1 kg/t（机理反算）</td><td>基准 39.0 → 上限后 25.0 kg/t</td></tr>
+<tr><td>品种分配</td><td>球团单一（3.53 t）</td><td><b>三类</b>：钒渣铁 0.25 / 铁皮 0.09 / 球团 2.78 t</td></tr>
+<tr><td>渣量</td><td>2848 kg（全口径）</td><td>729 kg（仅 SiO₂+V₂O₅）</td></tr>
+<tr><td>热量富余</td><td>16.5 MJ</td><td>不计算（查表法无热平衡）</td></tr>
+<tr><td>品位预测</td><td><b>13.30%</b></td><td><b>无此能力</b></td></tr>
+</table>
+<div class="lead"><b>A 供「总量 + 品位预测」，B 供「品种分配结构」。</b>专家B 切勿拟合连续公式——它的价值恰在离散档位经验，抹平成公式会伪造精度并丢掉分配维度。据 <code>backend/ARBITRATION_DEMO.md</code> 实测对照。</div>
+
+<h3>3.3 知识分级判据（能否脱离本厂数据复算）</h3>
+<table>
+<tr><th style="width:12%">级别</th><th style="width:26%">内容</th><th>判据</th></tr>
+<tr><td>L0</td><td>可独立复算（分子量、Tc=1361℃）</td><td>全开放</td></tr>
+<tr><td>L1</td><td>结构通用、数值厂级（四大平衡项表式）</td><td>结构可交付，数值留厂</td></tr>
+<tr><td>L2</td><td>厂标定值（1.157、2777）</td><td>单个手册常数不算 IP，<b>整套标定组合 / 偏离文献的拟合值才算</b></td></tr>
+<tr><td>L3</td><td>师傅经验</td><td>默认落厂级层，走署名与采纳记账</td></tr>
+</table>
+<p><b>脱敏复用法</b>：出「模板包」——保留 key 与方程，<code>value: &lt;TO_BE_CALIBRATED&gt;</code> + 附标定 recipe。仓库只留结构模板 + 占位，真值随厂包本地分发。</p>
+
+<h3>3.4 合规：Clean-room 形态</h3>
+<ul>
+<li>只交付通用引擎；参数由客户自带并标定，存本地或租户密钥库</li>
+<li><b>不进代码、默认值、测试、日志</b></li>
+<li>使用 A/B 衍生成果前须签授权范围与来源声明</li>
+</ul>
+<div class="warn"><b>紧急项 A（最严重）</b>：<code>backend/app/tools/v_heat_calibration.py:18-37</code> 硬编码了<b>专家A 16 天逐日真实生产实绩</b>（铁水 Si%、铁水 V%、粗钒渣装车样 V₂O₅%、精钒渣 V₂O₅%），且注释直接给出源表定位「Excel 工作表『钒渣钒品位情况』B3:Q6」。<br>
+这比常数更严重：常数尚可争辩为经验值，<b>逐日实绩是明文生产记录</b>，且注释指明了源表位置。合规判断：须<b>立即下架/私有化 + 清历史 + 查 fork</b>；仅删除文件不够（历史提交、fork、制品中仍在）。</div>
+<div class="warn"><b>紧急项 B</b>：33 个专家常数仍在 public 仓库且带 Excel 单元格溯源（<code>!D25</code> <code>!E15</code> <code>!E18</code> 等）。同样需私有化 + 清历史。</div>
+<div class="amber"><b>数据索取口径（对外）</b>：向客户索取冷料分品种加入量时，只索<b>实绩值</b>或其<b>热容当量折算值</b>，<b>不索取配方</b>——冷料配比可能承载客户诀窍。<code>EXPERIENCE_CAPTURE.md §7</code> 的三级 scope 只是内部 SOP，不足以对外构成「默认不共享」承诺，须<b>合同 + 技术隔离 + 审计三者齐备</b>。</div>
+
+<h2>四、已查实的三个缺陷（均实跑证明，P0）</h2>
+<table>
+<tr><th style="width:26%">缺陷</th><th>证据</th><th style="width:22%">后果</th></tr>
+<tr><td><b>1. <code>list_conflicts</code> 恒为 0</b><br>冲突检测已死</td><td><code>tools/__init__.py:118</code> 调 <code>load_pack()</code>，其 <code>DEFAULT_PACK</code> 指向已删除的 <code>knowledge/packs/plant_a/base.yaml</code> → 静默返回 <code>_missing</code> 空包</td><td>CF-001~005 全丢；LLM 侧唯一冲突通道是死的（走 industry 的路径能返回 3 条，<b>两条口径不一致</b>）</td></tr>
+<tr><td><b>2. <code>resolve_parameters</code> 缺包崩溃</b></td><td><code>plant_a_pack.py:166</code> 裸 <code>open()</code> 无降级，实测 FileNotFoundError</td><td>与「厂级包允许不随仓库分发」承诺矛盾；<b>复制新厂时该路径直接崩</b></td></tr>
+<tr><td><b>3. <code>ValidationControlWriter</code> 假装成功</b></td><td><code>mode_control.py:92-122</code> 四方法全部 <code>return True # Pretend success</code></td><td>注释「物理上无法发信号」具误导性——做不到却让上层以为做到了</td></tr>
+</table>
+
+<h2>五、最高风险：R1 与 R3 并列</h2>
+<table>
+<tr><th style="width:16%">风险</th><th style="width:44%">内容</th><th>缓解</th></tr>
+<tr><td><b>R1</b><br><span class="tag t-no">最高</span></td><td>实时数据零接入（全项目 OPC/Kafka/Modbus 零命中，只有 simulator）叠加模型系统性偏高 0.6~1.7pp——<b>一接真数据立刻暴露，验收必挂</b></td><td>分阶段验收（影子 N 炉达标转正）；P2 回放/影子/评测集必须<b>先于</b>第二厂交付完成</td></tr>
+<tr><td><b>R3</b><br><span class="tag t-no">升为并列</span></td><td>CF-001 钒氧化热未终审（配吃差 520 kg/炉）。它<b>不被我方控制</b>（属甲方权威裁决），却卡住转正门槛 ≤0.5pp</td><td>升级为<b>合同里程碑 CC-1</b>，带截止日与默认出口（见下）</td></tr>
+</table>
+
+<h3>CC-1 双出口（写进合同）</h3>
+<table>
+<tr><th style="width:14%">出口</th><th style="width:32%">条件</th><th>后果与成本</th></tr>
+<tr><td><b>甲</b></td><td>甲方工艺负责人在<b>首炉上线前</b>终审一个全局 dh_v</td><td>我方提交黄金用例与反演对照表作证材；全厂共用该口径</td></tr>
+<tr><td><b>乙</b></td><td>逾期未决</td><td>厂级包双案并存、UI 显示预测区间；<b>+3~5 人日/厂</b>，计入联合迭代档——引擎每次请求本已跑双案，此为把已有能力暴露到 UI，非新建</td></tr>
+</table>
+<div class="warn"><b>出口乙的 KPI 只考核方向性指标</b>（配吃采纳率、趋势/排序一致率、例外炉次召回），<b>品位绝对值指标整体挂起</b>至出口甲终审。不得改为「只考核双案一致的部分」——反演显示两案<b>同向偏高</b>（精渣偏差 +1.101 / +1.700 pp），双案一致等于一致地偏，考核一致部分会把已知偏移固化成合格。</div>
+
+<div class="amber"><b>最大单点依赖（已按实测修正）</b>：客户台账须<b>逐炉</b>给铁水 C、铁水温度、分品种实际冷料加入量(kg)、粗渣与精渣 V₂O₅、终点温度。<br>
+· <b>最低 n=20 炉可启动标定</b>（出偏差带与基线）；<br>
+· <b>n≥30 且铁水 V 极差 ≥0.20pp</b> 才走 CF-001 的统计判别路径——稳态生产天然窄（现有样本实测极差仅 0.049pp），此前「极差 ≥0.30pp」属过度设卡，<b>不作为启动条件</b>；不满足则走 CC-1 出口乙。</div>
+
+<h3>转正门槛必须分档，否则是不可达承诺</h3>
+<div class="warn">
+<b>已实测</b>：即便把已知偏移去掉，残差仍达粗渣 ≈0.83~0.91pp、精渣 ≈1.27~1.36pp（模型欠定，非标定问题）。<b>「≤0.5pp 转正」即使 CF-001 终审也兑现不了</b>，写进合同就是不可达承诺。<br>
+<b>分档</b>：默认档＝去偏后 <b>粗渣 ≤0.9pp / 精渣 ≤1.3pp</b>（当前反演已可实现）；<b>≤0.5pp 列为进阶档</b>，须待 CF-001 终审并补齐铁水 C/温度/分品种冷料量等自由度后方可承诺。<br>
+<b>且必须锁定对照对象</b>：默认<b>绑粗渣装车样</b>（RMSE ≈1.0pp），<b>精渣仅参考不进判据</b>——两者口径不同，混用会让判据本身不可复现。
+</div>
+<p><b>P2（回放 + 影子 + 评测集）应升为与 P4 并列的二厂前置 GATE</b>，而非缓释措施：R1（实时数据零接入 + 系统性偏高）在接真数据时即刻暴露，没有 P2 就没有影子期与基线，验收无从谈起。</p>
+
+<h2>六、行动排序</h2>
+<table>
+<tr><th style="width:8%">序</th><th style="width:36%">事项</th><th style="width:12%">人日</th><th>理由</th></tr>
+<tr><td>1</td><td>修三个 P0 缺陷</td><td>1~2</td><td>不修则「配置即得」是假象</td></tr>
+<tr><td>2</td><td>B 类常数入包（P4）</td><td>5</td><td><b>二厂前置 GATE</b>，复制成本 30→10 的前提</td></tr>
+<tr><td>3</td><td><b>【紧急】处置 public 仓库暴露</b>：16 天生产实绩 + 33 个专家常数（四类载体）</td><td>5</td><td>合规按<b>商业秘密事件</b>定性；先证据保全再改内容；下架/转私有优先于重写历史</td></tr>
+<tr><td>4</td><td>P0 数据源适配层</td><td>12</td><td>实时数据零接入是 R1 根因。<b>须与序 3 同批启动，不可串行</b>——否则冷启动必然撞上「估计值进模型」的降级运行期</td></tr>
+<tr><td>5</td><td>P2 回放 + 影子 + 评测集</td><td>10</td><td><b>二厂前置 GATE（与 P4 并列）</b>；无影子期即无基线，验收无从谈起</td></tr>
+<tr><td>6</td><td>拿二厂 ≥20 炉建包 + 影子盲测</td><td><b>12~15</b></td><td>含冷启动盯现场与降级运行期；未闭环不签效果值</td></tr>
+</table>
+
+<h2>七、对外声明口径与法务待确认</h2>
+<div class="warn"><b>对外只声明三件事，不承诺「已无泄露」</b>：<br>
+① 产品已<b>去生产实绩依赖</b>；② 交付前执行<b>全仓扫描</b>；③ 扫描纳入 <b>CI 校验</b>。<br>
+<b>禁止对外声称「已彻底清除」</b>——公网副本（fork、镜像、缓存、制品）不可控，此类承诺无法举证，反而构成新的不实陈述。</div>
+<p><b>客户侧配套</b>：客户清单第 6 条（数据与授权）须升级为合同条款——<b>客户自有数据本地化、不回流、不跨厂使用</b>，写入合同或 DPA，作为与 GATE-2 对等的对外承诺。</p>
+<p><b>处置顺序（不可颠倒）</b>：证据保全 → 改内容 → 下架/转私有 → 评估重写历史 → 法务判断通知与补救。</p>
+<div class="amber"><b>待律师/法务确认（不可自行认定）</b>：<br>
+① A/B 两厂合同的<b>权属条款与授权范围</b>；② 公开行为是否<b>削弱技术秘密性</b>；③ 清历史/fork 的<b>止损可行性</b>（force push 对已存在的副本无效）；④ <b>通知与补救义务</b>的适用与顺序。</div>
+
+<div class="foot">
+数据来源：7 角色两轮评审（产品 / 架构 / 知识工程 / 合规 / 行业专家 / 交付实施 / AI 专家）+ 实跑核查。<br>
+关键文件：<code>backend/app/tools/plant_a_reference.py</code>、<code>backend/app/tools/plant_a_pack.py</code>、<code>backend/app/tools/__init__.py</code>、<code>backend/app/core/mode_control.py</code>、<code>backend/ARBITRATION_DEMO.md</code>、<code>docs/PRODUCT_DEFINITION.md</code>。<br>
+注：撞车/合规结论均来自公开检索与实务判断，非法律意见，落地前需法务确认。
+</div>
+
+</body>
+</html>

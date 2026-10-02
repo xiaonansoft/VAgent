@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>VERO 跨厂复制实施清单</title>
+<style>
+body{font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif;line-height:1.7;color:#2C2C2A;background:#fff;max-width:900px;margin:0 auto;padding:28px 24px}
+h1{font-size:20px;font-weight:600;margin:0 0 4px}
+h2{font-size:15.5px;font-weight:600;margin:22px 0 8px;padding-bottom:5px;border-bottom:2px solid #185FA5;color:#0C447C}
+.sub{color:#5F5E5A;font-size:12.5px;margin-bottom:16px}
+table{border-collapse:collapse;width:100%;margin:10px 0;font-size:13px}
+th{background:#E6F1FB;color:#0C447C;text-align:left;padding:7px 9px;border:1px solid #B5D4F4;font-weight:600}
+td{padding:7px 9px;border:1px solid #D3D1C7;vertical-align:top}
+tr:nth-child(even) td{background:#FAFAF8}
+.lead{background:#E1F5EE;border-left:4px solid #0F6E56;padding:10px 14px;margin:14px 0;font-size:13.5px}
+.warn{background:#FCEBEB;border-left:4px solid #A32D2D;padding:10px 14px;margin:14px 0;font-size:13.5px}
+.amber{background:#FAEEDA;border-left:4px solid #854F0B;padding:10px 14px;margin:14px 0;font-size:13.5px}
+code{background:#F1EFE8;padding:1px 5px;border-radius:3px;font-size:12px;font-family:ui-monospace,Menlo,monospace}
+.tag{display:inline-block;padding:1px 7px;border-radius:4px;font-size:11.5px;font-weight:600}
+.t-gate{background:#FCEBEB;color:#791F1F}
+.t-done{background:#E1F5EE;color:#085041}
+ol,ul{margin:6px 0;padding-left:20px}
+li{margin:3px 0}
+.foot{margin-top:26px;padding-top:10px;border-top:1px solid #D3D1C7;color:#888780;font-size:11.5px}
+</style>
+</head>
+<body>
+
+<h1>VERO 提钒冶炼智能体 · 跨厂复制实施清单</h1>
+<div class="sub">客户版 · 用于实施范围、双方配合与验收口径对齐 · 2026-09-28</div>
+
+<div class="lead">
+<b>交付形态</b>：机理引擎（通用，含四大平衡与证据链机制）+ 贵厂私有参数包（贵厂数据标定，不出厂、不跨厂流转）。<br>
+<b>能力边界</b>：开吹前决策支持。<b>不写入 PLC、不做吹炼过程控制、不自动修改参数</b>——建议权在贵厂。
+</div>
+
+<h2>一、实施阶段与 Gate</h2>
+<table>
+<tr><th style="width:8%">阶段</th><th style="width:32%">内容</th><th style="width:12%">工期</th><th>说明</th></tr>
+<tr><td>Gate 0</td><td><b>知识包脚手架就绪</b></td><td>—</td><td><span class="tag t-gate">前置</span> 我方平台侧准备，不占用贵厂工期；未就绪不启动建包</td></tr>
+<tr><td>阶段 1</td><td>资料交付与数据字典对齐</td><td>1 周</td><td>见 §二清单；缺任一项则后续不启动</td></tr>
+<tr><td>阶段 2</td><td>参数包标定（基于 ≥20 炉历史台账）</td><td>1~2 周</td><td>冷料分档、目标阈值、化验口径修正系数</td></tr>
+<tr><td>阶段 3</td><td>接口对接与只读采集</td><td>2~3 周</td><td>点表映射配置化；<b>只读、数据不出厂</b></td></tr>
+<tr><td>阶段 4</td><td><b>影子运行</b></td><td>4 周 / ≥100 炉</td><td>不推送、不考核、不触达操作；出基线报告双方签字</td></tr>
+<tr><td>阶段 5</td><td>转正与验收</td><td>1 周</td><td>见 §三验收条款</td></tr>
+</table>
+
+<h2>二、贵厂需提供（缺一项即无法出数）</h2>
+<ol>
+<li>现行《提钒操作规程》：冷却剂按 Si 分档查表 kg/t、温度修正 kg/t/℃、冷料上限 t</li>
+<li>冷料实物化验单（Fe₂O₃ / SiO₂ / V₂O₅）</li>
+<li>铁水 C/Si/V/Ti/P/S/Mn 化验口径与送样时延</li>
+<li>半钢终点目标：温度、残钒上限、保碳下限</li>
+<li><b>历史台账（逐炉）</b>：铁水 C、铁水温度、<b>分品种实际冷料加入量（kg）</b>、粗渣与精渣 V₂O₅、终点温度。<br>
+· <b>最低 n=20 炉可启动标定</b>（出偏差带与基线）；<br>
+· <b>n≥30 且铁水 V 极差 ≥0.20 个百分点</b>，才走 CF-001 的数据判别路径——稳态生产天然窄（现有样本实测极差仅 0.049），此门槛用于判断能否做统计判别，<b>不作为启动条件</b>；不满足则走 CC-1 出口乙（双案并存）</li>
+<li>OPC / Kafka 点表与<b>只读</b>采集授权<br><span class="sub">注：以上为<b>我方为完成标定所需</b>的资料，不等同于贵厂的数据保护要求</span></li>
+<li><b>【须单列】贵厂自有数据的本地化与不回流</b><br>生产实绩、标定参数、冷料配比等贵厂数据<b>仅存于贵厂边界内</b>，不回传我方、不跨厂流转、不用于任何其他厂的标定。此条须写入<b>合同或 DPA</b>，不能由上一条的「只读授权」替代——只读授权约束的是我方读取方式，<b>不约束数据落地位置与用途</b></li>
+</ol>
+
+<h2>三、验收条款</h2>
+<div class="amber">
+<b>1. 基线锁定</b>：影子期 4 周、≥100 炉，<b>不推送、不考核、不付成果款</b>。出基线报告由双方签字锁定；所有效益指标一律表述为「<b>基线 ± Δ</b>」，<b>无基线的绝对值无效</b>。
+</div>
+<div class="amber">
+<b>2. 偏差带而非零点对齐</b>：判据写「预测-实绩偏差带」，并<b>显式携带已知系统性偏移</b>（当前模型在同类条件下偏高约 0.6~1.7 个百分点）。偏差带绑定「知识包版本 + Si 分档 + ±2σ」，每 100 炉或每季度强制复核。
+</div>
+<div class="amber">
+<b>3. 转正门槛（分档，且锁定对照对象）</b>：<br>
+· 先锁定对照对象：<b>默认绑粗渣装车样</b>（当前反演 RMSE ≈1.0 个百分点），<b>精渣仅作参考不进判据</b>——两者口径不同，混用会让判据本身不可复现。<br>
+· <b>默认档</b>：去偏后残差 <b>粗渣 ≤0.9 / 精渣 ≤1.3</b> 个百分点（当前反演已可实现）。<br>
+· <b>进阶档</b>：≤0.5 个百分点——需 CF-001 终审且补齐铁水 C/温度/分品种冷料量等自由度后方可承诺，<b>不作为默认门槛</b>。<br>
+· 已知偏移作为<b>显式 bias 参数</b>写入厂级包（带溯源、责任人、复核日期），不得作为永久容差。
+</div>
+<div class="warn">
+<b>双轨结算</b>：结果轨（钒回收率、档位命中率，样本 ≥100 炉）可罚并设赔付上限；质量轨（推翻率趋势、留痕完整率）只进运营报表。<b>不以「采纳率」考核班组</b>。
+</div>
+
+<h2>四、里程碑 CC-1：钒氧化热口径终审（贵厂决策项）</h2>
+<div class="warn">
+<b>性质</b>：ΔH_V（2777 与 15000 两套口径，配吃量相差约 520 kg/炉）的仲裁本质是<b>权威裁决</b>，我方提供证材，<b>不承诺由数据定案</b>。<br>
+依据：现有反演把铁水 C 固定取值、无温度与冷料自由度（欠定）；历史 16 炉样本铁水 V 极差仅 0.049 个百分点，信号小于反演噪声。
+</div>
+<p><b>合同写「双出口」，贵厂二选一：</b></p>
+<table>
+<tr><th style="width:14%">出口</th><th style="width:32%">条件</th><th>后果与成本</th></tr>
+<tr><td><b>出口甲</b></td><td>贵厂工艺负责人在<b>首炉上线前</b>终审一个全局 dh_v</td><td>我方提交黄金用例与反演对照表作为证材；全厂共用该口径，KPI 全面启用</td></tr>
+<tr><td><b>出口乙</b></td><td>逾期未决</td><td>厂级包双案并存，UI 显示<b>预测区间</b>（引擎每次请求本已跑双案，此为把已有能力暴露到 UI，非新建）；<b>+3~5 人日/厂</b>，计入联合迭代档</td></tr>
+</table>
+<div class="amber">
+<b>出口乙的 KPI 口径</b>：只考核<b>方向性指标</b>（配吃采纳率、趋势/排序一致率、例外炉次召回），<b>品位绝对值指标整体挂起</b>至出口甲终审。<br>
+<b>不得改为「只考核双案一致的部分」</b>——反演显示两案<b>同向偏高</b>（精渣偏差 +1.101 / +1.700 个百分点），双案一致等于一致地偏，考核一致部分会把已知偏移固化成合格。
+</div>
+
+<h2>五、报价构成</h2>
+<table>
+<tr><th style="width:24%">构成</th><th>说明</th></tr>
+<tr><td>许可</td><td>按站点 / 炉座</td></tr>
+<tr><td>实施</td><td>标准接入 <b>22~27 人日/厂</b>（含冷启动降级运行期的口径确认与参数标定；理想条件下可压缩至 10~12 人日，<b>不作为报价基线</b>）；含非标点表工程的深度档按条目计价并设工时上限，超量走变更单</td></tr>
+<tr><td>年维保</td><td>知识包版本管理与回归门禁</td></tr>
+</table>
+<p class="sub">平台侧一次性投入（数据源适配层、回放/影子/评测集、前端桥接等）列为<b>我方产品投入</b>，<b>不计入本厂报价</b>。</p>
+
+<h2>六、双方义务与工期</h2>
+<ul>
+<li><b>贵厂义务</b>：影子期需配合工艺/化验每炉约 10 分钟的数据确认，以及每日对齐会。该配合不计我方人日，但直接影响工期</li>
+<li><b>延期免责</b>：因资料延迟、点表授权延迟或配合不到位导致的工期顺延，双方书面确认后免责</li>
+<li><b>我方义务</b>：不触碰控制回路；参数变更经贵厂工艺工程师签字生效，<b>禁止在线自改</b>；每炉输出可回放</li>
+<li><b>数据隔离</b>：交付物<b>不携带任何其他厂的生产实绩数据</b>，反演器只接受贵厂现场提供的本厂数据；交付前出具数据隔离声明</li>
+<li><b>数据用途限制</b>：贵厂提供的冷料实绩等数据<b>仅用于本厂标定</b>，不进入任何跨厂共享层；如需用脱敏样本做演示，须经贵厂书面同意且不得反推真实工况</li>
+</ul>
+
+<div class="foot">
+本清单用于实施范围与验收口径对齐，具体商务条款以合同为准。<br>
+能力边界依据：开吹前决策支持；不写 PLC、不做过程控制、不自动改参数、不跨厂共享厂级经验。
+</div>
+
+</body>
+</html>

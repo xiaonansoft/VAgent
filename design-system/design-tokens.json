@@ -1,0 +1,93 @@
+{
+  "meta": {
+    "project": "VERO 提钒-炼钢全链路蓝图文档",
+    "version": "1.0",
+    "date": "2026-09-28",
+    "designer": "颜好看",
+    "scope": "light documentation theme（蓝图文档专用；深色驾驶舱 v0.9 主题独立不变）",
+    "iconLibrary": "lucide",
+    "iconSizes": [16, 20, 24]
+  },
+  "color": {
+    "bg":              { "value": "#F6F7F9", "type": "color", "layer": "A2", "ref": "--c-paper-100" },
+    "surface":         { "value": "#FFFFFF", "type": "color", "layer": "A2", "ref": "--c-paper-0" },
+    "surfaceSunken":   { "value": "#EFF1F4", "type": "color", "layer": "A2", "ref": "--c-paper-200" },
+    "fg":              { "value": "#141D2B", "type": "color", "layer": "A2", "ref": "--c-ink-900" },
+    "fg2":             { "value": "#3D4A5F", "type": "color", "layer": "A2", "ref": "--c-ink-700" },
+    "muted":           { "value": "#6B7686", "type": "color", "layer": "A2", "ref": "--c-ink-500" },
+    "meta":            { "value": "#98A1AE", "type": "color", "layer": "A2", "ref": "--c-ink-400" },
+    "border":          { "value": "#E2E5EA", "type": "color", "layer": "A2", "ref": "--c-line-300" },
+    "borderSoft":      { "value": "#EBEEF2", "type": "color", "layer": "A2", "ref": "--c-line-200" },
+    "accent":          { "value": "#E8590C", "type": "color", "layer": "A2", "ref": "--c-molten-600", "note": "铁水橙·图形与大字号用" },
+    "accentText":      { "value": "#C2410C", "type": "color", "layer": "A2", "ref": "--c-molten-700", "note": "白底 5.2:1·链接与强调文字" },
+    "accentTint":      { "value": "#FDEEE3", "type": "color", "layer": "A2", "ref": "--c-molten-100" },
+    "accentHover":     { "value": "#D9480F", "type": "color", "layer": "A2" },
+    "accentActive":    { "value": "#B84E0C", "type": "color", "layer": "A2" },
+    "steel":           { "value": "#2B4A6F", "type": "color", "layer": "A2", "ref": "--c-steel-700" },
+    "steelTint":       { "value": "#E7EEF5", "type": "color", "layer": "A2", "ref": "--c-steel-100" },
+    "success":         { "value": "#2B8A3E", "type": "color", "layer": "A2", "tint": "#E4F3E7" },
+    "warn":            { "value": "#B54708", "type": "color", "layer": "A2", "tint": "#FCF0DC" },
+    "danger":          { "value": "#C92A2A", "type": "color", "layer": "A2", "tint": "#FBEAEA" },
+    "info":            { "value": "#1971C2", "type": "color", "layer": "A2", "tint": "#E2EFFA" },
+    "domainVanadium":  { "value": "#E8590C", "type": "color", "layer": "C", "note": "工艺域·提钒" },
+    "domainSteel":     { "value": "#2B4A6F", "type": "color", "layer": "C", "note": "工艺域·炼钢" },
+    "domainCommon":    { "value": "#6B7686", "type": "color", "layer": "C", "note": "工艺域·公共底座" }
+  },
+  "font": {
+    "family": {
+      "display": { "value": "Inter, HarmonyOS Sans SC, MiSans, PingFang SC, Microsoft YaHei, system-ui, sans-serif", "type": "fontFamily" },
+      "body":    { "value": "Inter, HarmonyOS Sans SC, MiSans, PingFang SC, Microsoft YaHei, system-ui, sans-serif", "type": "fontFamily" },
+      "mono":    { "value": "JetBrains Mono, Cascadia Code, SF Mono, Menlo, Consolas, monospace", "type": "fontFamily" }
+    },
+    "size": {
+      "cap":  { "value": "12px", "type": "dimension", "lineHeight": "1.5" },
+      "sm":   { "value": "13px", "type": "dimension", "lineHeight": "1.6" },
+      "body": { "value": "14px", "type": "dimension", "lineHeight": "1.75" },
+      "md":   { "value": "15px", "type": "dimension", "lineHeight": "1.7" },
+      "h3":   { "value": "16px", "type": "dimension", "lineHeight": "1.5" },
+      "h2":   { "value": "20px", "type": "dimension", "lineHeight": "1.4" },
+      "h1":   { "value": "26px", "type": "dimension", "lineHeight": "1.3" },
+      "doc":  { "value": "34px", "type": "dimension", "lineHeight": "1.25" }
+    },
+    "tracking": {
+      "caps":  { "value": "0.06em", "type": "dimension" },
+      "title": { "value": "-0.01em", "type": "dimension" }
+    },
+    "numeric": { "value": "tabular-nums", "type": "other", "note": "所有数据表格/坐标轴/KPI 强制启用" }
+  },
+  "space": {
+    "s1": { "value": "4px",  "type": "dimension" },
+    "s2": { "value": "8px",  "type": "dimension" },
+    "s3": { "value": "12px", "type": "dimension" },
+    "s4": { "value": "16px", "type": "dimension" },
+    "s5": { "value": "24px", "type": "dimension" },
+    "s6": { "value": "32px", "type": "dimension" },
+    "s7": { "value": "48px", "type": "dimension" },
+    "s8": { "value": "64px", "type": "dimension" }
+  },
+  "radius": {
+    "sm":   { "value": "6px",   "type": "dimension" },
+    "md":   { "value": "8px",   "type": "dimension" },
+    "lg":   { "value": "12px",  "type": "dimension", "note": "卡片上限，禁止 ≥24px" },
+    "pill": { "value": "999px", "type": "dimension" }
+  },
+  "shadow": {
+    "shadow1": { "value": "0 1px 2px rgba(20,29,43,0.05)", "type": "boxShadow" },
+    "shadow2": { "value": "0 4px 12px rgba(20,29,43,0.08)", "type": "boxShadow" }
+  },
+  "focus": {
+    "ring": { "value": "0 0 0 3px rgba(232,89,12,0.35)", "type": "boxShadow" }
+  },
+  "motion": {
+    "fast": { "value": "120ms", "type": "duration" },
+    "base": { "value": "180ms", "type": "duration" },
+    "ease": { "value": "cubic-bezier(0.2, 0, 0, 1)", "type": "cubicBezier" },
+    "reducedMotion": "prefers-reduced-motion: reduce 时全部动画降为 0ms"
+  },
+  "layout": {
+    "containerMax": { "value": "1200px", "type": "dimension" },
+    "tocWidth":     { "value": "216px",  "type": "dimension" },
+    "gutter":       { "value": "24px",   "type": "dimension" },
+    "sectionY":     { "value": "56px",   "type": "dimension" }
+  }
+}

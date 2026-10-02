@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>VERO 战略规划 v0.1 · 前瞻引领 × 可落地</title>
+<style>
+body{font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif;line-height:1.7;color:#2C2C2A;background:#fff;max-width:980px;margin:0 auto;padding:28px 24px}
+h1{font-size:21px;font-weight:600;margin:0 0 4px}
+h2{font-size:16px;font-weight:600;margin:26px 0 8px;padding-bottom:5px;border-bottom:2px solid #185FA5;color:#0C447C}
+h3{font-size:14px;font-weight:600;margin:16px 0 6px;color:#0C447C}
+.sub{color:#5F5E5A;font-size:12.5px;margin-bottom:16px}
+table{border-collapse:collapse;width:100%;margin:10px 0;font-size:12.7px}
+th{background:#E6F1FB;color:#0C447C;text-align:left;padding:7px 9px;border:1px solid #B5D4F4;font-weight:600}
+td{padding:7px 9px;border:1px solid #D3D1C7;vertical-align:top}
+tr:nth-child(even) td{background:#FAFAF8}
+.lead{background:#E1F5EE;border-left:4px solid #0F6E56;padding:10px 14px;margin:14px 0;font-size:13.5px}
+.warn{background:#FCEBEB;border-left:4px solid #A32D2D;padding:10px 14px;margin:14px 0;font-size:13.5px}
+.amber{background:#FAEEDA;border-left:4px solid #854F0B;padding:10px 14px;margin:14px 0;font-size:13.5px}
+.info{background:#E6F1FB;border-left:4px solid #185FA5;padding:10px 14px;margin:14px 0;font-size:13.5px}
+code{background:#F1EFE8;padding:1px 5px;border-radius:3px;font-size:11.5px;font-family:ui-monospace,Menlo,monospace}
+.tag{display:inline-block;padding:1px 7px;border-radius:4px;font-size:11.5px;font-weight:600}
+.t-ok{background:#E1F5EE;color:#085041}
+.t-no{background:#FCEBEB;color:#791F1F}
+.t-mid{background:#FAEEDA;color:#854F0B}
+.t-lead{background:#EEEDFE;color:#3C3489}
+ol,ul{margin:6px 0;padding-left:20px}
+li{margin:3px 0}
+.foot{margin-top:26px;padding-top:10px;border-top:1px solid #D3D1C7;color:#888780;font-size:11.5px}
+.judge{font-size:11.5px;color:#854F0B}
+</style>
+</head>
+<body>
+
+<h1>VERO 提钒冶炼智能体 · 战略规划 v0.1</h1>
+<div class="sub">前瞻引领 × 可落地 · 2026-09-28 · 六角色（行业前沿 / AI 架构 / 产品战略 / 20 年炉长 / CBO / 安全合规 IP）并行评审后收敛</div>
+
+<div class="lead">
+<b>一句话结论</b>：提钒智能化是<b>全球性空白</b>——主流炼钢已进"一键炼钢"，提钒仅承德钒钛一家做到全自动，国际大厂不愿为窄赛道下场。VERO 若打通「在线标定 + 实时同化 + 安全留痕」，即<b>细分行业第一</b>。但所有前瞻性，必须先过炉长那关：<b>喊得准，才谈得上引领；喊不准，全是展厅货。</b>
+</div>
+
+<h2>一、今天讨论全景 · 收敛表</h2>
+<table>
+<tr><th style="width:24%">今天讨论的问题</th><th style="width:46%">收敛结论</th><th>落点</th></tr>
+<tr><td>解决哪些业务问题</td><td>配吃决策 / 品位预判 / 提钒保碳两难 / 经验不可复制 / 口径冲突显性化</td><td>产品规划 v0.1</td></tr>
+<tr><td>三段功能与界面</td><td>前预测 / 中实时推理+优化建议 / 后分析，22 功能 14 屏</td><td>产品规划 v0.1</td></tr>
+<tr><td>中段做不做实时推理</td><td><b>做</b>；骨架已到位九成，缺接线/真数据/标定三样</td><td>本文 §五</td></tr>
+<tr><td>边界怎么修</td><td>「只开吹前不碰事中」→「事中只推理与建议、不执行」</td><td>产品规划 §二</td></tr>
+<tr><td>复制与两厂知识</td><td>通用引擎+厂级配置服务；A 供总量与品位、B 供品种分配</td><td>边界文档</td></tr>
+<tr><td><b>前瞻引领 vs 落地</b></td><td>引领=做成提钒细分第一；落地=过炉长硬门槛 + 不越安全红线</td><td>本文 §三~十</td></tr>
+</table>
+
+<h2>二、赛道判断：空白，且窄到巨头不下场</h2>
+<table>
+<tr><th style="width:20%">厂商 / 主体</th><th style="width:18%">开吹前配料</th><th style="width:22%">吹炼中动态控制</th><th style="width:20%">终点命中</th><th>定位</th></tr>
+<tr><td>达涅利 SDM</td><td>静态模型</td><td>副枪+烟气动态校正</td><td>C-T 双命中 ~90%+</td><td>全球 120+ 套，标杆</td></tr>
+<tr><td>普锐特 TPO</td><td>全流程设定表</td><td>LOMAS 烟气+副枪</td><td>承诺命中率达标（日照 2025）</td><td>一键炼钢，95% 流程自动化</td></tr>
+<tr><td>宝武 / 宝信</td><td>钢铁大模型 + AI 炉长</td><td>场景化试点</td><td>高炉炉温预测 90%</td><td>大模型路线，转炉追赶</td></tr>
+<tr><td><b>提钒赛道</b></td><td colspan="3"><b>仅承德钒钛 2024 全自动（模型使用率 96%，余钒/温度命中率各升 11.6 / 10.3 pct）</b>；其余靠人工经验；<b>无商用提钒动力学实时控制产品</b></td><td><span class="tag t-lead">空白</span></td></tr>
+</table>
+<div class="amber">
+<b>市场盘子（量级估算，不确定性 ±30%）</b>：全球可服务提钒转炉约 <b>40~60 座</b>（中国 30~50：攀钢/河钢承钢/建龙/德胜/成渝钒钛/达钢等 10~14 家；EVRAZ、南非、新西兰部分非转炉工艺不可服务）。按炉座年订阅 30~60 万元，年化 <b>2000 万 ~ 1 亿元</b>。<b>这是"养得起一家专精公司、喂不饱巨头产品线"的市场</b>——窄，恰是护城河。
+</div>
+
+<h2>三、引领性定位与可投标目标</h2>
+<div class="lead">
+<b>定位一句话（升级）</b>：<br>
+「<b>提钒行业的机理计算底座：让每一炉配吃决策有机理、有判例、有留痕，把师傅经验变成可继承的厂级数字资产。</b>」<br>
+从"炉长用一次的工具"升为"厂级知识资产的操作系统"，但每个词都能兑现：机理=已有引擎，判例=已有判例库，留痕=已有证据链，资产=知识包署名记账。
+</div>
+<h3>五条可写进投标的引领性目标 <span class="judge">（判断项，需以双方签字基线审计为准）</span></h3>
+<ol>
+<li><b>行业首个</b>提钒「静态四大平衡 + 动力学 ODE + 卡尔曼同化」在线模型，k 常数自动标定。</li>
+<li>半钢温度 <b>±15℃</b>、余钒 <b>±0.005%</b> 命中率 <b>≥90%</b>（对标并力争超过承德基线）。</li>
+<li>8~12 分钟吹炼<b>全程秒级状态估计</b>，降低对副枪的依赖。</li>
+<li>钒回收率提升 <b>≥1.5 pct</b>，吨钢创效<b>可审计</b>（基线±Δ）。</li>
+<li>每条建议<b>可追溯、每次采纳有签名</b>——控制零触碰，知识全留痕。</li>
+</ol>
+
+<h2>四、前瞻引领点 × 落地路径 × 红线（核心一张表）</h2>
+<table>
+<tr><th style="width:20%">前瞻主张</th><th style="width:40%">落地路径（锚在现有资产上）</th><th>红线（不可越）</th></tr>
+<tr><td><b>行业首个提钒在线动力学模型</b></td><td>接线 <code>useProcessStream</code>（1~2 人日）+ 标定 k 常数与 Q/R（≥50 炉）→ 2026 跑通</td><td><span class="tag t-no">红线</span> σ 必须来自 KF 协方差，禁用硬编码线性式</td></tr>
+<tr><td><b>Tc 拐点提前 60~90 秒喊出来</b></td><td>炉长最疼的一件事：把老师傅看火听声的玄学变班组刻度；先做"模型 vs 师傅"误差报告建信任</td><td><span class="tag t-no">红线</span> 误报 ≤1 次/班连续 3 班，超 3 次/月炉长永久关报警</td></tr>
+<tr><td>炉次级软孪生（2027）</td><td>UKF/EKF 多状态 + 残差 ML（GBM 级）+ 真实 learned_entries 增量标定</td><td><span class="tag t-no">红线</span> 2026 不宣称"孪生"；永不宣称"全流程数字孪生"；宣称前建 <code>docs/claims_evidence.md</code> 逐条挂证</td></tr>
+<tr><td>数据飞轮</td><td><b>三层双飞轮</b>：L1 行业层共享 schema/方法学；L2 厂级标定数值不出厂；L3 师傅经验不出厂。类比 Android：AOSP 共享、私有层自持</td><td><span class="tag t-no">红线</span> 共享结构与方法，<b>永不共享数值</b>；跨厂参数回流总仓=违约</td></tr>
+<tr><td>提钒知识交换标准卡位</td><td>开源 <code>vero.knowledge-pack/v1</code> schema + 行业基线包（文献共识，本非 IP）；引擎与回归用例集闭源；lint+回归门禁=认证收费点。<b>窗口期约 2 年</b></td><td><span class="tag t-no">红线</span> 标准附件不得含 33 个溯源常数；只能输出匿名化方法论/接口规范</td></tr>
+<tr><td>LLM 智能体</td><td>做<b>理解 / 编排 / 解释 / 留痕</b>：炉况语义化、跨炉次经验检索、把仲裁双案讲成决策建议</td><td><span class="tag t-no">红线</span> <b>零数值计算权</b>；不编造常数；不绕过 ModeController</td></tr>
+<tr><td>按炉订阅 + 增量分成</td><td>年维保升级为按炉订阅（主推）；增量分成二期再上（需签字基线+对赌）</td><td><span class="tag t-no">红线</span> 无基线不分成；知识包商城 / 数据要素入表<b>不做</b>（踩 IP 边界）</td></tr>
+</table>
+
+<h2>五、三年 AI 技术路线（每一跳都在现有代码延长线上）</h2>
+<h3>混合建模三者的精确分工</h3>
+<table>
+<tr><th style="width:12%">层</th><th style="width:50%">职责</th><th>边界（红线）</th></tr>
+<tr><td><b>机理层</b></td><td>四大平衡定初值与终态约束；8 状态 ODE 推演轨迹；KF 融合软测量输出 σ</td><td>唯一允许输出数值的层；常数带 Excel 溯源</td></tr>
+<tr><td><b>数据层</b></td><td>学<b>残差</b>而非学过程：<code>actual − ODE_pred</code> → 在线标定 k_si/k_v、修正 σ、识别 stirring_factor 真实衰减曲线</td><td>不直接预测终点成分，只在机理框架内纠偏</td></tr>
+<tr><td><b>LLM 层</b></td><td>理解（炉况语言化、异常归因）、编排（选工具走图触发审批）、解释（把 σ 和 Tc 翻成人话）、留痕（推理链落 AdviceLog）</td><td><b>零数值计算权</b></td></tr>
+</table>
+<h3>演进三级跳</h3>
+<table>
+<tr><th style="width:14%">阶段</th><th style="width:42%">能力跃升</th><th style="width:12%">人日</th><th>失败回退</th></tr>
+<tr><td><b>2026 跑通+标定</b></td><td>① 接通 SSE（已存在只差 import）② Validation 写真实审计表 ③ 真实炉次标定 k 与 σ（残差回归替换线性假式）④ off_gas_correction 默认可开</td><td>60~80</td><td>σ 硬编码式 + KF 关闭，ODE 裸跑仍可用</td></tr>
+<tr><td><b>2027 在线孪生体</b></td><td>① KF → UKF/EKF 多状态（C+T 联合）② 残差上 ML（GBM 级，不上深度学习）③ learned_entries 从 mock 变真实增量标定 ④ 炉役自学习：stirring_factor 按炉号回归</td><td>150~200</td><td>冻结 2026 标定常数，关闭在线学习</td></tr>
+<tr><td><b>2028 引领形态</b></td><td><b>多炉协同知识飞轮</b>：厂级标定脱敏沉淀知识包新版（scope 提升需人审）；LLM 写标定报告 + 跨厂异常模式比对；对外宣称<b>自标定软测量系统</b></td><td>200+</td><td>各厂独立标定，知识包不跨厂流动</td></tr>
+</table>
+<div class="info">
+<b>两个架构裁决</b>：① <b>不拆多智能体</b>——现有 CoordinatorAgent + LangGraph interrupt/approve 已具备感知→推理→人工审批→留痕全部结构，真分工边界在代码层（工具）与编排层（图节点），为拆而拆只引入通信开销；2028 要拆也是拆<b>知识包实例</b>而非 agent 进程。② <b>数字孪生宣称门槛三条</b>：离线回放误差可量化（终点 C ±0.05% / T ±15℃ 命中率 >70%）、σ 来自 KF 协方差、每个数字可溯源到常数+炉次。
+</div>
+
+<h2>六、产品四阶段演进与护城河</h2>
+<table>
+<tr><th style="width:10%">阶段</th><th style="width:12%">年份</th><th style="width:26%">形态</th><th style="width:22%">收费点</th><th>壁垒</th></tr>
+<tr><td>① 工具</td><td>2026~27</td><td>单炉配吃助手 + 事中建议</td><td>炉座 License + 每厂 22~27 人日实施</td><td>机理引擎 + Excel 黄金回归</td></tr>
+<tr><td>② 系统</td><td>2027~28</td><td>车间级：判例闭环 + 参数治理 + 经验捕获</td><td>站点 License + 年维保（知识包版本+回归门禁）</td><td>厂级参数包 + 判例库</td></tr>
+<tr><td>③ 平台</td><td>2028~30</td><td>Clean-room 引擎 + 知识包脚手架 + lint CI</td><td>平台订阅 + 配置服务 + 交付认证</td><td>schema 生态位 + 行业基线包</td></tr>
+<tr><td>④ 生态/标准</td><td>2030+</td><td>第三方按 schema 交付知识包</td><td>标准认证 + 市场分成</td><td>事实标准本身</td></tr>
+</table>
+<div class="amber">
+<b>护城河从阶段②末开始形成、③固化，且不是代码</b>——是三样资产：<b>黄金回归用例集</b>（需多年积累）、<b>行业基线包的内容</b>（条条带溯源）、<b>经验流通协议</b>（判例格式+采纳记账积累的师傅信任）。引擎可重写，"被验证过的参数+溯源链"抄不走。
+</div>
+
+<h2>七、现场可接受性：前瞻必须过炉长这关</h2>
+<div class="warn">
+<b>炉前大屏被真正用起来的 5 条硬门槛（可检验）</b><br>
+① 时延：读数刷新 <b>≤2s</b>、建议生成 <b>≤5s</b>（吹炼共 8~12 分钟）；② 一屏核心读数 <b>≤6 个</b>（温度/碳/钒/枪位/氧流量/倒计时）；③ 误报 <b>≤1 次/班连续 3 班</b>，首月超 3 次炉长永久关报警；④ <b>不增人手</b>——不得要求班组新增任何录入，手敲的一律死；⑤ <b>不背锅</b>——每条建议带"依据快照"（当时温度/渣况/铁水硅），事后可追溯。
+</div>
+<h3>四条优化建议的现场采纳度排序</h3>
+<table>
+<tr><th style="width:16%">建议</th><th style="width:14%">采纳度</th><th style="width:34%">为什么</th><th>误报 / 漏报代价</th></tr>
+<tr><td><b>枪位</b></td><td><span class="tag t-ok">最高</span></td><td>一助手本就盯枪位，与经验同向时是"佐证"，敢用</td><td>误报→喷溅/返干伤炉衬；漏报→烧枪数万</td></tr>
+<tr><td><b>补冷料</b></td><td><span class="tag t-ok">次之</span></td><td>块状走天车，从建议到入炉 2~3 分钟，<b>窗口错过建议即废</b></td><td>误报→压温过头保不住碳；漏报→过 Tc 钒烧损</td></tr>
+<tr><td>供氧</td><td><span class="tag t-mid">半信半疑</span></td><td>氧流量动工艺纪律，炉长只信自己手感</td><td>—</td></tr>
+<tr><td>提枪时机</td><td><span class="tag t-no">最易被无视</span></td><td>提枪是炉长的"军令状"，"该提不提"一次他这辈子不信你</td><td><b>只配做"参考倒计时"，不配做建议</b></td></tr>
+</table>
+<h3>落地第一公里的 5 个坑（人和流程，不是技术）</h3>
+<ol>
+<li><b>班组抵触</b>：老师傅觉得系统在"考他"——<b>前两周只显示不评价</b>，先混脸熟再谈建议。</li>
+<li><b>化验时延 5~8 分钟</b>：系统拿滞后数据推"实时"，炉长一眼拆穿——必须显式标注数据时龄。</li>
+<li><b>天车留痕断点</b>：冷料加没加、加多少不回传，模型以为自己吃了冷料实际没吃，全盘错——称量/吊运实绩必须回流。</li>
+<li><b>责任归属</b>：不先跟车间签「<b>建议免责、操作负责</b>」的纸面规矩，没人敢点"采纳"。</li>
+<li><b>夜班无人看屏</b>：后半夜人手减半，建议必须<b>声光一体 + 值守室同步</b>，只亮屏等于没发。</li>
+</ol>
+
+<h2>八、商业化：窄赛道的信任生意</h2>
+<table>
+<tr><th style="width:22%">模式</th><th style="width:12%">判断</th><th>说明</th></tr>
+<tr><td>许可 + 实施 + 维保</td><td><span class="tag t-ok">基座</span></td><td>平台投入 40 人日不进厂报价；每厂 22~27 人日</td></tr>
+<tr><td>按炉订阅</td><td><span class="tag t-ok">主推</span></td><td>年维保升级为订阅（含模型迭代），现金流前置</td></tr>
+<tr><td>按钒回收增量分成</td><td><span class="tag t-mid">二期</span></td><td>需签字基线 + 对赌条款；无基线时是自杀</td></tr>
+<tr><td>知识包商城</td><td><span class="tag t-no">不做</span></td><td>踩"不跨厂共享经验"；变通=只卖去标识化机理模板（参数区间、无厂级数据）</td></tr>
+<tr><td>数据要素入表 / 交易</td><td><span class="tag t-no">不做</span></td><td>踩"数据不出厂"；冶炼数据权属归厂方，我方只收软件费</td></tr>
+</table>
+<div class="info">
+<b>无签字基线也能报价——报"条件价"</b>：影子期<b>免费</b>联合测基线并双方签字 → 收益 ≥Y 转正式合同、Y~Z 区间阶梯价、<b>低于 Y 甲方可无条件终止</b>、赔付上限合同额 N 倍。<b>把不确定性变成分档结构，而不是吹成确定值</b>——这本身就是对竞对"PPT 卖模型"的降维打击。<br>
+<b>GTM 第一单</b>：首选民企标杆（德胜/达钢），厂长一人拍板、决策链 1~2 层、2 个月可签；免费影子期 4~8 周 → 签字基线 → 脱敏案例 → 回头打攀钢/承钢（国企认"同行已签字"胜过一切演示）。防中冶赛迪以"项目制"顺手接单。
+</div>
+
+<h2>九、红线守门：三条死线 + 话术红白名单</h2>
+<div class="warn">
+<b>三条死线（宁可不智能也不能越）</b><br>
+① 任何写 PLC/执行机构的路径<b>物理不可达</b>——<code>ProductionControlWriter</code> 的 NotImplementedError 锁保留并升级为架构级隔离；急停、红警自动投料<b>永远不进代码</b>。<br>
+② <b>无"无人工确认的执行"</b>——建议可给、执行必过人；自动闭环禁止，影子模式也不得与控制系统同网段。<br>
+③ <b>未标定不上线</b>——取得 N 炉次真值标定前，"事中建议"不得出现在生产界面，只能事后复盘。
+</div>
+<h3>对外话术红白名单</h3>
+<table>
+<tr><th style="width:24%">说法</th><th style="width:12%">判定</th><th>安全替代表述</th></tr>
+<tr><td>数字孪生 / 预测未来 5min</td><td><span class="tag t-mid">改口径</span></td><td>"机理+规则的仿真校验环境"；禁"预测未来"</td></tr>
+<tr><td>自学习 / 越用越准</td><td><span class="tag t-no">禁用</span></td><td>"人工确认后的经验沉淀，可追溯复用"</td></tr>
+<tr><td>大模型</td><td><span class="tag t-mid">改口径</span></td><td>"大模型辅助知识检索与报告生成，不参与控制决策"</td></tr>
+<tr><td>降本 X 元 / 品位波动降 30% / 收得率 88%</td><td><span class="tag t-no">禁用</span></td><td>"目标指标，以双方确认的基线审计为准"</td></tr>
+<tr><td>急停写 PLC / 红警自动投生铁</td><td><span class="tag t-no">禁用且须从存量物料清除</span></td><td>—</td></tr>
+</table>
+<div class="amber">
+<b>处置紧迫度排序</b>：① <b>public 仓库实产数据 + 专家常数立即下架/脱敏</b>（泄露已发生、扩散不可逆）＞ ② SOLUTION_PITCH 五条款清除（内部物料，可控）＞ ③ 代码三处造假修复（learned_entries mock / ValidationControlWriter 假装成功 / switch_mode 未 await，防演示被现场拆穿）。<br>
+<b>法律定性</b>：未实现功能写入 PPT/投标 = 招标阶段虚假宣传（反不正当竞争法§8）+ 缔约过失（民法典§500）；中标后 = 合同违约 + 欺诈可撤销。
+</div>
+<h3>三句可直接用的安全版引领话术</h3>
+<ol>
+<li>"VERO 是首个把提钒专家经验工程化为<b>可审计软件资产</b>的平台——<b>控制零触碰，知识全留痕</b>。"</li>
+<li>"我们不替代操作工的手，我们<b>沉淀操作工的脑</b>：每条建议可追溯、每次采纳有签名。"</li>
+<li>"Clean-room 架构让每家工厂的经验只服务于自己——这是<b>数据主权时代的工业 AI 标准姿势</b>。"</li>
+</ol>
+
+<h2>十、前瞻 × 落地的统一：引领性 = 把别人不敢承诺的"可审计"做到极致</h2>
+<div class="lead">
+六个角色收敛出一个共同判断：<b>VERO 的引领性，不在"更聪明的 AI"，在"更可审计的工程"</b>。达涅利拼的是功能全，我们拼的是——每个数字有机理、有判例、有留痕、能签字。在国企采购与功能安全审查的语境里，<b>"被验证过的信任"比"炫技的智能"稀缺得多</b>，也抄不走。<br>
+所以前瞻与落地不是矛盾，是同一件事的两面：<b>把 Tc 拐点提前 90 秒喊准，是现场认的引领；把 k 常数自动标定做成行业第一，是技术认的引领；把知识包 schema 做成标准，是生态认的引领</b>——三者的共同地基，都是"先喊准、再说话"。
+</div>
+
+<h2>十一、待拍板</h2>
+<ol>
+<li><b>定位一句话</b>是否采用 §三 升级版（机理计算底座 / 厂级数字资产）。</li>
+<li><b>引领性目标第 2 条</b>（±15℃ / ±0.005% / ≥90%）是否作为对外投标口径——需先经基线审计确认可达。</li>
+<li><b>中段接线</b>（1~2 人日跑通演示）与<b>三处造假修复</b>是否立即动手。</li>
+<li><b>public 仓库暴露</b>立即下架/脱敏——六角色一致列为最紧迫。</li>
+<li><b>SOLUTION_PITCH 清理</b>与存量物料话术白名单替换。</li>
+<li><b>标准卡位</b>是否立项（开源 schema + 行业基线包，窗口期约 2 年）。</li>
+</ol>
+
+<div class="foot">
+本战略由六角色（全球行业前沿 / AI 首席架构 / 产品战略 / 20 年炉长·车间主任 / CBO / 功能安全·合规·IP）并行评审后收敛。结论已区分【行业共识】与【判断】；市场数字为量级估算（±30%），引领性目标需以双方签字基线审计为准。交叉核对依据：kinetics_simulator.py、plant_a_reference.py、data_server.py、main.py、PRODUCT_DEFINITION.md、VERO_PRODUCT_PLAN_v0.1.html。
+</div>
+
+</body>
+</html>
