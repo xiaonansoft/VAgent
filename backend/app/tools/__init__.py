@@ -16,6 +16,7 @@ from __future__ import annotations
 
 import importlib
 import logging
+import os
 from typing import Any, Callable, Dict, List, Literal, Optional
 
 from pydantic import BaseModel, ConfigDict, Field
@@ -82,9 +83,10 @@ def query_knowledge_pack(param_path: str = "", plant: str | None = None) -> dict
     - param_path 命中叶子节点: 返回 {"found": True, "value": ..., "unit":..., "source":...}
     - 未命中: 返回 {"found": False, "available_keys": [...]}
     """
-    from .plant_a_pack import resolve_parameters  # 惰性导入（yaml 仅在调用时加载）
+    from .plant_a_pack import last_resolve_status, resolve_parameters  # 惰性导入（yaml 仅在调用时加载）
 
     merged = resolve_parameters(plant)
+    status = last_resolve_status()
     node: Any = merged
     for key in [k for k in param_path.split(".") if k]:
         if isinstance(node, dict) and key in node:
@@ -95,6 +97,8 @@ def query_knowledge_pack(param_path: str = "", plant: str | None = None) -> dict
                 "found": False,
                 "value": None,
                 "available_keys": sorted(node.keys()) if isinstance(node, dict) else None,
+                "degraded": status.get("degraded", False),
+                "degraded_note": status.get("message") if status.get("degraded") else None,
             }
 
     if isinstance(node, dict) and "value" in node:
@@ -105,6 +109,8 @@ def query_knowledge_pack(param_path: str = "", plant: str | None = None) -> dict
             "unit": node.get("unit"),
             "source": node.get("source"),
             "note": node.get("note"),
+            "degraded": status.get("degraded", False),
+            "degraded_note": status.get("message") if status.get("degraded") else None,
         }
 
     return {
@@ -112,6 +118,8 @@ def query_knowledge_pack(param_path: str = "", plant: str | None = None) -> dict
         "found": True,
         "value": node,
         "available_keys": sorted(node.keys()) if isinstance(node, dict) else None,
+        "degraded": status.get("degraded", False),
+        "degraded_note": status.get("message") if status.get("degraded") else None,
     }
 
 
@@ -119,20 +127,68 @@ def list_conflicts() -> dict[str, Any]:
     """
     列出知识包内部的已知冲突（known_conflicts）以及「包内常数 vs 复现代码常数」的不一致项。
     用于人工/仲裁环节判断某条建议是否踩在文献冲突区间上。
-    """
-    from .plant_a_pack import load_pack, pack_discrepancies  # 惰性导入
 
-    pack = load_pack()
-    meta = pack.get("pack", {})
-    issues = pack_discrepancies(pack)
-    known = pack.get("known_conflicts", []) or []
+    诚实语义（不静默）：聚合 industry + plant_a(专家A仲裁包) + 当前厂级包三层；
+    某层缺失（厂级包允许不随仓库分发）时显式上报 missing/degraded，
+    绝不把「包缺失」伪装成「零冲突」。
+    """
+    from .plant_a_pack import (DEFAULT_PACK, DEFAULT_PLANT, INDUSTRY_PACK,
+                               last_resolve_status, load_pack, pack_discrepancies)
+
+    known: list[Any] = []
+    discrepancies: list[str] = []
+    packs_report: list[dict[str, Any]] = []
+
+    # 行业基线层：known_conflicts 为行业通用口径冲突（如 CF-007 Tc 口径）
+    industry = load_pack(INDUSTRY_PACK)
+    known.extend(industry.get("known_conflicts", []) or [])
+    packs_report.append({
+        "pack": industry.get("pack", {}).get("plant", "industry"),
+        "scope": "industry",
+        "loaded": not industry.get("_missing", False),
+        "known_conflict_count": len(industry.get("known_conflicts", []) or []),
+    })
+
+    # 厂级层：专家A仲裁包（CF-001~006 的原生载体）+ 当前部署厂包
+    plant_paths: list[tuple[str, str]] = [("plant_a", DEFAULT_PACK)]
+    default_path = os.path.join(
+        os.path.dirname(INDUSTRY_PACK), DEFAULT_PLANT, "base.yaml")
+    if DEFAULT_PLANT != "plant_a":
+        plant_paths.append((DEFAULT_PLANT, default_path))
+    for plant_name, ppath in plant_paths:
+        pack = load_pack(ppath)
+        loaded = not pack.get("_missing", False)
+        if loaded:
+            known.extend(pack.get("known_conflicts", []) or [])
+            discrepancies.extend(pack_discrepancies(pack))
+        packs_report.append({
+            "pack": plant_name,
+            "scope": "plant",
+            "loaded": loaded,
+            "known_conflict_count": len(pack.get("known_conflicts", []) or []) if loaded else 0,
+            "path": os.path.normpath(ppath),
+        })
+
+    missing = [p["pack"] for p in packs_report if not p["loaded"]]
+    degraded = bool(missing)
+    note = ""
+    if degraded:
+        note = (f"知识包缺失: {', '.join(missing)}（厂级包属保密资产，允许不随仓库分发）。"
+                f"缺失层的已知冲突（如 plant_a 的 CF-001~006）当前不可见——"
+                f"这是「降级」而非「无冲突」，重建包后本清单自动恢复。")
+
+    meta = {"missing_packs": missing, "resolve_status": last_resolve_status()}
     return {
-        "pack": meta.get("name"),
-        "pack_version": meta.get("version"),
+        "packs": packs_report,
+        "pack": next((p["pack"] for p in packs_report if p["loaded"] and p["scope"] == "plant"), None),
+        "pack_version": None,
         "known_conflicts": known,
         "known_conflict_count": len(known),
-        "discrepancies": issues,
-        "discrepancy_count": len(issues),
+        "discrepancies": discrepancies,
+        "discrepancy_count": len(discrepancies),
+        "degraded": degraded,
+        "note": note,
+        "meta": meta,
     }
 
 

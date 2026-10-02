@@ -10,6 +10,8 @@
 的厂级参数都应从这里取, 而不是各自硬编码。
 """
 
+from __future__ import annotations
+
 import os
 from typing import Dict, List
 
@@ -146,6 +148,20 @@ def _deep_merge(base: dict, override: dict) -> dict:
     return out
 
 
+#: 最近一次 resolve_parameters 的降级状态（供 UI/引擎显式标注"已降级"，禁止降级值进 KPI 合同轨）
+RESOLVE_STATUS: Dict = {
+    "plant": None,
+    "plant_pack_loaded": False,
+    "degraded": False,
+    "message": "尚未执行 resolve_parameters",
+}
+
+
+def last_resolve_status() -> Dict:
+    """返回最近一次 resolve_parameters 的状态（含降级标记）。"""
+    return dict(RESOLVE_STATUS)
+
+
 def resolve_parameters(plant: str | None = None) -> Dict:
     """
     按 scope 分层合并参数: 行业基线(industry, 行业通用规则) → 厂级包(plant, 覆盖/补充)。
@@ -153,6 +169,10 @@ def resolve_parameters(plant: str | None = None) -> Dict:
     - plant=None 时使用 DEFAULT_PLANT (默认 plant_b, 可用 VERO_PLANT 覆盖)。
     - 返回合并后的 parameters dict, 供 initial_charge / lance_profile 等引擎统一取值。
     单一事实来源: 行业基线定「行业通用逻辑」, 厂级包定「厂级参数值」。
+
+    降级语义（显式，非静默）: 厂级包缺失时不崩溃（厂级包允许不随仓库分发），
+    回退为行业基线单层，并更新 RESOLVE_STATUS.degraded=True —— 调用方（引擎/UI）
+    必须读取 last_resolve_status() 并在输出中标注"已降级"。
     """
     with open(INDUSTRY_PACK, "r", encoding="utf-8") as f:
         industry = yaml.safe_load(f)
@@ -163,23 +183,36 @@ def resolve_parameters(plant: str | None = None) -> Dict:
     target = plant or DEFAULT_PLANT
     packs_dir = os.path.dirname(os.path.dirname(INDUSTRY_PACK))  # knowledge/packs
     ppath = os.path.join(packs_dir, target, "base.yaml")
-    with open(ppath, "r", encoding="utf-8") as f:
-        plant_pack = yaml.safe_load(f)
-    assert plant_pack.get("schema") == "vero.knowledge-pack/v1", "未知知识包 schema"
-    merged = _deep_merge(merged, plant_pack["parameters"])
+    if os.path.exists(ppath):
+        with open(ppath, "r", encoding="utf-8") as f:
+            plant_pack = yaml.safe_load(f)
+        assert plant_pack.get("schema") == "vero.knowledge-pack/v1", "未知知识包 schema"
+        merged = _deep_merge(merged, plant_pack["parameters"])
+        RESOLVE_STATUS.update(
+            plant=target, plant_pack_loaded=True, degraded=False,
+            message=f"厂级包 {target} 已加载（行业基线打底 + 厂级覆盖）")
+    else:
+        RESOLVE_STATUS.update(
+            plant=target, plant_pack_loaded=False, degraded=True,
+            message=f"厂级包缺失: {ppath}（厂级包允许不随仓库分发）——已降级为行业基线单层取值，"
+                    f"输出必须显式标注「已降级」且禁止用于 KPI 合同轨")
     return merged
 
 
 if __name__ == "__main__":
     pack = load_pack()
-    meta = pack["pack"]
-    print(f"知识包: {meta['name']} v{meta['version']} (scope={meta['scope']}, status={meta['status']})")
-    issues = pack_discrepancies(pack)
-    n = sum(len(v) if isinstance(v, dict) else 1 for v in pack["parameters"].values())
-    if issues:
-        print(f"⚠️ 发现 {len(issues)} 处包/代码不一致:")
-        for i in issues:
-            print("  -", i)
+    if pack.get("_missing"):
+        print("⚠️ 厂级知识包（plant_a）缺失——属保密资产，允许不随仓库分发。")
+        print("   计算走行业基线 + 当前厂级包（resolve_parameters），包/代码一致性核对跳过。")
     else:
-        print(f"✅ 包内常数与复现代码完全一致 ({n} 类参数)")
-    print(f"已知冲突清单: {len(pack['known_conflicts'])} 条")
+        meta = pack["pack"]
+        print(f"知识包: {meta.get('name')} v{meta.get('version')} (scope={meta.get('scope')}, status={meta.get('status')})")
+        issues = pack_discrepancies(pack)
+        n = sum(len(v) if isinstance(v, dict) else 1 for v in pack["parameters"].values())
+        if issues:
+            print(f"⚠️ 发现 {len(issues)} 处包/代码不一致:")
+            for i in issues:
+                print("  -", i)
+        else:
+            print(f"✅ 包内常数与复现代码完全一致 ({n} 类参数)")
+        print(f"已知冲突清单: {len(pack.get('known_conflicts') or [])} 条")

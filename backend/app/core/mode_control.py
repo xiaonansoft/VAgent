@@ -89,37 +89,43 @@ class ValidationDataReader(IProcessDataReader):
     async def get_oxygen_flow(self) -> float:
         return 0.0
 
+class ControlWriteRefused(RuntimeError):
+    """影子(VALIDATION)模式下拒绝一切物理控制写入——该调用本身即编排层越权，必须响报。"""
+
+
 class ValidationControlWriter(IControlSignalWriter):
     """
-    SAFEGUARD: Log-only writer. Physically incapable of sending signals to DCS.
+    SAFEGUARD: 影子模式写入器——物理上不具备向 DCS 发信号的能力。
+
+    诚实语义（红线 C1「无无人工确认的执行」）：影子模式只允许"记录建议"，
+    任何到达 writer 的写调用都是编排层越权——记录审计后**拒绝并抛出
+    ControlWriteRefused**，绝不返回成功。建议的正确出口是 AdviceLog/UI 建议卡，
+    而不是本类。急停同理：物理急停属 PLC 硬件回路，软件层只能"建议急停"。
     """
     def __init__(self):
         self.logger = logging.getLogger("ValidationAudit")
         self.logs = [] # In-memory log for testing
 
-    async def set_lance_height(self, target_mm: float) -> bool:
-        msg = f"[VALIDATION] Would set lance height to {target_mm}mm"
-        self.logger.info(msg)
+    def _refuse(self, msg: str) -> None:
+        self.logger.warning(msg)
         self.logs.append(msg)
-        return True # Pretend success
+        raise ControlWriteRefused(msg)
+
+    async def set_lance_height(self, target_mm: float) -> bool:
+        self._refuse(f"[VALIDATION] Refused (log-only): would set lance height to {target_mm}mm — 影子模式无执行通道")
+        return False  # pragma: no cover - _refuse 恒抛出
 
     async def set_oxygen_flow(self, flow_nm3_min: float) -> bool:
-        msg = f"[VALIDATION] Would set oxygen flow to {flow_nm3_min} Nm3/min"
-        self.logger.info(msg)
-        self.logs.append(msg)
-        return True
+        self._refuse(f"[VALIDATION] Refused (log-only): would set oxygen flow to {flow_nm3_min} Nm3/min — 影子模式无执行通道")
+        return False  # pragma: no cover
 
     async def add_coolant(self, material: str, weight_kg: float) -> bool:
-        msg = f"[VALIDATION] Would add {weight_kg}kg of {material}"
-        self.logger.info(msg)
-        self.logs.append(msg)
-        return True
+        self._refuse(f"[VALIDATION] Refused (log-only): would add {weight_kg}kg of {material} — 影子模式无执行通道")
+        return False  # pragma: no cover
 
     async def emergency_stop(self) -> bool:
-        msg = "[VALIDATION] Would trigger EMERGENCY STOP"
-        self.logger.critical(msg)
-        self.logs.append(msg)
-        return True
+        self._refuse("[VALIDATION] Refused (log-only): would trigger EMERGENCY STOP — 物理急停属 PLC 硬件回路，软件仅可建议")
+        return False  # pragma: no cover
 
 # --- Concrete Implementations: Production ---
 class ProductionControlWriter(IControlSignalWriter):
@@ -166,8 +172,10 @@ class ModeController:
         
         # Concurrency & Rate Limiting
         self._lock = asyncio.Lock()
-        self._last_switch_time = 0.0
         self._switch_cooldown = 1.0 # Seconds
+        # 初始值取负：事件循环 time() 从 0 起步，若初始化为 0.0，
+        # 每个新控制器的首次切换会被误判"切换过频"（测试期已暴露的潜在 bug）
+        self._last_switch_time = -float(self._switch_cooldown)
 
     @property
     def current_mode(self) -> SystemMode:

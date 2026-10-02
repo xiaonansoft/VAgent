@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from datetime import datetime, timezone
-from typing import Any
+from typing import Optional, Any
 
 from sqlalchemy import String, Float, Boolean, JSON, DateTime, Integer, ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column
@@ -58,16 +58,16 @@ class Heat(Base):
     status: Mapped[str] = mapped_column(
         String(32), default=HeatStatus.CREATED.value, index=True,
         comment="CREATED/CHARGING/BLOWING/PENDING_CONFIRM/CONFIRMED/ARCHIVED/EXCEPTION")
-    started_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
-    closed_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+    started_at: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
+    closed_at: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
 
     l1_recipe: Mapped[dict[str, Any]] = mapped_column(JSON)
     l2_final_temp: Mapped[float] = mapped_column(Float)
-    equilibrium_final_temp: Mapped[float | None] = mapped_column(Float, nullable=True)
+    equilibrium_final_temp: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
     actual_final_temp: Mapped[float] = mapped_column(Float)
     actual_analysis: Mapped[dict[str, Any]] = mapped_column(JSON)
     advice_adopted: Mapped[bool] = mapped_column(Boolean)
-    trace_id: Mapped[str | None] = mapped_column(String, index=True, nullable=True)
+    trace_id: Mapped[Optional[str]] = mapped_column(String, index=True, nullable=True)
     timestamp: Mapped[datetime] = mapped_column(DateTime, default=lambda: datetime.now(timezone.utc))
 
 
@@ -75,10 +75,10 @@ class AdviceLog(Base):
     __tablename__ = "advice_logs"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
-    trace_id: Mapped[str | None] = mapped_column(String, index=True, nullable=True)
+    trace_id: Mapped[Optional[str]] = mapped_column(String, index=True, nullable=True)
 
     # A3 · Heat 锚点: 建议归属到具体炉次（旧库无外键约束，仅索引 + 应用层保证）
-    heat_id: Mapped[str | None] = mapped_column(
+    heat_id: Mapped[Optional[str]] = mapped_column(
         String, ForeignKey("heats.heat_id"), index=True, nullable=True)
 
     message: Mapped[str] = mapped_column(String)
@@ -89,7 +89,7 @@ class AdviceLog(Base):
 
     # A2 · 人工推翻建议记录（对应 schemas.OverturnRecord 与事件 ADVICE_OVER TURNED）
     overturned: Mapped[bool] = mapped_column(Boolean, default=False)
-    overturn_reason: Mapped[str | None] = mapped_column(String, nullable=True)
-    overturn_by: Mapped[str | None] = mapped_column(String, nullable=True)
-    overturned_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
-    arbitration_result: Mapped[bool | None] = mapped_column(Boolean, nullable=True)
+    overturn_reason: Mapped[Optional[str]] = mapped_column(String, nullable=True)
+    overturn_by: Mapped[Optional[str]] = mapped_column(String, nullable=True)
+    overturned_at: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
+    arbitration_result: Mapped[Optional[bool]] = mapped_column(Boolean, nullable=True)

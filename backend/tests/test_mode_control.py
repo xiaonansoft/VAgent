@@ -1,6 +1,9 @@
 import pytest
 import asyncio
-from app.core.mode_control import ModeController, SystemMode, ValidationControlWriter, SimulationControlWriter, ProductionControlWriter
+from app.core.mode_control import (
+    ModeController, SystemMode, ValidationControlWriter, SimulationControlWriter,
+    ProductionControlWriter, ControlWriteRefused,
+)
 
 @pytest.mark.asyncio
 async def test_initial_mode_is_simulation():
@@ -21,19 +24,33 @@ async def test_mode_switch_audit():
 @pytest.mark.asyncio
 async def test_validation_mode_isolation():
     """
-    Test that Validation Mode writes to log and does NOT touch DCS (implied by class type).
+    影子模式：写调用必须被显式拒绝（ControlWriteRefused），且先留下审计记录。
+    绝不允许"假装成功"——返回 True 而无物理写入即是造假。
     """
     controller = ModeController()
     await controller.switch_mode(SystemMode.VALIDATION, user="qa", auth_token="any")
-    
+
     assert isinstance(controller.writer, ValidationControlWriter)
-    
-    # Execute a command
-    await controller.writer.set_lance_height(1500.0)
-    
-    # Check logs (ValidationControlWriter specific)
+
+    # Execute a command → must be refused loudly, audit log still written
+    with pytest.raises(ControlWriteRefused, match="lance height"):
+        await controller.writer.set_lance_height(1500.0)
     assert len(controller.writer.logs) == 1
-    assert "Would set lance height to 1500.0mm" in controller.writer.logs[0]
+    assert "Refused" in controller.writer.logs[0]
+
+@pytest.mark.asyncio
+async def test_validation_mode_refuses_all_writes():
+    """四个写方法全部拒绝（含 emergency_stop：物理急停属 PLC 硬件回路）。"""
+    writer = ValidationControlWriter()
+    for call in (
+        lambda: writer.set_lance_height(1500.0),
+        lambda: writer.set_oxygen_flow(250.0),
+        lambda: writer.add_coolant("pellet", 300.0),
+        lambda: writer.emergency_stop(),
+    ):
+        with pytest.raises(ControlWriteRefused):
+            await call()
+    assert len(writer.logs) == 4
 
 @pytest.mark.asyncio
 async def test_production_mode_safeguards():

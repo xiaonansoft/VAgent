@@ -4,6 +4,8 @@
 VERO 红线: LLM 只做翻译器/检索器/建议器, **零数值计算权**、**不碰控制回路**。
 所有提示词模板必须包含 system.py 的三条红线, 不得被下游覆盖。
 """
+from __future__ import annotations
+
 
 from .system import (
     RED_LINES,
