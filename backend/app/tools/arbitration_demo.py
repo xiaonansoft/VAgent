@@ -11,15 +11,19 @@
 3. 人工决策位 —— 每条冲突给出 [采用A]/[采用B]/[本炉例外]/[挂起] 选项,
                 本演示仅生成证据, 不自动裁决
 
-运行: python3 -m app.tools.arbitration_demo
+GATE-2 纪律: 炉次实绩数据不内联（见 v_heat_calibration 模块头）。默认读本机私有
+数据文件；无私有数据时用 --synthetic 显式跑合成数据（报告标注合成，不作仲裁证据）。
+
+运行: python3 -m app.tools.arbitration_demo [--synthetic]
 输出: 控制台 + 仓库根目录 ARBITRATION_DEMO.md
 """
 
 import os
-from typing import Dict, List
+import sys
+from typing import Dict, List, Optional
 
 from app.tools import plant_a_reference as pr
-from app.tools.v_heat_calibration import HEATS, SCENARIOS, predict_all, stats
+from app.tools.v_heat_calibration import SCENARIOS, load_heats, predict_all, stats
 
 # ---------------------------------------------------------------------------
 # 引擎 B: 专家B查表法 (源: MODEL_ALGORITHM.md §1, initial_charge.py 同口径)
@@ -93,13 +97,13 @@ def engine_b(si: float = 0.215, temp: float = 1300.0, v: float = 0.284) -> Dict:
     }
 
 
-def evidence_table() -> Dict[str, Dict[str, float]]:
-    """16 炉次历史回放: 各 ΔH 假设对粗/精渣的 RMSE"""
+def evidence_table(heats: List[Dict]) -> Dict[str, Dict[str, float]]:
+    """炉次历史回放: 各 ΔH 假设对粗/精渣的 RMSE（数据经入参注入，不内联）"""
     out = {}
     for name, dh in SCENARIOS.items():
-        preds = predict_all(dh)
+        preds = predict_all(dh, heats)
         for target in ("rough", "fine"):
-            errs = [p - h[target] for p, h in zip(preds, HEATS) if h[target] is not None]
+            errs = [p - h[target] for p, h in zip(preds, heats) if h[target] is not None]
             out[(name, target)] = stats(errs)
     return out
 
@@ -115,16 +119,24 @@ CONF_LIST = [
 ]
 
 
-def main() -> None:
+def main(synthetic: bool = False, heats: Optional[List[Dict]] = None) -> None:
+    if heats is None:
+        heats, data_label = load_heats(synthetic=synthetic)
+    else:
+        data_label = "调用方注入数据"
     a = engine_a()
     b = engine_b()
-    ev = evidence_table()
+    ev = evidence_table(heats)
     lines: List[str] = []
     emit = lambda s="": (print(s), lines.append(s))
 
     emit("# 冲突仲裁演示报告 (ARBITRATION_DEMO)")
     emit()
     emit(f"> 输入: 铁水 80t / 1300°C / Si 0.215% / V 0.284% · 生成: 本演示脚本")
+    emit(f"> 历史证据数据来源: {data_label} · n={len(heats)} 炉")
+    if synthetic:
+        emit("> ⚠️ 合成演示数据：本报告仅验证流程，不构成 CF-001 仲裁证据；"
+             "真实证据须以本机私有实绩数据重跑生成")
     emit()
     emit("## 一、双方案对照 (同一输入)")
     emit()
@@ -176,4 +188,4 @@ def main() -> None:
 
 
 if __name__ == "__main__":
-    main()
+    main(synthetic="--synthetic" in sys.argv)

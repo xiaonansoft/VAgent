@@ -20,3 +20,7 @@ out/
 
 # macOS
 .DS_Store
+
+# GATE-2: 保密生产实绩数据与已归档旧演示（严禁入库）
+knowledge/data/private/
+archive/

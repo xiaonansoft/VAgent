@@ -566,7 +566,7 @@ body.fs .fb-inner{max-width:none}
     </div>
     <div class="col-stack">
       <div class="panel">
-        <h2><span class="num">05</span>V 氧化反应热 · 双口径对照 <span class="hint">16 炉实绩为证 · 专家审定中</span></h2>
+        <h2><span class="num">05</span>V 氧化反应热 · 双口径对照 <span class="hint">回放演示（合成数据）· 专家审定中</span></h2>
         <fieldset style="border:none;padding:0;margin-bottom:var(--s2)">
           <legend style="font-size:var(--fs-cap);color:var(--t2)"><b>口径选择</b>（切换后全视图生效）</legend>
           <div class="radios">
@@ -589,7 +589,7 @@ body.fs .fb-inner{max-width:none}
         <div id="sim" class="scroll-x"></div>
       </div>
       <div class="panel">
-        <h2><span class="num">07</span>生产实绩回放（最近 16 日）</h2>
+        <h2><span class="num">07</span>回放演示（最近 16 日 · 合成数据，非任何厂实绩）</h2>
         <div id="replay" class="scroll-x"></div>
       </div>
     </div>
@@ -738,15 +738,17 @@ function runModel(inp){
 <script>
 "use strict";
 /* ============ 应用层 v0.7（渲染分层 + 组件 token，引擎不变） ============ */
+/* GATE-2: 回放数据已替换为合成演示数据（非任何厂实绩，逐行不同于真实炉次）。
+   真实台账不入仓库；接真数据后由 /api/heats 或私有数据文件注入。 */
 const HEATS=[
- {day:1,si:.19, v:.319,rough:14.47,fine:14.06},{day:2,si:.152,v:.325,rough:14.41,fine:13.25},
- {day:3,si:.154,v:.323,rough:15.11,fine:13.59},{day:4,si:.14, v:.329,rough:14.05,fine:13.67},
- {day:5,si:.172,v:.332,rough:14.17,fine:13.64},{day:6,si:.142,v:.33, rough:15.85,fine:13.91},
- {day:7,si:.138,v:.333,rough:14.59,fine:14.24},{day:8,si:.135,v:.319,rough:null, fine:14.19},
- {day:9,si:.128,v:.331,rough:14.68,fine:14.59},{day:10,si:.125,v:.298,rough:14.92,fine:13.90},
- {day:11,si:.195,v:.294,rough:13.41,fine:13.28},{day:12,si:.192,v:.284,rough:14.03,fine:13.21},
- {day:13,si:.144,v:.286,rough:13.06,fine:12.72},{day:14,si:.266,v:.299,rough:12.24,fine:13.59},
- {day:15,si:.251,v:.287,rough:13.48,fine:14.70},{day:16,si:.13, v:.288,rough:14.27,fine:12.61}];
+ {day:1, si:.183,v:.308,rough:13.92,fine:13.41},{day:2, si:.147,v:.312,rough:14.28,fine:13.62},
+ {day:3, si:.161,v:.315,rough:14.55,fine:13.85},{day:4, si:.133,v:.318,rough:13.78,fine:13.30},
+ {day:5, si:.176,v:.321,rough:15.02,fine:13.98},{day:6, si:.149,v:.305,rough:14.11,fine:13.55},
+ {day:7, si:.129,v:.309,rough:13.65,fine:13.15},{day:8, si:.201,v:.317,rough:14.83,fine:14.05},
+ {day:9, si:.168,v:.311,rough:13.99,fine:13.48},{day:10,si:.155,v:.302,rough:14.36,fine:13.72},
+ {day:11,si:.184,v:.296,rough:13.51,fine:12.98},{day:12,si:.136,v:.300,rough:14.62,fine:13.90},
+ {day:13,si:.172,v:.294,rough:13.87,fine:13.35},{day:14,si:.241,v:.305,rough:12.98,fine:13.42},
+ {day:15,si:.226,v:.297,rough:13.22,fine:14.08},{day:16,si:.141,v:.302,rough:null, fine:13.28}];
 const $=id=>document.getElementById(id);
 const fmt=(v,d=2)=>Number(v).toLocaleString("en-US",{minimumFractionDigits:d,maximumFractionDigits:d});
 const fmtGrade=(v)=>{const d=Math.abs(v-14.0)<0.2?3:2;return fmt(v,d);};
@@ -1050,8 +1052,8 @@ function renderFurnace(inp,r){
   if(risky&&top.length){
     const c=top[0], dev=r.grade-c.h.fine;
     wc.innerHTML="<div class='ev-t'>黄灯 · 唯一例外判例</div>"+
-      "<div class='ev-b'>相似炉 #"+c.h.day+" 实绩偏差 "+(dev>=0?"+":"")+fmt(dev,2)+"%"+
-      "<small>第 "+c.h.day+" 日 Si "+c.h.si.toFixed(2)+"% / V "+c.h.v.toFixed(2)+"% → 实绩精钒渣 "+
+      "<div class='ev-b'>相似炉 #"+c.h.day+" 回放偏差 "+(dev>=0?"+":"")+fmt(dev,2)+"%"+
+      "<small>第 "+c.h.day+" 日 Si "+c.h.si.toFixed(2)+"% / V "+c.h.v.toFixed(2)+"% → 回放精钒渣 "+
       c.h.fine+"%；本炉预测 "+fmtGrade(r.grade)+"%，相似距离 "+c.d.toFixed(3)+"</small></div>";
     zone.classList.add("split");
   }else{
@@ -1076,7 +1078,7 @@ function renderFurnace(inp,r){
   $("caseDetail").innerHTML=
     "<div class='note' style='margin-top:2px'>判例明细（相似距离 = 2×|ΔSi|+|ΔV|，越小越相似）：</div>"+
     top.map(x=>"<div style='font-size:var(--fs-cap);color:var(--t2)'>第 <b>"+x.h.day+"</b> 日：Si "+
-      x.h.si.toFixed(2)+"% / V "+x.h.v.toFixed(2)+"% → 实绩精钒渣 <b>"+x.h.fine+"%</b>（距离 "+x.d.toFixed(3)+"）</div>").join("")+
+      x.h.si.toFixed(2)+"% / V "+x.h.v.toFixed(2)+"% → 回放精钒渣 <b>"+x.h.fine+"%</b>（距离 "+x.d.toFixed(3)+"）</div>").join("")+
     "<div class='note' style='margin-top:6px'>字段完整度："+fields.map(f=>esc(f[0])+" "+esc(f[1])).join(" · ")+
       (m.compCls==="ok"?" · 4/4 齐备":" · <span style='color:var(--warn)'>缺炉次号</span>")+
       "　时效："+esc(m.tlTxt)+"</div>"+
@@ -1087,7 +1089,7 @@ function renderFurnace(inp,r){
   const top3=nearH(inp.Si,inp.V).slice(0,3);
   const fines=top3.map(x=>x.h.fine).filter(v=>v!=null);
   const ta=$("trustAnchor");
-  if(!fines.length){ta.innerHTML="信任锚：相似炉次实绩数据不足，无法比对";return;}
+  if(!fines.length){ta.innerHTML="信任锚：相似炉次回放数据不足，无法比对";return;}
   const lo=Math.min(...fines),hi=Math.max(...fines);
   const days=top3.map(x=>"第"+x.h.day+"日").join("/");
   const tag=g<lo?" <b style='color:var(--danger)'>↓ 低于相似炉下限</b>":g>hi?" <b style='color:var(--ok)'>↑ 高于相似炉上限</b>":" · 落在相似炉区间";
@@ -1095,9 +1097,9 @@ function renderFurnace(inp,r){
   const a0=Math.min(lo,g)-pad, a1=Math.max(hi,g)+pad;
   const pc=v=>((v-a0)/(a1-a0)*100).toFixed(1)+"%";
   const rl=(lo-a0)/(a1-a0)*100, rw=(hi-lo)/(a1-a0)*100;
-  ta.innerHTML="信任锚：最相似 3 炉（"+days+"）实绩精钒渣 <b>"+fmt(lo,2)+"–"+fmt(hi,2)+"%</b>，本炉预测 <b style='color:var(--accent)'>"+fmtGrade(g)+"%</b>"+tag+
+  ta.innerHTML="信任锚：最相似 3 炉（"+days+"）回放精钒渣 <b>"+fmt(lo,2)+"–"+fmt(hi,2)+"%</b>，本炉预测 <b style='color:var(--accent)'>"+fmtGrade(g)+"%</b>"+tag+
     "<div class='a-scale'><div class='a-range' style='left:"+rl+"%;width:"+rw+"%'></div><div class='a-cur' style='left:"+pc(g)+"'></div></div>"+
-    "<div class='a-lbl'><span>"+fmt(a0,1)+"</span><span style='color:var(--info)'>蓝段=相似炉实绩区间 · 橙针=本炉预测</span><span>"+fmt(a1,1)+"</span></div>";
+    "<div class='a-lbl'><span>"+fmt(a0,1)+"</span><span style='color:var(--info)'>蓝段=相似炉回放区间 · 橙针=本炉预测</span><span>"+fmt(a1,1)+"</span></div>";
 }
 
 /* ---------- 工艺台渲染 ---------- */
@@ -1152,7 +1154,7 @@ function drawReplay(rebuild){
   const Wd=580,Ht=225,L=46,R=14,Tt=12,pb=30;
   const x=i=>L+i*(Wd-L-R)/15;
   const yy=g=>pb-(Math.min(Math.max(g,11),18)-11)/7*(Ht-Tt-pb);
-  let s="<svg width='100%' viewBox='0 0 "+Wd+" "+Ht+"' style='display:block' role='img' aria-label='最近16日生产实绩与机理预测对比'>";
+  let s="<svg width='100%' viewBox='0 0 "+Wd+" "+Ht+"' style='display:block' role='img' aria-label='最近16日回放演示（合成数据）与机理预测对比'>";
   s+="<line x1='"+L+"' y1='"+pb+"' x2='"+(Wd-R)+"' y2='"+pb+"' stroke='var(--line)'/><line x1='"+L+"' y1='"+Tt+"' x2='"+L+"' y2='"+pb+"' stroke='var(--line)'/>";
   for(let g=12;g<=18;g+=2){s+="<text x='"+(L-7)+"' y='"+(yy(g)+4)+"' text-anchor='end' font-size='10' fill='var(--t3)'>"+g+"</text>"+
     "<line x1='"+L+"' y1='"+yy(g)+"' x2='"+(Wd-R)+"' y2='"+yy(g)+"' stroke='var(--line)' opacity='.45'/>";}
@@ -1165,14 +1167,14 @@ function drawReplay(rebuild){
      "<span><b style='color:var(--accent)'>●</b> 粗钒渣实测（装车样）</span><span><b style='color:var(--ok)'>●</b> 精钒渣实测</span></div>";
   const rm=t=>{let se=0,cnt=0;HEATS.forEach((h,i)=>{if(h[t]!=null){const e=preds[i]-h[t];se+=e*e;cnt++;}});return {v:Math.sqrt(se/cnt),n:cnt}};
   const rmR=rm("rough"),rmF=rm("fine");
-  s+="<div class='note' style='margin-top:6px'>均方根误差（RMSE，当前口径）：粗钒渣 <b style='color:var(--t1)'>"+fmt(rmR.v,3)+"</b>（n="+rmR.n+"，第8炉未取样）　精钒渣 <b style='color:var(--t1)'>"+fmt(rmF.v,3)+"</b>（n="+rmF.n+"）　对照 Python 基准脚本结果一致</div>";
+  s+="<div class='note' style='margin-top:6px'>均方根误差（RMSE，当前口径）：粗钒渣 <b style='color:var(--t1)'>"+fmt(rmR.v,3)+"</b>（n="+rmR.n+"，第8炉未取样）　精钒渣 <b style='color:var(--t1)'>"+fmt(rmF.v,3)+"</b>（n="+rmF.n+"）　与 Python 基准脚本口径一致（合成演示数据）</div>";
   const rp=$("replay"); rp.innerHTML=s; rp.dataset.built="1";
 }
 function explainTB(inp,r,risky){
   $("explain").innerHTML=
     "<div><span class='hl-k'>知识口径</span>：plant_a/base.yaml v1.0.0（试用）· 31 类参数溯源至专家A Excel 单元格</div>"+
     "<div><span class='hl-k'>机理依据</span>：四大平衡全链路，物料收支校验差 <b>"+(r.balPct*100).toFixed(4)+"%</b>（≤0.02% 为通过）</div>"+
-    "<div><span class='hl-k'>相似炉次判例</span>："+nearH(inp.Si,inp.V).map(x=>"第"+x.h.day+"日（Si "+x.h.si.toFixed(2)+"/V "+x.h.v.toFixed(2)+"，实绩精钒渣 "+x.h.fine+"%）").join("；")+"</div>"+
+    "<div><span class='hl-k'>相似炉次判例</span>："+nearH(inp.Si,inp.V).map(x=>"第"+x.h.day+"日（Si "+x.h.si.toFixed(2)+"/V "+x.h.v.toFixed(2)+"，回放精钒渣 "+x.h.fine+"%）").join("；")+"</div>"+
     (risky?"<div style='margin-top:6px'><span class='badge b-y'><span class='sq'></span>建议对照高硅预案：全程低枪位，并按例外流程记录本炉</span></div>":"");
 }
 
