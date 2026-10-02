@@ -1,0 +1,1032 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VERO 工作台 v5.0 · 提钒—半钢双联工艺决策辅助</title>
+<style>
+/* VERO 工作台 v5.0 · Audit Console（近黑实色 + 单点缀 + 数字即主角 · 对标 Vercel/Linear） */
+:root{
+  --bg0:#0A0B0D; --bg1:#0E0F12; --bg2:#141519;
+  --panel:#131418; --panel-2:#191A20;
+  --line:#1F2127; --line-2:#2B2E36;
+  --t1:#EDEEF0; --t2:#9BA0A8; --t3:#646870; --t4:#41444B;
+  --accent:#E05D2B; --accent-hi:#F2764A; --accent-dim:rgba(224,93,43,.12);
+  --ok:#3FB950; --warn:#D29922; --danger:#F85149; --info:#6E93C4; --cold:#6FC3FF;
+  --r1:6px; --r2:10px; --r3:12px;
+  --sh-pop:0 8px 24px rgba(0,0,0,.5);
+  --font:"PingFang SC","HarmonyOS Sans SC",-apple-system,"Inter",sans-serif;
+  --mono:"SF Mono","JetBrains Mono",ui-monospace,Consolas,monospace;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{background:var(--bg0);color:var(--t1);font:13px/1.6 var(--font);padding-bottom:48px;padding-left:56px;-webkit-font-smoothing:antialiased}
+::selection{background:var(--accent-dim)}
+button,input,select{font:inherit;color:inherit}
+:focus-visible{outline:1.5px solid var(--accent-hi);outline-offset:2px;border-radius:4px}
+button{cursor:pointer}
+.mono,.num,.v,td.num,th.num,.cd{font-variant-numeric:tabular-nums;font-family:var(--mono)}
+::-webkit-scrollbar{width:6px;height:6px}::-webkit-scrollbar-thumb{background:var(--line-2);border-radius:3px}
+
+/* 左栏 */
+.rail{position:fixed;left:0;top:0;bottom:0;width:52px;background:var(--bg1);border-right:1px solid var(--line);display:flex;flex-direction:column;align-items:center;padding:10px 0;gap:4px;z-index:60}
+.rail .mark{width:28px;height:28px;border-radius:8px;background:var(--accent);display:grid;place-items:center;color:#fff;margin-bottom:12px}
+.rail button{width:38px;height:38px;border:none;background:transparent;border-radius:var(--r2);color:var(--t3);display:grid;place-items:center;transition:background .15s,color .15s}
+.rail button:hover{background:var(--panel-2);color:var(--t1)}
+.rail button.on{background:var(--accent-dim);color:var(--accent-hi)}
+.rail button svg{width:18px;height:18px}
+.rail .sp{flex:1}
+
+/* 顶栏 */
+header{display:flex;align-items:center;gap:14px;padding:0 20px;height:50px;margin-left:52px;background:var(--bg1);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:50}
+header .logo{font-weight:600;font-size:14px;letter-spacing:.2px;display:flex;align-items:center;gap:9px}
+header .logo .mark{width:22px;height:22px;border-radius:6px;background:var(--accent);display:grid;place-items:center;color:#fff}
+header .logo b{color:var(--accent-hi)}
+.pill{font-size:11px;padding:2.5px 10px;border-radius:999px;border:1px solid var(--line-2);color:var(--t2);display:inline-flex;align-items:center;gap:5px;white-space:nowrap}
+.pill.ok{color:var(--ok);border-color:rgba(63,185,80,.4)} .pill.err{color:var(--danger);border-color:rgba(248,81,73,.4)}
+.pill.warn{color:var(--warn);border-color:rgba(210,153,34,.4)} .pill.mode{color:var(--info);border-color:rgba(110,147,196,.4)}
+
+/* 页签 */
+.tabs{display:flex;gap:2px;padding:10px 20px 0;margin-left:52px;background:var(--bg1);border-bottom:1px solid var(--line)}
+.tabs button{background:transparent;border:none;color:var(--t3);padding:8px 16px;border-radius:var(--r1) var(--r1) 0 0;font-size:13px;transition:color .15s}
+.tabs button:hover{color:var(--t2)}
+.tabs button.on{color:var(--t1);font-weight:500;box-shadow:inset 0 -2px 0 var(--accent)}
+.tabs button .sn{color:var(--accent-hi);margin-right:3px}
+
+main{padding:18px 20px;max-width:1360px;margin:0 auto}
+section{display:none}section.on{display:block;animation:fadein .16s ease}
+@keyframes fadein{from{opacity:0}to{opacity:1}}
+
+/* 卡片：实色 1px 边，无阴影无浮起 */
+.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--r2);padding:16px 18px;margin-bottom:14px}
+.card:hover{border-color:var(--line-2)}
+.card h3{font-size:12px;font-weight:500;color:var(--t3);margin-bottom:12px}
+.row{display:flex;gap:14px;flex-wrap:wrap}
+.grow{flex:1;min-width:220px}
+label{display:block;font-size:12px;color:var(--t2);margin-bottom:4px}
+input,select{background:var(--bg2);border:1px solid var(--line-2);color:var(--t1);border-radius:var(--r1);padding:7px 11px;font:inherit;width:100%;transition:border-color .15s}
+input:hover,select:hover{border-color:var(--t4)}
+input:focus,select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 2px var(--accent-dim)}
+.btn{background:var(--accent);color:#fff;border:none;border-radius:var(--r1);padding:7px 16px;font-size:13px;font-weight:500;transition:background .15s}
+.btn:hover{background:var(--accent-hi)}
+.btn.ghost{background:transparent;border:1px solid var(--line-2);color:var(--t2)}
+.btn.ghost:hover{border-color:var(--t4);color:var(--t1)}
+.btn.sm{padding:5px 13px;font-size:12.5px}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{text-align:left;padding:8px 12px;color:var(--t3);font-weight:500;font-size:11px;border-bottom:1px solid var(--line-2)}
+td{padding:9px 12px;border-bottom:1px solid var(--line)}
+tbody tr:hover{background:var(--bg2)}
+td.num,th.num{text-align:right}
+
+/* 大数：纯白 mono 主角，状态只染数字 */
+.bigrow{display:flex;gap:12px;margin-bottom:14px}
+.bn{flex:1;background:var(--panel);border:1px solid var(--line);border-radius:var(--r2);padding:14px 16px;cursor:help;transition:border-color .15s}
+.bn:hover{border-color:var(--line-2)}
+.bn .v{font:500 32px/1.1 var(--mono);color:var(--t1);letter-spacing:-.5px}
+.bn.good .v{color:var(--ok)} .bn.warn .v{color:var(--warn)} .bn.bad .v{color:var(--danger)} .bn.cold .v{color:var(--cold)}
+.bn .l{font-size:12px;color:var(--t2);margin-top:3px}
+.bn .s{font-size:11px;color:var(--t3);margin-top:2px}
+
+/* 告警：禁闪烁 */
+.alarmstrip{border-radius:var(--r1);padding:10px 14px;margin-bottom:14px;font-weight:500;display:none;align-items:center;gap:10px;font-size:13px}
+.alarmstrip .ic{width:17px;height:17px;flex:none}
+.alarmstrip.danger{display:flex;background:rgba(248,81,73,.08);border:1px solid rgba(248,81,73,.35);border-left:3px solid var(--danger);color:#FFC9C9}
+.alarmstrip.warn{display:flex;background:rgba(210,153,34,.08);border:1px solid rgba(210,153,34,.35);border-left:3px solid var(--warn);color:#FFE3B8}
+
+.prog{background:var(--bg2);border:1px solid var(--line);border-radius:999px;height:12px;overflow:hidden;flex:1}
+.prog i{display:block;height:100%;background:var(--accent);transition:width .5s;border-radius:999px}
+
+/* 建议卡 */
+.advice{background:var(--panel);border:1px solid var(--line-2);border-left:3px solid var(--warn);border-radius:var(--r2);padding:12px 14px;margin-bottom:10px;transition:opacity .2s}
+.advice.tap{border-left-color:var(--info)}
+.advice.expired{opacity:.45;border-left-color:var(--t4)}
+.advice.done{opacity:.8;border-left-color:var(--ok)}
+.advice .ttl{font-weight:500;display:flex;justify-content:space-between;align-items:center;gap:10px}
+.advice .ttl .cd{font-size:24px;font-weight:600;color:var(--t1)}
+.advice .cd.hot{color:var(--danger)}
+.advice .msg{margin:6px 0 8px;font-size:13px}
+.advice .meta{font-size:11px;color:var(--t3);border-top:1px solid var(--line);padding-top:6px}
+.advice .ops{display:flex;gap:8px;margin-top:9px;flex-wrap:wrap}
+
+.log{font-family:var(--mono);font-size:11.5px;color:var(--t2);max-height:230px;overflow-y:auto}
+.log div{padding:3px 0;border-bottom:1px dashed var(--line)}
+.tag{font-size:10px;padding:2px 8px;border-radius:5px;background:var(--bg2);border:1px solid var(--line-2);color:var(--t2);margin-right:4px;font-family:var(--mono)}
+.note{font-size:12px;color:var(--t3)}
+.svgwrap{background:var(--bg1);border:1px solid var(--line);border-radius:var(--r2);padding:8px}
+.legend{font-size:11px;color:var(--t2);display:flex;gap:14px;padding:6px 8px 0;flex-wrap:wrap}
+.legend i{display:inline-block;width:14px;height:2px;margin-right:4px;vertical-align:middle}
+.kv{display:grid;grid-template-columns:1fr 1fr;gap:8px 20px;font-size:13px}
+.flash{padding:10px 14px;border-radius:var(--r2);margin-bottom:12px;font-size:13px;border-left:3px solid}
+.flash.ok{background:rgba(63,185,80,.07);border-color:var(--ok);color:#B2F2BB}
+.flash.err{background:rgba(248,81,73,.07);border-color:var(--danger);color:#FFC9C9}
+.flash.warn{background:rgba(210,153,34,.07);border-color:var(--warn);color:#FFE3B8}
+.mono{font-family:var(--mono)}
+.linkline{border-top:1px solid var(--line);margin-top:10px;padding-top:10px}
+footer{max-width:1360px;margin:0 auto;padding:14px 20px;color:var(--t4);font-size:11px}
+
+/* 字典 */
+.dict-grid{display:grid;grid-template-columns:170px 120px 90px 1fr;gap:0}
+.dict-grid>div{padding:7px 10px;border-bottom:1px solid var(--line);font-size:12.5px}
+.dict-h{color:var(--t3)!important;font-size:10.5px!important;font-weight:500}
+.dict-f{color:var(--accent-hi)} .dict-s{color:var(--info)}
+#dictPop{position:fixed;z-index:99;max-width:340px;background:var(--panel-2);border:1px solid var(--line-2);border-radius:var(--r2);box-shadow:var(--sh-pop);padding:12px 14px;font-size:12.5px;display:none}
+#dictPop .h{font-weight:500;color:var(--accent-hi);font-family:var(--mono);margin-bottom:4px}
+#dictPop .r{color:var(--t2);line-height:1.55}
+
+/* 分区标签 + 引导 + SOP + 智能体 + 时间轴（v5.0 丢失类全量回归 · v5 规范） */
+.secrow{display:flex;align-items:stretch;padding:0}
+.stab{flex:none;width:40px;border-radius:var(--r2) 0 0 var(--r2);display:flex;align-items:center;justify-content:center;writing-mode:vertical-rl;letter-spacing:5px;font-size:12px;font-weight:500;color:var(--t1);padding:14px 0}
+.stab.gray{background:var(--panel-2);color:var(--t2)}
+.stab.molten{background:var(--accent)} .stab.steel{background:#2B4A6F}
+.secrow .card{flex:1;margin-bottom:14px;border-top-left-radius:0;border-bottom-left-radius:0}
+.labcard{border:1px solid var(--line-2);border-radius:var(--r-m);overflow:hidden;margin-bottom:10px}
+.labcard .lh{display:flex;justify-content:space-between;background:var(--panel-2);padding:8px 14px;font-size:11px;color:var(--t3)}
+.labcard .lg{display:grid;grid-template-columns:repeat(7,1fr);gap:1px;background:var(--line)}
+.labcard .li{background:var(--bg2);padding:8px 10px}
+.labcard .li label{font-size:10px;color:var(--t3);margin-bottom:2px}
+.labcard .li input{background:transparent;border:none;padding:2px 0;font-family:var(--mono);font-size:15px;border-radius:0}
+.labcard .li input:focus{box-shadow:none;border-bottom:1px solid var(--accent);border-radius:0}
+.labcard.locked .li input{color:var(--t1)}
+.lockbtn{transition:all .15s}
+.guide{display:flex;gap:12px;align-items:flex-start;background:var(--panel);border:1px solid var(--line-2);border-left:3px solid var(--info);border-radius:var(--r2);padding:12px 16px;margin-bottom:14px}
+.guide .gt{flex:none;width:86px;font-weight:500;color:var(--info);font-size:12px}
+.guide .gb{font-size:13px;color:var(--t2);line-height:1.7}
+.guide .gb b{color:var(--t1)}
+.guide .x{flex:none;margin-left:auto}
+.howto{border:1px solid var(--line);border-radius:var(--r2);overflow:hidden;margin-bottom:14px}
+.howto td{vertical-align:top}
+.sop2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.sopcol{background:var(--panel);border:1px solid var(--line);border-radius:var(--r2);padding:12px 14px}
+.sopcol h4{font-size:12.5px;color:var(--t1);margin-bottom:8px;display:flex;align-items:center;gap:8px;font-weight:500}
+.sopcol h4 .dot{width:8px;height:8px;border-radius:50%}
+.sopstep{display:flex;gap:8px;padding:5px 0;border-bottom:1px dashed var(--line);font-size:12.5px}
+.sopstep .n{flex:none;width:20px;height:20px;border-radius:5px;display:grid;place-items:center;font-family:var(--mono);font-size:11px;background:var(--bg2);color:var(--accent-hi)}
+.sopstep .v{flex:1;color:var(--t2)} .sopstep .v b{color:var(--t1)}
+.sopstep .st{flex:none;font-size:10px;padding:1px 7px;border-radius:5px;height:fit-content}
+.st.now{background:var(--accent-dim);color:var(--accent-hi);border:1px solid rgba(224,93,43,.4)}
+.st.p2{background:var(--bg2);color:var(--t3);border:1px solid var(--line-2)}
+.agent-steps{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px}
+.astep{background:var(--panel-2);border:1px solid var(--line);border-radius:var(--r1);padding:9px 11px}
+.astep .h{font-size:10.5px;color:var(--t3);font-weight:500;display:flex;align-items:center;gap:5px;margin-bottom:4px}
+.astep .h i{width:6px;height:6px;border-radius:50%;background:var(--accent)}
+.astep.judge .h i{background:var(--warn)} .astep.plan .h i{background:var(--info)} .astep.act .h i{background:var(--ok)}
+.astep .b{font-size:12.5px;line-height:1.5}
+.pipeline{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}
+.ptask{background:var(--bg2);border:1px solid var(--line);border-radius:var(--r1);padding:4px 10px;font-size:11px;font-family:var(--mono);color:var(--t2)}
+.ptask b{color:var(--t1)}
+.thought{font-size:12px;color:var(--t2);border-left:2px solid var(--line-2);padding:3px 0 3px 9px;margin-bottom:4px;line-height:1.5}
+.thought b{color:var(--t1);font-family:var(--mono);font-size:11px;font-weight:500}
+.goal{background:var(--accent-dim);border:1px solid rgba(224,93,43,.35);border-radius:var(--r1);padding:8px 12px;font-size:12.5px;margin-bottom:10px}
+.goal b{color:var(--accent-hi)}
+.plantask{display:flex;gap:8px;align-items:flex-start;padding:4px 0;font-size:12.5px;border-bottom:1px dashed var(--line)}
+.plantask .st{flex:none;width:16px;text-align:center;font-family:var(--mono)}
+.plantask .st.done{color:var(--ok)} .plantask .st.cur{color:var(--warn)}
+.plantask .nm{flex:1;color:var(--t2)} .plantask .nm.done{color:var(--t3);text-decoration:line-through}
+.plantask .wh{flex:none;font-size:10.5px;color:var(--t3);font-family:var(--mono)}
+.bub{background:var(--panel-2);border:1px solid var(--line);border-radius:4px 12px 12px 12px;padding:7px 11px;font-size:12.5px;margin-bottom:6px;line-height:1.55}
+.bub.replan{border-left:2px solid var(--warn)}
+.bub.done{border-left:2px solid var(--ok)}
+.bub .bt{font-size:10px;color:var(--t3);font-family:var(--mono)}
+.bbrow{display:flex;gap:8px;font-size:11.5px;padding:4px 0;border-bottom:1px dashed var(--line);align-items:baseline}
+.bbrow .ag{flex:none;width:52px;color:var(--steel);font-weight:500}
+.bbrow .kd{flex:none;width:56px;font-family:var(--mono);color:var(--t3);font-size:10px}
+.bbrow.veto .kd{color:var(--danger)} .bbrow.proposal .kd{color:var(--warn)}
+.tl-wrap{background:var(--bg1);border:1px solid var(--line);border-radius:var(--r2);padding:8px}
+.tl-ph{transition:opacity .2s}
+.actsbar{display:flex;align-items:center;gap:6px;padding:10px 20px 0;margin-left:52px;background:var(--bg1);border-bottom:1px solid var(--line)}
+.actstep{display:flex;align-items:center;gap:6px;padding:6px 12px;border-radius:8px;color:var(--t3);font-size:12.5px}
+.actstep .n{width:18px;height:18px;border-radius:50%;display:grid;place-items:center;font-family:var(--mono);font-size:11px;background:var(--bg2);border:1px solid var(--line-2)}
+.actstep.on{color:var(--t1);background:var(--accent-dim)} .actstep.on .n{background:var(--accent);border-color:var(--accent);color:#fff}
+.actstep.done{color:var(--t2)} .actstep.done .n{background:var(--ok);border-color:var(--ok);color:#0A0B0D}
+.actarrow{color:var(--t4);font-size:12px}
+.hdrchip{display:inline-flex;align-items:center;gap:6px;padding:4px 12px;border:1px solid var(--line-2);border-radius:8px;font-family:var(--mono);font-size:13px}
+.hdrchip b{color:var(--t1)}
+.hdrchip .lamp{width:9px;height:9px;border-radius:50%;background:var(--ok)}
+.hdrchip .lamp.warn{background:var(--warn)} .hdrchip .lamp.bad{background:var(--danger)}
+@media (prefers-reduced-motion: reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<nav class="rail" aria-label="阶段导航">
+  <span class="mark"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 2c2 3.5-1.5 5 1 8 1.6 1.9 4 1.5 4 5a5 5 0 0 1-10 0c0-2 .8-3.4 2-4.5.3 1.4 1 2.2 2 2.5-.8-2.6.2-4.4 1-6 .4 1.6 1.6 2.4 2.4 3.6C15.6 7.6 13.4 4.6 12 2z"/></svg></span>
+  <button data-tab="t0" class="on" title="态势墙" onclick="tab('t0')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></svg></button>
+  <button data-tab="t2" title="吹炼 · 实时" onclick="tab('t2')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg></button>
+  <button data-tab="t3" title="复盘 · 冶炼后" onclick="tab('t3')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M16 13H8"/><path d="M16 17H8"/></svg></button>
+  <button data-tab="t4" title="治理 · 红线" onclick="tab('t4');loadGovernance()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/></svg></button>
+  <span class="sp"></span>
+</nav>
+<header>
+  <span class="logo"><span class="mark"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 2c2 3.5-1.5 5 1 8 1.6 1.9 4 1.5 4 5a5 5 0 0 1-10 0c0-2 .8-3.4 2-4.5.3 1.4 1 2.2 2 2.5-.8-2.6.2-4.4 1-6 .4 1.6 1.6 2.4 2.4 3.6C15.6 7.6 13.4 4.6 12 2z"/></svg></span>VERO <b>工作台</b> v5.0</span>
+  <span class="pill" id="conn">连接中…</span>
+  <span class="pill mode" id="modeBadge">演示模式</span>
+  <span style="flex:1"></span>
+  <span class="hdrchip" id="hdrTc">距 Tc —</span>
+  <span class="hdrchip" id="hdrLamp"><span class="lamp"></span><span id="hdrState">待炉</span></span>
+  <span class="hdrchip" id="hdrCd" style="display:none">距提枪 <b id="hdrCdV">—</b></span>
+  <button class="btn ghost sm" onclick="tab('t4');loadGovernance()">家底</button>
+</header>
+<div class="actsbar">
+  <div class="actstep" id="as1"><span class="n">1</span>接单 · 化验单</div><span class="actarrow">→</span>
+  <div class="actstep" id="as2"><span class="n">2</span>开吹 · 加料单</div><span class="actarrow">→</span>
+  <div class="actstep" id="as3"><span class="n">3</span>吹炼 · 盯窗口</div><span class="actarrow">→</span>
+  <div class="actstep" id="as4"><span class="n">4</span>决断 · 建议确认</div><span class="actarrow">→</span>
+  <div class="actstep" id="as5"><span class="n">5</span>交班 · 对账单</div>
+  <span style="flex:1"></span>
+  <button class="btn ghost sm" onclick="tab('t0')">态势</button>
+  <button class="btn ghost sm" onclick="tab('t4');loadGovernance()">家底</button>
+  <button class="btn ghost sm" onclick="tab('t5')">?</button>
+</div>
+<main>
+<section id="t0" class="on">
+  <div class="card">
+    <h3>炉次态势 · 异常与在吹置顶</h3>
+    <div class="row" id="wall"><div class="note">加载中…</div></div>
+    <div class="row" style="margin-top:12px">
+      <button class="btn" onclick="newHeat()">接化验单 · 开新炉</button>
+      <span class="note" style="align-self:center">态势每 3 秒刷新 · 点卡片进入该炉（在吹=驾驶舱，收炉=结账复盘）</span>
+    </div>
+  </div>
+</section>
+<section id="t5">
+  <div class="sop2">
+    <div class="sopcol"><h4><span class="dot" style="background:var(--molten)"></span>提钒转炉 SOP（系统正在执行 · 逐步对应界面）</h4>
+      <div class="sopstep"><span class="n">0</span><span class="v"><b>接铁水/校验</b>：化验单到达 → 「①开吹」自动算配吃（零填报，只确认时龄）→ 生成指令单给二助手</span><span class="st now">界面①</span></div>
+      <div class="sopstep"><span class="n">1</span><span class="v"><b>Si 氧化期（0~1′）</b>：枪位 1100，硅氧化放热主升温 → 时间轴第一段</span><span class="st now">界面②</span></div>
+      <div class="sopstep"><span class="n">2</span><span class="v"><b>去钒主期（1~5′）</b>：枪位 1200 软吹；散状冷料窗 60~240s；2′ 副枪①——超温风险此段暴露</span><span class="st now">界面②</span></div>
+      <div class="sopstep"><span class="n">3</span><span class="v"><b>控温收钒期（5~8′）</b>：枪位 1000；7′ 副枪②；Tc 裕度加强监控</span><span class="st now">界面②</span></div>
+      <div class="sopstep"><span class="n">4</span><span class="v"><b>终点判定</b>：三条件（余钒≤0.03 / 温度 1350~1420 / C≥3.0）→ 提枪参考倒计时 → 「③复盘」真值对账 + 半钢交接单</span><span class="st now">界面③</span></div>
+    </div>
+    <div class="sopcol"><h4><span class="dot" style="background:var(--steel)"></span>半钢炼钢 SOP（规划视图 · VERO 逐步接入）</h4>
+      <div class="sopstep"><span class="n">0</span><span class="v"><b>接半钢</b>：上工序交接单即入炉条件（温/C/余钒/渣量）→ 已由「③复盘」半钢交接卡承载</span><span class="st now">已接入</span></div>
+      <div class="sopstep"><span class="n">1</span><span class="v"><b>开吹（无 Si 氧化期）</b>：开吹即激烈碳氧反应，干法除尘泄爆风险 → 供氧爬坡节奏预警</span><span class="st p2">P2</span></div>
+      <div class="sopstep"><span class="n">2</span><span class="v"><b>化渣期</b>：硅锰痕迹 → CaO-FeO 渣系化渣慢粘枪 → 造渣剂推荐 + 粘枪预警</span><span class="st p2">P2</span></div>
+      <div class="sopstep"><span class="n">3</span><span class="v"><b>提温/脱硫</b>：化学热比铁水少 20% → 提温剂量求解（M15）+ 脱硫路径</span><span class="st p2">P2</span></div>
+      <div class="sopstep"><span class="n">4</span><span class="v"><b>终点/出钢</b>：碳温双命中（行业洼地 80.7%）→ 终点预测 + 命中归因</span><span class="st p2">P2</span></div>
+      <div class="note" style="margin-top:8px">半钢机理引擎属 P2（M15~M17）；当前仅交接契约已接入——如实标注，不装作已实现。</div>
+    </div>
+  </div>
+  <div class="howto"><table><thead><tr><th style="width:120px">界面</th><th style="width:110px">谁用</th><th style="width:150px">什么时候看</th><th>怎么用（三步以内）</th></tr></thead><tbody>
+    <tr><td><b>① 开吹</b></td><td>炉长/二助手/工艺</td><td>兑铁后~开吹前 90 秒</td><td>1. 核对化验时龄 → 2. 点「计算配吃方案」出融合方案（A 总量×B 结构），有拦截先处理 → 3. 生成指令单签字；工艺可拉 Si 滑杆、查双口径仲裁</td></tr>
+    <tr><td><b>② 吹炼</b></td><td>炉长/一助手</td><td>吹炼全程</td><td>1. 「开始吹炼」绑定方案 → 2. 盯四样：时间轴、大数四块、告警条、建议卡倒计时 → 3. 建议出现「采纳」或一键否决；智能体面板展示它的感知/判断/规划/动作</td></tr>
+    <tr><td><b>③ 复盘</b></td><td>工艺/厂部</td><td>收炉后</td><td>1. 方案 vs 真值对账 + 三条件矩阵 → 2. 归因标签与误差带覆盖率 → 3. 「确认入台账」；厂部看批次统计、导出审计</td></tr>
+    <tr><td><b>④ 治理</b></td><td>专家委/工艺/自动化</td><td>异常/审批/巡检</td><td>1. 三层冲突清单 → 2. 参数溯源 → 3. 模式切换（PRODUCTION 需授权）；红线四断言 CI 强制</td></tr>
+    <tr><td><b>点数字</b></td><td>所有人</td><td>看不懂任何数字时</td><td>大数看板与建议卡上的数字<b>点一下</b>：从哪张表来、单位、作用、怎么算的</td></tr>
+  </tbody></table></div>
+  <div class="note">话术对照：在线估计=软测量实况 ｜ 终点预测=按当前轨迹推到收炉 ｜ Tc=碳钒转化温度（约 1361℃，随余钒动态修正）｜ 补吹线=余钒 0.04% ｜ 融合方案=A 厂机理总量 × B 厂查表品种结构</div>
+</section>
+<!-- ============ ① 开吹 ============ -->
+<section id="t1">
+  <div class="guide"><div class="gt">这屏怎么用</div><div class="gb"><b>给炉长（30 秒决策）和二助手（拿指令单）。</b>①核对化验时龄（超 15 分钟红牌）→ ②点「计算配吃方案」出<b>融合方案</b>（A 机理总量 × B 查表结构）+ 终点三判据 → ③有拦截先处理，无拦截生成指令单签字；工艺可拉 Si 滑杆、查双口径仲裁。</div><button class="btn ghost sm x" onclick="this.parentElement.style.display='none'">知道了</button></div>
+  <div class="secrow"><div class="stab gray">铁水条件</div><div class="card">
+    <h3>铁水条件（LIMS 化验单口径 · 零填报：仅确认或修正）</h3>
+    <div class="labcard" id="labCard">
+      <div class="lh"><span>铁水化验单 · LIMS 直传</span><span id="labNo">NO. LIMS-20261002-06</span></div>
+      <div class="lg">
+        <div class="li"><label>C %</label><input id="fC" value="4.30" type="number" step="0.01"></div>
+        <div class="li"><label>Si %</label><input id="fSi" value="0.19" type="number" step="0.001"></div>
+        <div class="li"><label>V %</label><input id="fV" value="0.319" type="number" step="0.001"></div>
+        <div class="li"><label>Ti %</label><input id="fTi" value="0.15" type="number" step="0.01"></div>
+        <div class="li"><label>温度 ℃</label><input id="fT" value="1290" type="number" step="5"></div>
+        <div class="li"><label>重量 t</label><input id="fW" value="80" type="number" step="1"></div>
+        <div class="li"><label>时龄 min</label><input id="fAge" value="6" type="number" step="1"></div>
+      </div>
+    </div>
+    <div class="row" style="align-items:center">
+      <button class="btn lockbtn" id="labLock" onclick="lockLab()">确认化验单无误，锁定</button>
+      <button class="btn" id="btnCharge" onclick="doCharge()" disabled>计算配吃方案</button>
+      <span class="note" id="ageTag" style="align-self:center"></span>
+    </div>
+  </div></div>
+  <div id="chargeOut"></div>
+  <div class="secrow"><div class="stab steel">敏感性</div><div class="card" id="whatifCard" style="display:none;margin-bottom:0">
+    <h3>Si 敏感性 what-if（F1.4 · 拖动滑杆实时重算）</h3>
+    <label>Si = <b class="mono" id="siLabel">0.19</b>%（0.10 ~ 0.30）</label>
+    <input type="range" id="siSlider" min="0.10" max="0.30" step="0.01" value="0.19" style="width:100%" oninput="siWhatIf(this.value)">
+    <div class="svgwrap" style="margin-top:8px"><svg id="siChart" width="100%" height="180" viewBox="0 0 720 180"></svg></div>
+    <div class="legend"><span><i style="border-color:#FF7A33"></i>品位响应</span><span><i style="border-color:#4A7AB5"></i>球团需求</span></div>
+  </div></div>
+</section>
+
+<!-- ============ ② 吹炼 ============ -->
+<section id="t2" style="display:none">
+  <div class="guide"><div class="gt">这屏怎么用</div><div class="gb"><b>给炉长和一助手，吹炼全程 8~12 分钟盯着。</b>四样东西按顺序看：①顶部时间轴——现在在 SOP 第几段；②四块大数——最左「距碳钒转化温度」最险；③告警条——红黄才需要动手；④建议卡——倒计时内「采纳」或一键否决。系统只建议不执行，按不按你看火定。</div><button class="btn ghost sm x" onclick="this.parentElement.style.display='none'">知道了</button></div>
+  <div class="alarmstrip" id="alarmStrip"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.46 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg><span id="alarmText"></span></div>
+  <div class="card">
+    <h3>吹炼会话 <span class="note">（演示扰动仅在 SIMULATION 模式可选；真值对界面不可见，仅复盘揭示）</span></h3>
+    <details id="simControls" style="margin-bottom:8px"><summary class="note" style="cursor:pointer">演示设置（场景与倍速 · 仅演示模式）</summary>
+      <div class="row" style="margin-top:8px">
+        <div class="grow"><label>场景（真值扰动对界面不可见，仅复盘揭示）</label>
+          <select id="scen">
+            <option value="normal">正常炉次（无扰动）</option>
+            <option value="hot_metal">铁水超温——比化验单高 18℃（化验单不知道）</option>
+            <option value="high_si">化验滞后——入炉硅比化验单高 0.08%</option>
+          </select></div>
+        <div class="grow"><label>演示倍速（1=实时 8~10min）</label>
+          <select id="tscale"><option>5</option><option selected>10</option><option>20</option></select></div>
+      </div>
+    </details>
+    <div class="row" style="margin-top:8px">
+      <div style="align-self:flex-end"><button class="btn" id="btnStart" onclick="startBlow()">开始吹炼（绑定开吹方案）</button></div>
+      <div style="align-self:flex-end"><button class="btn ghost" onclick="stopBlow()">人工提枪</button></div>
+      <div class="grow" style="align-self:center">
+        <div class="row" style="align-items:center;gap:10px">
+          <span class="note mono" id="o2Text">累计氧 0 m³</span>
+          <div class="prog"><i id="o2Bar" style="width:0%"></i></div>
+        </div>
+      </div>
+    </div>
+    <div class="note" style="margin-top:6px">数据链路：<span id="linkState" class="pill">待机</span> · 系统只产出建议与留痕，无任何执行通道；「采纳」= 模拟操作工按建议人工执行。</div>
+  </div>
+  <div class="bigrow" id="big"></div>
+  <div class="card"><h3>炼钢时间轴 · SOP 阶段 / 检查点 / 事件钉</h3>
+    <div class="tl-wrap"><svg id="tlSvg" width="100%" height="86" viewBox="0 0 720 86"></svg></div>
+    <div class="legend" style="padding-top:4px">
+      <span><i style="border-top:none;background:#2B4A6F;width:14px;height:10px;border-radius:2px"></i>Si 氧化期</span>
+      <span><i style="border-top:none;background:#E8590C;width:14px;height:10px;border-radius:2px"></i>去钒主期</span>
+      <span><i style="border-top:none;background:#B54708;width:14px;height:10px;border-radius:2px"></i>控温收钒期</span>
+      <span><i style="border-top:none;background:#3B82C4;width:14px;height:10px;border-radius:2px"></i>终点判定</span>
+      <span><i style="border-top:none;background:#3B82C4;width:8px;height:8px;transform:rotate(45deg);border-radius:1px"></i>副枪检查点</span>
+      <span><i style="border-top:none;background:#FF7A33;width:8px;height:8px;border-radius:50%"></i>建议事件</span>
+      <span class="note" id="sopNote"></span>
+    </div>
+  </div>
+  <div class="row">
+    <div class="grow" style="flex:2">
+      <div class="card"><h3>温度轨迹 · 估计 vs 方案基线（误差带）+ Tc 动态参考</h3>
+        <div class="svgwrap"><svg id="chartT" width="100%" height="230" viewBox="0 0 720 230"></svg></div>
+        <div class="legend"><span><i style="border-color:#9AA8BB;border-top-style:dashed"></i>方案基线</span><span><i style="border-color:#FF7A33"></i>在线估计</span><span><i style="border-color:rgba(255,122,51,.35);border-top-width:8px"></i>误差带</span><span><i style="border-color:#E03131;border-top-style:dashed"></i>Tc(随V动态)</span><span><i style="border-color:#3B82C4;border-top-style:none;background:#3B82C4;width:7px;height:7px;border-radius:50%"></i>副枪样</span></div>
+      </div>
+      <div class="card"><h3>残钒轨迹（0.03 目标 / 0.04 补吹线）</h3>
+        <div class="svgwrap"><svg id="chartV" width="100%" height="170" viewBox="0 0 720 170"></svg></div>
+      </div>
+    </div>
+    <div class="grow">
+      <div class="card"><h3>智能体运行时 <span class="note" id="agCycle"></span></h3>
+        <div class="goal" data-dict="goal">本炉目标：<b id="agGoal">—</b><span class="note" id="agReplan" style="margin-left:8px"></span></div>
+        <div class="note" style="margin-bottom:5px">它给自己排的计划（触发器驱动，会重规划）：</div>
+        <div id="agPlan" style="margin-bottom:10px"></div>
+        <div class="note" style="margin-bottom:5px">主动播报：</div>
+        <div id="agFeed" style="max-height:140px;overflow-y:auto;margin-bottom:10px"></div>
+        <div class="note" style="margin-bottom:5px">协作黑板（感知员/工艺员/质检员）：</div>
+        <div id="agBB" style="max-height:130px;overflow-y:auto;margin-bottom:8px"></div>
+        <div class="agent-steps">
+          <div class="astep"><div class="h"><i></i>它在看</div><div class="b mono" id="agP" style="font-size:11.5px">—</div></div>
+          <div class="astep judge"><div class="h"><i></i>它觉得</div><div class="b" id="agJ">—</div></div>
+          <div class="astep plan"><div class="h"><i></i>它打算</div><div class="b" id="agPl">—</div></div>
+          <div class="astep act"><div class="h"><i></i>它在做</div><div class="b" id="agA">—</div></div>
+        </div>
+        <div class="note" style="margin-bottom:5px">任务编排（每周期）：<span class="pipeline" id="agTasks"></span></div>
+        <div class="linkline"><div class="log" id="agStream" style="max-height:150px"></div></div>
+      </div>
+      <div class="card"><h3>建议卡（同屏 ≤2 条 · 倒计时到期自动失效）</h3><div id="advices"><div class="note">暂无建议</div></div></div>
+      <div class="card"><h3>留痕流水（S11 · 自动）</h3><div class="log" id="auditLog"></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ ③ 复盘 ============ -->
+<section id="t3" style="display:none">
+  <div class="guide"><div class="gt">这屏怎么用</div><div class="gb"><b>给工艺工程师（单炉）和厂部（批次）。</b>收炉后自动对账：方案 vs 真值、三条件达标矩阵、归因标签、误差带覆盖率（系统自己承认真不准到哪）。确认入台账后批次统计才累计。<b>半钢交接单</b>在此页——下一工序的入炉条件就是它。</div><button class="btn ghost sm x" onclick="this.parentElement.style.display='none'">知道了</button></div>
+  <div class="card"><h3>单炉复盘（S12 · 真值在此揭示——预测与估计的诚实对账）</h3>
+    <div id="repOut"><div class="note">吹炼结束后自动生成；也可粘贴会话号：<input id="repSid" placeholder="session_id" style="width:220px;display:inline-block"> <button class="btn ghost sm" onclick="loadReport($('repSid').value.trim())">加载</button></div></div>
+  </div>
+  <div class="card"><h3>半钢交接契约（M14 · transfersTo —— "双联"的跨工序一环）</h3>
+    <div id="xferOut" class="note">复盘生成后自动填入：上工序终点即下工序入炉条件（半钢温/C/余V/时刻/置信）。</div>
+  </div>
+  <div class="card"><h3>批次偏差带统计（S13 · 厂部视角）</h3>
+    <div style="margin-bottom:8px"><button class="btn ghost sm" onclick="loadHeats()">刷新台账</button>
+      <button class="btn ghost sm" onclick="loadStats()">批次统计</button>
+      <button class="btn ghost sm" onclick="exportAudit()">导出审计 JSON（F3.6）</button>
+      <span class="note" id="learned"></span></div>
+    <div id="statsOut" class="note">点「批次统计」聚合入库炉次（样本 &lt;5 诚实标注"样本不足"）。</div>
+    <table id="heatTbl" style="margin-top:8px"><thead><tr><th>炉号</th><th class="num">L2 预测温</th><th class="num">实绩温</th><th class="num">偏差</th><th>建议采纳</th><th>时间</th></tr></thead><tbody></tbody></table>
+  </div>
+</section>
+
+<!-- ============ ④ 治理 ============ -->
+<section id="t4" style="display:none">
+  <div class="guide"><div class="gt">这屏怎么用</div><div class="gb"><b>给专家委员会/工艺/自动化。</b>只做三件事：查口径冲突（谁跟谁不一致、缺什么包）、查参数溯源（每个数来自哪个包）、模式切换（影子→advisory 阶梯，PRODUCTION 要授权 token，错了诚实拒绝）。四条红线由 CI 技术强制，不靠自觉。</div><button class="btn ghost sm x" onclick="this.parentElement.style.display='none'">知道了</button></div>
+  <div class="card"><h3>系统模式（影子 → advisory 阶梯 · PRODUCTION 需授权）</h3>
+    <div class="row">
+      <div class="grow"><label>目标模式</label>
+        <select id="modeSel"><option>SIMULATION</option><option>VALIDATION</option><option>PRODUCTION</option></select></div>
+      <div class="grow"><label>授权 token（PRODUCTION 必需）</label><input id="modeToken" placeholder="向工艺负责人索取授权口令"></div>
+      <div style="align-self:flex-end"><button class="btn sm" onclick="switchMode()">切换</button></div>
+    </div>
+    <div id="modeMsg" style="margin-top:8px"></div>
+    <div class="linkline"><table id="modeAudit"><thead><tr><th>时间</th><th>用户</th><th>从 → 到</th><th>原因</th></tr></thead><tbody></tbody></table>
+    <div class="note" style="margin-top:4px">切换审计（S14 出口）：<button class="btn ghost sm" onclick="loadModeAudit()">加载</button></div></div>
+  </div>
+  <div class="card"><h3>数据字典（每个字段 → 来源表 → 单位 → 作用 · 与 docs/DATA_DICTIONARY.md 同源）</h3>
+    <div class="row" style="margin-bottom:10px">
+      <div class="grow"><input id="dictSearch" placeholder="检索字段名 / 表名 / 作用…（如 tc_margin、heats、覆盖率）" oninput="renderDict(this.value)"></div>
+      <span class="note" style="align-self:center">大数看板与建议卡上的数字可<b style="color:var(--t2)">直接点击</b>查看字段解释。</span>
+    </div>
+    <div class="dict-grid" id="dictOut"></div>
+  </div>
+  <div class="card"><h3>口径冲突清单（industry + plant_a + 厂级 三层聚合 · 缺失显式降级）</h3>
+    <div id="confOut"><div class="note">加载中…</div></div>
+  </div>
+  <div class="card"><h3>参数溯源（知识包 = 口径唯一源 · value/unit/source/status 四维）</h3>
+    <div class="row">
+      <div class="grow"><label>参数路径（留空看顶层 · 返回=行业基线打底+厂级覆盖合并后的唯一口径）</label><input id="paramPath" placeholder="l1_charge.target_temp_c.value"></div>
+      <div style="align-self:flex-end"><button class="btn ghost sm" onclick="queryParam()">查询</button></div>
+    </div>
+    <div id="paramOut" style="margin-top:8px"></div>
+  </div>
+  <div class="card"><h3>红线声明（技术强制 · scripts/security_scan.py CI 门禁）</h3>
+    <div class="kv note">
+      <span>① 控制写入路径：<b style="color:var(--ok)">物理不可达（AST 断言 raise）</b></span>
+      <span>② 工业协议直连：<b style="color:var(--ok)">opcua/pymodbus/snap7 禁入</b></span>
+      <span>③ 控制写入端点：<b style="color:var(--ok)">路由扫描零命中</b></span>
+      <span>④ 生产实绩入库：<b style="color:var(--ok)">指纹扫描零命中（GATE-2）</b></span>
+    </div>
+  </div>
+</section>
+</main>
+<div id="dictPop"></div>
+<footer>
+  <span class="pill ok">🔒 控制写入 0 路径</span>
+  <span class="pill ok">协议直连 0</span>
+  <span class="pill ok">写控端点 0</span>
+  <span class="pill ok">实绩指纹 0</span>
+  <span class="pill mode">CI · security_scan v5</span>
+  <span style="margin-left:8px">VERO 提钒—半钢双联工艺决策辅助智能体（ADSS）· 合成/仿真口径（演示标定参数待 ≥50 炉真实标定）· 控制零触碰，知识全留痕</span>
+</footer>
+
+<script>
+"use strict";
+const $=id=>document.getElementById(id);
+const fmt=(v,d=2)=>v==null?"—":Number(v).toLocaleString("en-US",{minimumFractionDigits:d,maximumFractionDigits:d});
+let blowSid=null, es=null, lastReport=null, lastCharge=null;
+
+async function api(path, opt){
+  const r = await fetch(path, opt);
+  if(!r.ok){ const e = await r.json().catch(()=>({detail:r.status})); throw new Error(e.detail||("HTTP "+r.status)); }
+  return r.json();
+}
+let CUR_ACT=0;
+function setAct(n){
+  CUR_ACT=n;
+  for(let i=1;i<=5;i++){
+    const el=$("as"+i); if(!el) continue;
+    el.classList.toggle("on", i===n);
+    el.classList.toggle("done", i<n);
+  }
+  const map={1:"t1",2:"t1",3:"t2",4:"t2",5:"t3"};
+  const sec=$(map[n]); if(!sec) return;
+  document.querySelectorAll("section").forEach(s=>s.classList.remove("on"));
+  sec.classList.add("on");
+}
+function tab(id){
+  document.querySelectorAll("section").forEach(s=>s.classList.remove("on"));
+  $(id).classList.add("on");
+}
+const SCEN_CN={normal:"正常炉次",hot_metal:"铁水超温",high_si:"化验滞后"};
+async function renderWall(){
+  try{
+    const list=await api("/api/blow/sessions");
+    const act=list.filter(x=>!x.finished), fin=list.filter(x=>x.finished).slice(0,8);
+    const card=x=>{
+      const cls=x.tc_alarm?"bad":(x.alarms>0?"warn":"");
+      return `<div class="bn ${cls}" style="cursor:pointer" onclick="openSession('${x.session_id}')">
+        <div class="v">${fmt(x.est_T,0)}<span style="font-size:14px;color:var(--t3)"> ℃</span></div>
+        <div class="l">炉 ${x.session_id.slice(0,6)} · ${SCEN_CN[x.scenario]||x.scenario} · ${x.finished?"已收炉":"在吹 · "+x.phase}</div>
+        <div class="s">余钒 ${fmt(x.est_V,3)}% · 距 Tc ${fmt(x.tc_margin_c,0)}℃ · ${x.alarms>0?(x.alarms+" 条告警"):"无告警"} · ${x.stop_reason||("氧 "+fmt((x.progress||0)*100,0)+"%")}</div></div>`;};
+    $("wall").innerHTML = (act.map(card).join("") + (fin.length?`<div style="flex-basis:100%" class="note">— 已收炉 —</div>`+fin.map(card).join(""):"")) || '<div class="note">还没有炉次——点「接化验单 · 开新炉」开始第一炉。</div>';
+  }catch(e){ $("wall").innerHTML=`<div class="flash err">态势加载失败：${e.message}</div>`; }
+}
+setInterval(renderWall, 3000);
+function openSession(sid){
+  tab('t1');
+  api("/api/blow/sessions").then(l=>{
+    const x=l.find(v=>v.session_id===sid);
+    if(x&&!x.finished){ blowSid=sid; viewSession(sid); }
+    else loadReport(sid);
+  });
+}
+async function viewSession(sid){
+  if(es) es.close();
+  es=new EventSource(`/api/blow/${sid}/stream`);
+  es.onmessage=ev=>{ const s=JSON.parse(ev.data); renderBlow(s);
+    if(s.finished){ es.close(); finishToReport(sid); } };
+  $("linkState").textContent="正在吃数据（烟气+副枪）"; $("linkState").className="pill ok";
+}
+function finishToReport(sid){
+  loadReport(sid); setAct(5);
+  const b=document.createElement("div"); b.className="flash warn"; b.style.position="fixed";
+  b.style.top="64px"; b.style.right="20px"; b.style.zIndex=99; b.textContent="本炉已收炉——已自动跳转结账复盘，请确认入台账";
+  document.body.appendChild(b); setTimeout(()=>b.remove(), 6000);
+}
+async function checkConn(){
+  try{ await api("/health"); $("conn").textContent="后端已连接"; $("conn").className="pill ok";
+    const m = await api("/api/system/mode"); setMode(m.mode); }
+  catch(e){ $("conn").textContent="数据中断 · 已降级"; $("conn").className="pill err"; }
+}
+const MODE_CN={SIMULATION:"演示模式",VALIDATION:"影子模式",PRODUCTION:"生产模式"};
+function setMode(m){
+  $("modeBadge").textContent=MODE_CN[m]||m;
+  // 操作工红线：演示控件不得出现在非 SIMULATION 模式
+  $("simControls").style.display = (m==="SIMULATION") ? "flex" : "none";
+}
+checkConn(); setInterval(checkConn, 8000);
+setAct(1);
+
+/* ---------- ① 开吹 ---------- */
+let labLocked=false;
+function lockLab(){
+  labLocked=true; setAct(1); $("labCard").classList.add("locked");
+  $("labLock").textContent="✓ 化验单已确认锁定"; $("labLock").disabled=true;
+  $("btnCharge").disabled=false;
+  document.querySelectorAll("#labCard input").forEach(i=>i.readOnly=true);
+  ageTag();
+}
+function ageTag(){
+  const a=+$("fAge").value||0;
+  const cls = a>15?"err":(a>10?"warn":"ok");
+  const txt = a>15?"超 15min——本读数应灰显为「外推参考」，不得当实测":`数据时龄 ${a} min（LIMS 时滞 3~15min 正常区间）`;
+  $("ageTag").innerHTML=`<span class="pill ${cls}">化验单时龄 ${a} min</span> <span class="note">${txt}</span>`;
+}
+document.addEventListener("DOMContentLoaded",()=>{ try{ageTag();}catch(e){} });
+ageTag();
+
+async function doCharge(){
+  if(!labLocked){ alert("请先确认并锁定化验单"); return; }
+  const body={C:+$("fC").value, Si:+$("fSi").value, V:+$("fV").value, Ti:(+$("fTi").value)||null,
+              iron_temp_c:+$("fT").value, iron_weight_kg:+$("fW").value*1000};
+  const out=$("chargeOut"); out.innerHTML='<div class="card note">计算中…</div>';
+  try{
+    const d = await api("/api/plant_a/charge",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)});
+    lastCharge=d;
+    const p=d.primary, a=d.arbitration;
+    const diff=(a.case_15000.recipe_kg.pellet||0)-(a.case_2777.recipe_kg.pellet||0);
+    const bad=[];
+    if(body.Si<0.05||body.Si>0.8) bad.push("Si 超出工艺范围 0.05~0.80%");
+    if(body.V<0.1||body.V>0.6) bad.push("V 超出工艺范围 0.10~0.60%");
+    if(body.iron_temp_c<1200||body.iron_temp_c>1450) bad.push("铁水温度超出 1200~1450℃");
+    const gate = bad.length? `<div class="flash err">开吹条件校验（F1.1）：<b>不通过</b>——${bad.join("；")}。需工艺确认后方可开吹（确认留痕）。</div>`
+                           : `<div class="flash ok">开吹条件校验（F1.1）：通过（成分/温度在工艺窗口内）。</div>`;
+    out.innerHTML=`
+    ${gate}
+    <div class="secrow"><div class="stab molten">配吃推荐</div><div class="card"><h3>融合配吃方案（A 总量 × B 结构 · M18）+ 终点目标卡（S2）</h3>
+      ${d.fused?`<table style="margin-bottom:10px"><thead><tr><th>品种（B 结构分配）</th><th class="num">占比 ← B</th><th class="num"> fused kg ← A 总量</th></tr></thead><tbody>
+        ${Object.entries(d.fused.recipe_kg).map(([k,v])=>`<tr><td>冷料·${k}</td><td class="num">${fmt((d.fused.proportions[k]||0)*100,1)}%</td><td class="num"><b style="color:var(--molten-hi)">${fmt(v,0)} kg</b></td></tr>`).join("")}
+        <tr><td><b>合计（A 机理总量）</b></td><td class="num">100%</td><td class="num"><b>${fmt(d.fused.total_kg,0)} kg</b></td></tr>
+      </tbody></table>
+      <div class="note" style="margin-bottom:8px">${d.fused.rule} · 品位预测 ${fmt(d.fused.grade_pct)}%（仅 A 机理有此能力）· ${d.fused.note}${(d.fused.b_warnings&&d.fused.b_warnings.length)?" · B 告警："+d.fused.b_warnings.join("；"):""}</div>`:""}
+      <div class="row">
+        <div class="grow"><table><thead><tr><th>项目（A 机理原始口径）</th><th class="num">数值</th></tr></thead><tbody>
+          ${Object.entries(p.recipe_kg).filter(([k,v])=>v>0).map(([k,v])=>`<tr><td>冷料·${k}</td><td class="num">${fmt(v,0)} kg</td></tr>`).join("")}
+          <tr><td>预测 V₂O₅ 品位</td><td class="num"><b style="color:var(--accent)">${fmt(p.v2o5_grade_pct)}%</b></td></tr>
+          <tr><td>钒回收率</td><td class="num">${fmt(p.v_recovery_pct,1)}%</td></tr>
+        </tbody></table></div>
+        <div class="grow"><table><thead><tr><th>终点目标（三判据）</th><th class="num">目标</th></tr></thead><tbody>
+          <tr><td>余钒目标 / 补吹线</td><td class="num">≤0.030% / 0.040%</td></tr>
+          <tr><td>终点温度窗（顶吹）</td><td class="num">1350~1420℃</td></tr>
+          <tr><td>半钢 C 保碳下限</td><td class="num">≥3.0%</td></tr>
+          <tr><td>Tc（随 V 动态）</td><td class="num">${fmt(1361+(body.V-0.12)*80,0)}℃ @ V=${body.V}%</td></tr>
+        </tbody></table>
+        <div class="note" style="margin-top:6px">中段所有偏差都相对本目标定义。</div></div>
+      </div>
+      <div class="note" style="margin-top:8px">
+        <span class="tag">规则版本</span>${d.rule_version}
+        <span class="tag" style="margin-left:8px">机理</span>物料/热/氧/渣 四大平衡（黄金回归 75/75）
+        <span class="tag" style="margin-left:8px">加料路径</span>球团=散状（称量斗·事中可补）；块状=天车（开吹前一次配足）
+        <span class="tag" style="margin-left:8px">时龄</span>化验单 ${$("fAge").value} min
+      </div>
+      <div class="row" style="margin-top:10px">
+        <button class="btn" onclick="makeSheet()">生成开吹指令单（S6 · 二助手）</button>
+        <button class="btn ghost" onclick="plantCompare()">B 厂查表对照（M18）</button>
+      </div>
+      <div id="sheetOut" style="margin-top:10px"></div>
+    </div></div>
+    <div class="secrow"><div class="stab steel">仲裁对照</div><div class="card" style="margin-bottom:0"><h3>双口径仲裁台（S5 · CF-001 · 系统不代裁）</h3>
+      <table><thead><tr><th>口径</th><th class="num">球团 kg</th><th class="num">品位</th></tr></thead><tbody>
+      <tr><td>A 专家A 2777</td><td class="num">${fmt(a.case_2777.recipe_kg.pellet,0)}</td><td class="num">${fmt(a.case_2777.v2o5_grade_pct)}</td></tr>
+      <tr><td>B 文献 15000</td><td class="num">${fmt(a.case_15000.recipe_kg.pellet,0)}</td><td class="num">${fmt(a.case_15000.v2o5_grade_pct)}</td></tr>
+      </tbody></table>
+      <div class="note" style="margin-top:6px">两案球团差 <b>${fmt(diff,0)} kg/炉</b>（≈半吊料，不是小事）· 终审权在专家委员会（CC-1）· 证据：16 炉反演（本机私有数据）+ Excel 单元格溯源</div>
+    </div></div>`;
+    $("whatifCard").style.display="block";
+    setAct(2);
+  }catch(e){ out.innerHTML=`<div class="flash err">配料计算失败：${e.message}</div>`; }
+}
+
+window._siCurve=[];
+async function siWhatIf(si){
+  $("siLabel").textContent=(+si).toFixed(2);
+  const body={C:+$("fC").value, Si:+si, V:+$("fV").value, Ti:(+$("fTi").value)||null,
+              iron_temp_c:+$("fT").value, iron_weight_kg:+$("fW").value*1000};
+  try{
+    const d = await api("/api/plant_a/charge",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)});
+    window._siCurve = window._siCurve.filter(x=>Math.abs(x.si-(+si))>0.004);
+    window._siCurve.push({si:+si, grade:d.primary.v2o5_grade_pct, pellet:d.primary.recipe_kg.pellet||0});
+    window._siCurve.sort((a,b)=>a.si-b.si);
+    drawSi(window._siCurve);
+  }catch(e){}
+}
+function drawSi(curve){
+  const svg=$("siChart"),W=720,H=180,L=46,R=60,T=12,B=22;
+  if(curve.length<2){svg.innerHTML='<text x="60" y="90" fill="#5E6C80">拖动滑杆累积响应曲线…</text>';return;}
+  const x=s=>L+(s-0.10)/(0.20)*(W-L-R);
+  const gs=curve.map(c=>c.grade), ps=curve.map(c=>c.pellet);
+  const g0=Math.min(...gs),g1=Math.max(...gs),p0=Math.min(...ps),p1=Math.max(...ps);
+  const Yg=v=>T+(1-(v-g0)/Math.max(1e-9,g1-g0))*(H-T-B);
+  const Yp=v=>T+(1-(v-p0)/Math.max(1e-9,p1-p0))*(H-T-B);
+  let s="";
+  s+=`<polyline points="${curve.map(c=>`${x(c.si)},${Yg(c.grade)}`).join(" ")}" fill="none" stroke="#FF7A33" stroke-width="2"/>`;
+  s+=`<polyline points="${curve.map(c=>`${x(c.si)},${Yp(c.pellet)}`).join(" ")}" fill="none" stroke="#4A7AB5" stroke-width="2"/>`;
+  curve.forEach(c=>{s+=`<text x="${x(c.si)}" y="${H-6}" fill="#5E6C80" font-size="9" text-anchor="middle" font-family="monospace">${c.si.toFixed(2)}</text>`;});
+  const lc=curve[curve.length-1];
+  s+=`<text x="${W-R+4}" y="${Yg(lc.grade)+4}" fill="#FF7A33" font-size="10" font-family="monospace">品位${lc.grade.toFixed(1)}%</text>`;
+  s+=`<text x="${W-R+4}" y="${Yp(lc.pellet)+4}" fill="#4A7AB5" font-size="10" font-family="monospace">球团${fmt(lc.pellet,0)}</text>`;
+  svg.innerHTML=s;
+}
+async function plantCompare(){
+  const out=$("sheetOut");
+  try{
+    const b=await api("/api/plant_b/charge",{method:"POST",headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({C:+$("fC").value,Si:+$("fSi").value,V:+$("fV").value,Ti:(+$("fTi").value)||0.10,
+        iron_weight_t:+$("fW").value,iron_temp_c:+$("fT").value})});
+    const a=lastCharge.primary;
+    out.innerHTML=`<div class="card" style="border-color:var(--steel)"><h3>双厂对照（M18：同一引擎 · 两厂知识包）</h3>
+      <table><thead><tr><th>维度</th><th>A 厂 · 机理（供总量+品位）</th><th>B 厂 · 查表（供品种结构）</th></tr></thead><tbody>
+      <tr><td>冷却剂</td><td class="num">球团 ${fmt(a.recipe_kg.pellet,0)} kg（机理反算）</td><td class="num">${Object.entries(b.recipe_t).map(([k,v])=>`${k} ${fmt(v*1000,0)}kg`).join(" + ")}</td></tr>
+      <tr><td>渣量</td><td class="num">全口径（机理）</td><td class="num">${fmt(b.slag_weight_t,2)} t（SiO₂+V₂O₅）</td></tr>
+      <tr><td>总氧量</td><td class="num">—</td><td class="num">${fmt(b.oxygen_total_m3,0)} m³</td></tr>
+      <tr><td>品位预测</td><td class="num"><b>${fmt(a.v2o5_grade_pct)}%</b></td><td class="num">无此能力（查表法口径）</td></tr>
+      <tr><td>告警</td><td class="num">—</td><td class="num">${b.warnings.join("；")||"—"}</td></tr>
+      </tbody></table>
+      <div class="note" style="margin-top:6px">${b.rule_version} · 组合拳：A 厂总量 × B 厂品种分配——二厂复制不用重新研发。</div></div>`;
+  }catch(e){ out.innerHTML=`<div class="flash err">${e.message}</div>`; }
+}
+async function makeSheet(){
+  const out=$("sheetOut");
+  try{
+    const p=lastCharge.primary;
+    const order=[];
+    Object.entries((lastCharge.fused?lastCharge.fused.recipe_kg:p.recipe_kg)).forEach(([k,v])=>{ if(v>0) order.push("散状（称量斗·事中可补）"+k+" "+fmt(v,0)+"kg"); });
+    const d=await api("/api/blow/charge-sheet",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({
+      plant:"plant_a×plant_b（融合）", C:+$("fC").value, Si:+$("fSi").value, V:+$("fV").value,
+      iron_temp_c:+$("fT").value, iron_weight_kg:+$("fW").value*1000,
+      recipe_kg:(lastCharge.fused?lastCharge.fused.recipe_kg:p.recipe_kg), pred_grade:p.v2o5_grade_pct, add_order:order,
+      confirmed_by:"二助手", reviewed_by:"炉长（演示签字）"})});
+    out.innerHTML=`<div class="card" style="border-color:var(--ok)"><h3>开吹指令单 ${d.sheet_id}（S6 · 零填报 · 确认即留痕）</h3>
+      <table><tbody>
+      <tr><td>加料顺序</td><td>${d.add_order.join(" → ")}</td></tr>
+      <tr><td>时间戳 / 规则版本</td><td class="mono">${d.created_at} · ${d.rule_version.slice(0,40)}…</td></tr>
+      <tr><td>签字位</td><td>二助手：${d.confirmed_by} ✓ ｜ 炉长：${d.reviewed_by||"待签"}</td></tr>
+      </tbody></table>
+      <div class="note" style="margin-top:6px">打印即可执行；签字=确认留痕（非执行指令）。</div></div>`;
+  }catch(e){ out.innerHTML=`<div class="flash err">${e.message}</div>`; }
+}
+
+/* ---------- ② 吹炼 ---------- */
+async function startBlow(){
+  const body={C:+$("fC").value, Si:+$("fSi").value, V:+$("fV").value, Ti:(+$("fTi").value)||null,
+              iron_temp_c:+$("fT").value, iron_weight_kg:+$("fW").value*1000,
+              scenario:$("scen").value, time_scale:+$("tscale").value};
+  try{
+    const d=await api("/api/blow/start",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)});
+    blowSid=d.session_id;
+    if(es) es.close();
+    es=new EventSource(`/api/blow/${blowSid}/stream`);
+    es.onmessage=ev=>{ const s=JSON.parse(ev.data); renderBlow(s);
+      if(s.finished){ es.close(); finishToReport(s.session_id||blowSid); } };
+    es.onerror=()=>{ $("linkState").textContent="断链 · 重连中"; $("linkState").className="pill err"; };
+    $("linkState").textContent="正在吃数据（烟气+副枪）"; $("linkState").className="pill ok";
+    setAct(3);
+  }catch(e){ alert("开吹失败: "+e.message); }
+}
+async function stopBlow(){ if(blowSid) await api(`/api/blow/${blowSid}/stop?user=炉长`,{method:"POST"}); }
+async function decide(id,dec,reason){
+  try{ await api(`/api/blow/${blowSid}/decision`,{method:"POST",headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({advice_id:id,decision:dec,user:"炉长",reason:reason||""})}); }
+  catch(e){ alert("决策失败: "+e.message); }
+}
+function renderBlow(s){
+  $("hdrTc").innerHTML=`距 Tc <b>${fmt(s.tc_margin_c,0)}℃</b>`;
+  const lamp=$("hdrLamp").querySelector(".lamp");
+  lamp.className="lamp"+(s.tc_alarm?" bad":(s.alarms&&s.alarms.length?" warn":""));
+  $("hdrState").textContent=s.finished?"已收炉":(s.advices&&s.advices.some(a=>a.status==="active"&&a.requires_human_confirm)?"等您决断":s.sop?s.sop.name:"在吹");
+  if(s.end_countdown_s!=null){ $("hdrCd").style.display="inline-flex"; $("hdrCdV").textContent=fmt(s.end_countdown_s/(s.time_scale||10),0)+"s"; }
+  else { $("hdrCd").style.display="none"; }
+  if(!s.finished && s.advices && s.advices.some(a=>a.status==="active"&&a.requires_human_confirm)) setAct(4);
+  else if(!s.finished && CUR_ACT===4) setAct(3);
+  const strip=$("alarmStrip");
+  if(s.alarms && s.alarms.length){
+    const top=s.alarms[0];
+    strip.className="alarmstrip "+(top.level==="danger"?"danger":"warn");
+    $("alarmText").textContent=s.alarms.map(a=>a.text).join(" ｜ ");
+  } else { strip.className="alarmstrip"; }
+  const tm=s.tc_margin_c;
+  $("big").innerHTML=
+    bigCard("距碳钒转化温度", fmt(tm,0)+" ℃", `Tc ${fmt(s.tc_now_c,0)}℃（随 V 动态）· 余钒 ${fmt(s.est.V,3)}%`,
+      s.tc_alarm?"bad":(tm<30?"warn":"good"),"tc_margin_c")+
+    bigCard("预测残钒", fmt(s.pred.V,3)+" %", `目标 ≤${s.v_target} · 补吹线 ${s.v_blow_line}`, s.pred.V<=s.v_target?"good":"warn","pred.V")+
+    bigCard("预测终点温度", fmt(s.pred.T,0)+" ℃", "误差带 ±"+fmt(s.pred.sigma_T,0)+"℃（烟气+副枪+红外）",
+      (s.pred.T||0)>=1420?"bad":((s.pred.T||0)<1350?"cold":"good"),"pred.T")+
+    bigCard("枪位（SOP）", fmt(s.lance_plan_mm,0)+" mm", `半钢C ${fmt(s.pred.C,2)}%（保碳 ≥3.0）· ${s.extrapolating?"外推中":"含观测"}`, "","pred.C");
+  const ls=$("linkState");
+  if(s.extrapolating){ ls.textContent="副枪数据没来，机器在猜 · 上次副枪 "+(s.measure_age_min!=null?fmt(s.measure_age_min,1)+"min 前":"无"); ls.className="pill warn"; }
+  else { ls.textContent="同化中（含观测）"; ls.className="pill ok"; }
+  $("o2Text").textContent=`累计氧 ${fmt(s.o2.cum_m3,0)} / ${fmt(s.o2.planned_m3,0)} m³`;
+  $("o2Bar").style.width=(s.o2.progress*100)+"%";
+  renderTimeline(s); renderAgent(s);
+  renderCharts(s);
+  const act=s.advices.filter(a=>a.status==="active"), done=s.advices.filter(a=>a.status!=="active");
+  const card=a=>{
+    const cdReal=a.window_s!=null? a.window_s/(s.time_scale||10):null;
+    const cd=a.window_s!=null? fmt(cdReal,0)+"s":"—";
+    const cdHot=cdReal!=null&&cdReal<10;
+    return `<div class="advice ${a.type==="tap"?"tap":""} ${a.status==="expired"?"expired":(a.status!=="active"?"done":"")}" data-dict="advices">
+      <div class="ttl"><span>${a.title}</span><span class="cd ${cdHot?"hot":""}">${a.status==="active"?cd:a.status}</span></div>
+      <div class="msg">${a.message}</div>
+      ${a.cf_text?`<div class="flash warn" style="margin:6px 0 8px;padding:8px 12px;font-size:12px">反事实预演：${a.cf_text}</div>`:""}
+      <div class="meta">依据：烟气+副枪+红外 · estT ${a.snapshot.est_T}℃ / 余钒 ${a.snapshot.est_V}% / Tc ${a.snapshot.tc_now}℃ · ${a.snapshot.rule_version.slice(0,36)}…</div>
+      ${a.status==="active"&&a.requires_human_confirm?`<div class="ops">
+        <button class="btn sm" onclick="decide('${a.id}','adopt')">按它说的干（我确认）</button>
+        <button class="btn ghost sm" onclick="decide('${a.id}','reject')">否决</button>
+        <button class="btn ghost sm" onclick="decide('${a.id}','reject','枪位动不了')">否·枪位动不了</button>
+        <button class="btn ghost sm" onclick="decide('${a.id}','reject','天车占线')">否·天车占线</button>
+      </div>`:`<div class="meta">${a.status==="active"?"参考倒计时——提枪时机由炉长决定":a.status+" by "+(a.decided_by||"—")}</div>`}
+    </div>`;};
+  $("advices").innerHTML = (act.slice(0,2).map(card).join("") || '<div class="note">暂无建议——轨迹在方案包络内</div>')
+    + ((done.length||act.length>2)? `<div class="linkline note">已失效/已决策 ${done.length+(act.length>2?act.length-2:0)} 条（折叠）</div>`:"");
+  $("auditLog").innerHTML = s.audit_tail.map(a=>`<div>${a.ts_min}min · ${a.event}${a.advice_id?" "+a.advice_id:""}${a.user?" ["+a.user+"]":""}</div>`).join("") || "<div>—</div>";
+}
+function bigCard(l,v,sub,cls,did){ return `<div class="bn ${cls||""}" data-dict="${did||""}"><div class="v">${v}</div><div class="l">${l}</div><div class="s">${sub}</div></div>`; }
+const SOP_PHASES=[{id:"P1",n:"Si氧化期",t0:0,t1:60,c:"#2B4A6F"},{id:"P2",n:"去钒主期",t0:60,t1:300,c:"#E8590C"},{id:"P3",n:"控温收钒期",t0:300,t1:480,c:"#B54708"},{id:"P4",n:"终点判定",t0:480,t1:600,c:"#3B82C4"}];
+function renderTimeline(s){
+  const svg=$("tlSvg"),W=720,H=86,L=8,R=8,T=10,B=26;
+  const X=t=>L+t/600*(W-L-R);
+  let out="";
+  SOP_PHASES.forEach(p=>{
+    const cur=s.sop&&s.sop.phase===p.id;
+    out+=`<rect class="tl-ph" x="${X(p.t0)+1}" y="${T}" width="${X(p.t1)-X(p.t0)-2}" height="30" rx="4" fill="${p.c}" opacity="${cur?1:.55}" stroke="${cur?"#E9EEF5":"none"}" stroke-width="1.5"/>`;
+    out+=`<text x="${(X(p.t0)+X(p.t1))/2}" y="${T+19}" fill="#fff" font-size="11" text-anchor="middle" font-weight="600">${p.n}</text>`;
+    out+=`<text x="${(X(p.t0)+X(p.t1))/2}" y="${T+43}" fill="#7E8CA0" font-size="9.5" text-anchor="middle" font-family="monospace">${p.t0/60}′–${p.t1/60}′ 枪位${p.id==="P2"?"1200":p.id==="P1"?"1100":"1000"}</text>`;
+  });
+  [[2,"副枪①"],[7,"副枪②"]].forEach(([m,n])=>{
+    out+=`<rect x="${X(m*60)-4}" y="${T+50}" width="8" height="8" transform="rotate(45 ${X(m*60)} ${T+54})" fill="#3B82C4"/><text x="${X(m*60)}" y="${H-6}" fill="#3B82C4" font-size="9" text-anchor="middle" font-family="monospace">${m}′ ${n}</text>`;
+  });
+  (s.timeline||[]).forEach(e=>{
+    if(e.kind==="advice") out+=`<circle cx="${X(e.t*60)}" cy="${T+54}" r="4" fill="#FF7A33"><title>${e.text}</title></circle>`;
+    if(e.kind==="phase") out+=`<line x1="${X(e.t*60)}" y1="${T}" x2="${X(e.t*60)}" y2="${T+30}" stroke="#E9EEF5" stroke-width="1.2" opacity=".7"/>`;
+  });
+  const cx=X(Math.min(600,s.t_min*60));
+  out+=`<line x1="${cx}" y1="${T-4}" x2="${cx}" y2="${H-B+2}" stroke="#E9EEF5" stroke-width="2"/><circle cx="${cx}" cy="${T-4}" r="3" fill="#E9EEF5"/>`;
+  svg.innerHTML=out;
+  if(s.sop) $("sopNote").textContent=`SOP：${s.sop.version} ｜ 当前出口判据：${s.sop.exit} ｜ 控制要点：${s.sop.ctrl}`;
+}
+function nextTaskId(s){ const t=(s.plan||[]).find(t=>t.status==="pending"); return t?t.id:null; }
+function renderAgent(s){
+  const a=s.agent||{}; if(!a.thought) return;
+  $("agCycle").textContent=`周期 #${a.cycle} · ${s.t_min.toFixed(1)}min`;
+  const t=a.thought;
+  $("agP").textContent=t.perceive;
+  $("agJ").innerHTML=`${t.judge} <span class="pill ${t.conf>=0.8?"ok":"warn"}" style="margin-left:4px">置信 ${(t.conf*100)|0}%</span>`;
+  $("agPl").textContent=t.plan;
+  $("agA").textContent=t.act;
+  $("agTasks").innerHTML=a.tasks.map(x=>`<span class="ptask">${x.name} <b>${x.ms}ms</b></span>`).join("");
+  $("agGoal").textContent=s.goal||"";
+  $("agReplan").textContent=s.replans?`已重规划 ${s.replans} 次`:"";
+  const stIco={done:"✓",cur:"▶",pending:"○",replanned:"↻"};
+  $("agPlan").innerHTML=(s.plan||[]).map(t=>{
+    const cur=t.status==="pending"&&t.id===nextTaskId(s);
+    return `<div class="plantask"><span class="st ${t.status==="done"?"done":(cur?"cur":"")}">${t.status==="done"?"✓":(cur?"▶":"○")}</span>
+      <span class="nm ${t.status==="done"?"done":""}">${t.name}${t.depends_on&&t.depends_on.length?` <span class="note">← ${t.depends_on.join(",")}</span>`:""}</span><span class="wh">${t.when}</span></div>`;}).join("");
+  $("agFeed").innerHTML=(s.feed||[]).slice().reverse().map(f=>
+    `<div class="bub ${f.kind}"><span class="bt">${f.t}′</span> ${f.text}</div>`).join("")||'<div class="note">—</div>';
+  $("agBB").innerHTML=(s.blackboard||[]).slice().reverse().map(b=>
+    `<div class="bbrow ${b.kind}"><span class="ag">${b.agent}</span><span class="kd">${b.kind} ${b.t}′</span><span>${b.text}</span></div>`).join("")||'<div class="note">—</div>';
+  $("agStream").innerHTML=a.thoughts.slice().reverse().map(x=>
+    `<div class="thought"><b>#${x.cycle} ${x.t}′</b> ${x.judge} → ${x.act}<br><span class="note">感知：${x.perceive}</span></div>`).join("");
+}
+function renderCharts(s){
+  const ser=s.series||{t:[],estT:[],sT:[],baseT:[],estV:[],baseV:[]};
+  const tMax=Math.max(6,(s.t_min||6)*1.05);
+  {const svg=$("chartT"),W=720,H=230,L=46,R=12,T=12,B=22;
+   const X=t=>L+t/tMax*(W-L-R), Y=v=>T+(1480-v)/(1480-1240)*(H-T-B);
+   let out="";
+   [1300,1350,1400,1450].forEach(v=>{ out+=`<line x1="${L}" y1="${Y(v)}" x2="${W-R}" y2="${Y(v)}" stroke="${v===1361?"#E03131":"#2A3849"}" stroke-width="1" ${v===1361?'stroke-dasharray="5 3"':""}/><text x="6" y="${Y(v)+4}" fill="#5E6C80" font-size="10" font-family="monospace">${v}</text>`; });
+   const step=Math.max(1,Math.round(tMax/8));
+   for(let m=0;m<=tMax+0.01;m+=step) out+=`<text x="${X(m)}" y="${H-6}" fill="#5E6C80" font-size="10" text-anchor="middle" font-family="monospace">${Math.round(m)}′</text>`;
+   if(ser.estT&&ser.estT.length>1){
+     const tcLine=ser.t.map((t,i)=>ser.estV[i]==null?null:`${X(t)},${Y(Math.min(1480,(s.tc_now_c||1361)+(ser.estV[i]-0.12)*80))}`).filter(Boolean).join(" ");
+     if(tcLine) out+=`<polyline points="${tcLine}" fill="none" stroke="#E03131" stroke-width="1.3" stroke-dasharray="6 4" opacity="0.85"/>`;
+     const bp=ser.t.map((t,i)=>ser.baseT[i]==null?null:`${X(t)},${Y(ser.baseT[i])}`).filter(Boolean).join(" ");
+     if(bp) out+=`<polyline points="${bp}" fill="none" stroke="#9AA8BB" stroke-width="1.6" stroke-dasharray="6 4"/>`;
+     const band=ser.t.map((t,i)=>ser.estT[i]==null?null:`${X(t)},${Y(Math.min(1480,ser.estT[i]+(ser.sT[i]||10)))}`).filter(Boolean).join(" ")+" "+
+                ser.t.map((t,i)=>ser.estT[i]==null?null:`${X(t)},${Y(Math.max(1240,ser.estT[i]-(ser.sT[i]||10)))}`).filter(Boolean).reverse().join(" ");
+     out+=`<polygon points="${band}" fill="rgba(255,122,51,.13)"/>`;
+     out+=`<polyline points="${ser.t.map((t,i)=>ser.estT[i]==null?null:`${X(t)},${Y(ser.estT[i])}`).filter(Boolean).join(" ")}" fill="none" stroke="#FF7A33" stroke-width="2"/>`;
+   }
+   if(s.last_measure) out+=`<circle cx="${X(s.last_measure.t)}" cy="${Y(Math.min(1480,s.last_measure.T))}" r="4" fill="#3B82C4"/>`;
+   svg.innerHTML=out;
+   svg.onmousemove=ev=>{
+     const r=svg.getBoundingClientRect();
+     const t=((ev.clientX-r.left)*(720/r.width)-46)/(720-58)*tMax;
+     const est=(s.series||{}).estT||[], ts=(s.series||{}).t||[];
+     let bi=-1,bd=1e9; ts.forEach((x,i)=>{const d=Math.abs(x-t); if(d<bd){bd=d;bi=i;}});
+     if(bi>=0&&ts[bi]!=null){
+       const cx=46+ts[bi]/tMax*(720-58);
+       s._cross={x:cx, T:est[bi], tc:(s.tc_now_c||1361)+( (s.series.estV||[])[bi]||0 -0.12)*80};
+       renderCharts(s);
+     }
+   };
+   svg.onmouseleave=()=>{ s._cross=null; renderCharts(s); };
+   if(s._cross){
+     const o=s._cross;
+     let out2=`<line x1="${o.x}" y1="12" x2="${o.x}" y2="208" stroke="var(--line-hi)" stroke-width="1"/>`+
+       `<text x="${o.x+4}" y="26" fill="var(--t2)" font-size="10" font-family="monospace">T ${fmt(o.T,0)}℃</text>`;
+     svg.innerHTML+=out2;
+   }}
+  {const svg=$("chartV"),W=720,H=170,L=46,R=12,T=12,B=22;
+   const X=t=>L+t/tMax*(W-L-R), Y=v=>T+(0.36-v)/(0.36)*(H-T-B);
+   let out="";
+   [[0.03,"#2F9E44","0.03 目标"],[0.04,"#F08C00","0.04 补吹线"]].forEach(([v,c,lb])=>{
+     out+=`<line x1="${L}" y1="${Y(v)}" x2="${W-R}" y2="${Y(v)}" stroke="${c}" stroke-width="1" stroke-dasharray="5 3"/><text x="6" y="${Y(v)+4}" fill="${c}" font-size="10" font-family="monospace">${lb}</text>`;});
+   const step=Math.max(1,Math.round(tMax/8));
+   for(let m=0;m<=tMax+0.01;m+=step) out+=`<text x="${X(m)}" y="${H-6}" fill="#5E6C80" font-size="10" text-anchor="middle" font-family="monospace">${Math.round(m)}′</text>`;
+   if(ser.baseV&&ser.baseV.some(x=>x!=null)) out+=`<polyline points="${ser.t.map((t,i)=>ser.baseV[i]==null?null:`${X(t)},${Y(ser.baseV[i])}`).filter(Boolean).join(" ")}" fill="none" stroke="#9AA8BB" stroke-width="1.4" stroke-dasharray="6 4"/>`;
+   if(ser.estV&&ser.estV.some(x=>x!=null)) out+=`<polyline points="${ser.t.map((t,i)=>ser.estV[i]==null?null:`${X(t)},${Y(ser.estV[i])}`).filter(Boolean).join(" ")}" fill="none" stroke="#FF7A33" stroke-width="2"/>`;
+   svg.innerHTML=out;}
+}
+
+/* ---------- ③ 复盘 ---------- */
+async function loadReport(sid){
+  if(!sid) return;
+  try{
+    lastReport=await api(`/api/blow/${sid}/report`);
+    const r=lastReport, t=r.truth;
+    const matrix=`<span class="pill ${t.v_ok?"ok":"err"}">余钒 ${fmt(t.final_V,3)}% ${t.v_ok?"✓ 达标":"✗ 未达"}</span>
+      <span class="pill ${t.t_ok?"ok":"warn"}">温度 ${fmt(t.final_T,0)}℃ ${t.t_ok?"✓ 在窗":"△ 出窗"}</span>
+      <span class="pill ${t.c_ok?"ok":"warn"}">半钢C ${fmt(t.final_C,2)}% ${t.c_ok?"✓":"△ 逼近下限"}</span>
+      <span class="pill ${t.tc_crossed?"err":"ok"}">${t.tc_crossed?"真值曾越 Tc":"真值未越 Tc"}</span>`;
+    $("repOut").innerHTML=`
+      <div class="flash ${t.tc_crossed?"warn":"ok"}">终点：${r.stop_reason} · 场景：${r.scenario} · 终判三条件矩阵：${matrix}</div>
+      <div class="row">
+        <div class="grow"><table><thead><tr><th>对账项</th><th class="num">方案/预测</th><th class="num">真值</th></tr></thead><tbody>
+          <tr><td>终点温度</td><td class="num">${fmt(r.plan.final_T,0)}</td><td class="num">${fmt(t.final_T,0)}</td></tr>
+          <tr><td>终点残钒</td><td class="num">${fmt(r.plan.final_V,3)}</td><td class="num">${fmt(t.final_V,4)}</td></tr>
+          <tr><td>品位（模型复算，非化验真值）</td><td class="num">${fmt(r.plan.pred_grade)}</td><td class="num">${fmt(t.grade_model_recheck)}</td></tr>
+          <tr><td>补加散状冷料</td><td class="num">${fmt(r.plan.scatter_kg,0)}（含 15% 预留池）</td><td class="num">${fmt(t.scatter_added_kg,0)}</td></tr>
+        </tbody></table></div>
+        <div class="grow"><table><thead><tr><th>估计精度（诚实口径）</th><th class="num">值</th></tr></thead><tbody>
+          <tr><td>温度预测偏差（终）</td><td class="num">${fmt(r.accuracy.pred_vs_truth_T,1)} ℃</td></tr>
+          <tr><td>残钒预测偏差（终）</td><td class="num">${fmt(r.accuracy.pred_vs_truth_V,4)}</td></tr>
+          <tr><td>真值落入误差带比例 T / V</td><td class="num">${fmt((r.accuracy.coverage_T||0)*100,0)}% / ${fmt((r.accuracy.coverage_V||0)*100,0)}%</td></tr>
+        </tbody></table></div>
+      </div>
+      <div style="margin-top:8px"><b class="note">归因（规则四通道）：</b>${(r.attribution||[]).map(x=>`<span class="pill warn" style="margin:2px">${x}</span>`).join("")}</div>
+      <div class="row" style="margin-top:10px">
+        <button class="btn" onclick="saveHeat()">记入本班台账</button>
+        <span class="note">→ /api/heat/confirm · learned_entries 为 DB 真实计数</span>
+      </div>`;
+    $("xferOut").innerHTML=`<table><tbody>
+      <tr><td>半钢温度</td><td class="num mono">${fmt(t.final_T,0)} ℃</td><td>半钢 C</td><td class="num mono">${fmt(t.final_C,2)} %</td></tr>
+      <tr><td>余钒</td><td class="num mono">${fmt(t.final_V,3)} %（目标 ≤0.030）</td><td>终点判据</td><td class="num mono">${r.stop_reason}</td></tr>
+      <tr><td>估计置信</td><td class="num mono">σT ±${fmt(((r.estimate.slice(-1)[0])||{}).sT,0)}℃</td><td>越线标记</td><td class="num mono">${t.tc_crossed?"含（复盘揭示）":"无"}</td></tr>
+      </tbody></table>
+      <div class="note" style="margin-top:6px">以上 = semisteel_transfer 契约（M14）实例：下工序入炉条件即本表，随炉次留痕、跨工序可追溯。</div>`;
+    loadHeats(); loadStats();
+  }catch(e){ $("repOut").innerHTML=`<div class="flash err">${e.message}</div>`; }
+}
+async function saveHeat(){
+  const r=lastReport; if(!r) return;
+  try{
+    const d=await api("/api/heat/confirm",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({
+      furnace_id:"demo-1", heat_id:"H-"+r.session_id,
+      l1_recipe:{pellet:r.plan.scatter_kg||0, block:r.plan.block_kg||0},
+      l2_final_temp:r.plan.final_T||0, equilibrium_final_temp:null,
+      actual_final_temp:r.truth.final_T,
+      actual_analysis:{V:r.truth.final_V, C:r.truth.final_C},
+      advice_adopted:r.advices.some(a=>a.status==="adopted"),
+      trace_id:r.session_id})});
+    $("learned").textContent=` 已入库 · learned_entries=${d.learned_entries}`; loadHeats(); loadStats();
+  }catch(e){ alert("入库失败: "+e.message); }
+}
+async function loadHeats(){
+  try{
+    const hs=await api("/api/heats?limit=10");
+    $("heatTbl").querySelector("tbody").innerHTML = hs.map(h=>`
+      <tr><td>${h.heat_id}</td><td class="num">${fmt(h.l2_final_temp,0)}</td>
+      <td class="num">${fmt(h.actual_final_temp,0)}</td>
+      <td class="num">${h.l2_final_temp?fmt(h.actual_final_temp-h.l2_final_temp,1):"—"}</td>
+      <td>${h.advice_adopted?"✓ 采纳":"✗ 否决"}</td>
+      <td>${(h.timestamp||"").slice(0,19).replace("T"," ")}</td></tr>`).join("") || '<tr><td colspan="6" class="note">暂无炉次</td></tr>';
+  }catch(e){}
+}
+async function loadStats(){
+  try{
+    const s=await api("/api/stats/accuracy?limit=50");
+    $("statsOut").innerHTML=`<table><tbody>
+      <tr><td>样本数</td><td class="num mono">${s.n} 炉</td><td>温度 MAE</td><td class="num mono">${fmt(s.temp_mae_c,1)} ℃（最大 ${fmt(s.temp_max_dev_c,1)}）</td></tr>
+      <tr><td>建议采纳率</td><td class="num mono">${fmt((s.adoption_rate||0)*100,0)}%</td><td>漂移判据</td><td class="num mono">${s.drift_flag?"触发":"未启用（"+s.sample_note+"）"}</td></tr>
+      </tbody></table>`;
+  }catch(e){ $("statsOut").innerHTML=`<div class="flash err">${e.message}</div>`; }
+}
+function exportAudit(){
+  const r=lastReport; if(!r){ alert("先加载一炉复盘"); return; }
+  const blob=new Blob([JSON.stringify(r,null,1)],{type:"application/json"});
+  const a=document.createElement("a"); a.href=URL.createObjectURL(blob);
+  a.download=`VERO_audit_${r.session_id}.json`; a.click();
+}
+
+/* ---------- ④ 治理 ---------- */
+async function loadGovernance(){ tab("t4"); loadConflicts(); loadModeAudit(); renderDict($("dictSearch")?$("dictSearch").value:""); }
+async function loadConflicts(){
+  try{
+    const c=await api("/api/knowledge/conflicts");
+    $("confOut").innerHTML=`
+      ${c.degraded?`<div class="flash warn">降级状态：${c.note}</div>`:`<div class="flash ok">知识包三层齐备</div>`}
+      <table><thead><tr><th>来源层</th><th>已载入</th><th class="num">冲突数</th></tr></thead><tbody>
+      ${c.packs.map(p=>`<tr><td>${p.pack}</td><td>${p.loaded?"✓":"✗ 缺失（保密资产允许不入库）"}</td><td class="num">${p.known_conflict_count}</td></tr>`).join("")}
+      </tbody></table>
+      <div class="note" style="margin-top:6px">known_conflicts 合计 ${c.known_conflict_count} 条 · 包/代码不一致 ${c.discrepancy_count} 处</div>`;
+  }catch(e){ $("confOut").innerHTML=`<div class="flash err">${e.message}</div>`; }
+}
+async function loadModeAudit(){
+  try{
+    const rows=await api("/api/system/mode/audit");
+    $("modeAudit").querySelector("tbody").innerHTML = rows.map(x=>`<tr><td class="mono">${x.ts.slice(0,19)}</td><td>${x.user}</td><td>${x.from} → <b>${x.to}</b></td><td>${x.reason||"—"}</td></tr>`).join("") || '<tr><td colspan="4" class="note">无切换记录</td></tr>';
+  }catch(e){}
+}
+async function switchMode(){
+  try{
+    const d=await api("/api/system/mode",{method:"POST",headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({mode:$("modeSel").value,token:$("modeToken").value||"default",user:"workbench"})});
+    $("modeMsg").innerHTML=`<div class="flash ok">已切换 → ${d.mode}（已 await · 审计入 audit_log）</div>`;
+    setMode(d.mode); loadModeAudit();
+  }catch(e){ $("modeMsg").innerHTML=`<div class="flash err">切换被拒：${e.message}（诚实失败——绝不假装成功）</div>`; }
+}
+async function queryParam(){
+  try{
+    const d=await api(`/api/knowledge/param?path=${encodeURIComponent($("paramPath").value)}`);
+    $("paramOut").innerHTML=`<pre class="mono" style="font-size:12px;white-space:pre-wrap">${JSON.stringify(d,null,1)}</pre>`;
+  }catch(e){ $("paramOut").innerHTML=`<div class="flash err">${e.message}</div>`; }
+}
+
+/* ---------- 数据字典（与 docs/DATA_DICTIONARY.md 同源） ---------- */
+const DICT=[
+ ["tc_margin_c","blow 快照","℃","距动态碳钒转化温度的裕度——最险的数放最左","Tc=1361+(V-0.12)×80 · critical_temp.py（CF-007）"],
+ ["pred.T / pred.V / pred.C","blow 快照","℃/%/%","滚动终点预测：从当前估计前向积分到残钒达标时刻","ODE 前推 · σ=KF 口径"],
+ ["sigma.T/V/C","blow 快照","℃/%/%","估计误差带：观测融合收缩、外推放大（标定后=KF 协方差）","融合方程 · 演示口径"],
+ ["est.T/V/C/Si","blow 快照","℃/%/%/%","在线估计（认知炉）=化验单初值+ODE 递推+观测融合","kinetics_simulator 8 状态 ODE"],
+ ["alarms[]","blow 快照","—","告警条仅 3 类：越线/越线风险/过冷/去钒滞后","规则引擎 · 动态 Tc"],
+ ["o2.cum/planned/progress","blow 快照","m³/0-1","累计氧量与进度——操作工判断吹到哪的真源","氧流量积分"],
+ ["last_measure / measure_age_min","blow 快照","—/min","最近副枪采样与时龄——唯一硬观测","副枪模拟（真值+噪声）"],
+ ["advices[].kg / window_s","blow 快照","kg/s","建议量与剩余干预窗口；窗口一过自动失效（不给马后炮）","建议引擎规则"],
+ ["advices[].snapshot","blow 快照","—","建议触发时的状态快照（依据快照·可回放可追责）","审计"],
+ ["requires_human_confirm / control_write","blow 快照","—","true / forbidden——无人工确认不执行、控制写入路径不存在","红线 C1 · AST 断言"],
+ ["series.*","blow 快照","—","降采样轨迹（估计/误差带/方案基线）供前端直绘","会话轨迹"],
+ ["scatter_remaining_kg","blow 快照","kg","剩余可补散状冷料=计划量 15% 预留池（防与开吹调度双计）","评审修正 S5"],
+ ["v_target / v_blow_line","blow 快照","%","残钒目标 0.03 / 补吹线 0.04（评审统一口径）","知识包口径"],
+ ["heats.heat_id","DB heats","—","炉次号，跨表业务主键（=H-会话号）","工作台入台账"],
+ ["heats.l1_recipe","DB heats","kg","开吹 L1 配料方案（品种→重量），复盘对照基线","/api/plant_a/charge"],
+ ["heats.l2_final_temp / actual_final_temp","DB heats","℃","预测终点温度 vs 实绩终点温度——对账核心","会话预测 / 真值"],
+ ["heats.actual_analysis","DB heats","%","实绩成分（V/C），品位与残钒对账源","真值终态"],
+ ["heats.advice_adopted","DB heats","—","本炉是否有被采纳建议（批次采纳率分母）","工作台确认"],
+ ["heats.trace_id","DB heats","—","追溯号=会话 id，串起建议流水与复盘导出","系统生成"],
+ ["advice_logs.*","DB advice_logs","—","LLM 编排建议流水；事中建议权威留痕在会话审计（P2 迁移入表）","/api/chat"],
+ ["rule_version","API 载荷","—","引擎版本+黄金回归状态——每个数怎么算出来的第一要素","plant_a_reference"],
+ ["primary.recipe_kg","API 配料","kg","冷料品种→重量：球团=散状可事中补；块状=天车一次配足","四大平衡"],
+ ["arbitration.case_2777/15000","API 配料","—","CF-001 双口径并排（球团差≈520kg/炉），终审权在专家委员会","同引擎双参数 · CC-1"],
+ ["truth.v_ok/t_ok/c_ok","复盘报告","—","终判三条件矩阵：余钒≤0.03 / 温度 1350~1420 / C≥3.0","真值终态 · 评审 S2"],
+ ["accuracy.coverage_T/V","复盘报告","0-1","真值落入误差带比例——校准诚实度（低=σ过窄）","轨迹逐点统计"],
+ ["attribution[]","复盘报告","—","规则四通道归因：越线/冷料干预/平稳/预测超 2σ→k 失配候选","规则"],
+ ["grade_model_recheck","复盘报告","%","模型复算品位——明标非化验真值","评审修正 S8"],
+ ["criteria","复盘报告","—","判据快照：本炉用什么口径判的达标","会话"],
+ ["knowledge/packs/*.yaml","知识包 YAML","—","参数四维 value/unit/source/status+known_conflicts=口径唯一源","resolve_parameters 分层"],
+ ["k_v×2.5 / k_c×0.10 / 吸热 1500","演示标定","—","未标定常数（动力学/冷料吸热/越线阈值 0.15%）——待 ≥50 炉真实标定替换","session.py 集中声明"],
+];
+function renderDict(q){
+  q=(q||"").trim().toLowerCase();
+  const rows=DICT.filter(r=>!q||r.join(" ").toLowerCase().includes(q));
+  $("dictOut").innerHTML=
+    `<div class="dict-h">字段</div><div class="dict-h">来源</div><div class="dict-h">单位</div><div class="dict-h">作用 · 溯源</div>`+
+    (rows.map(r=>`<div class="dict-f">${r[0]}</div><div class="dict-s">${r[1]}</div><div>${r[2]}</div><div>${r[3]}<span class="note"> · ${r[4]}</span></div>`).join("")
+     || `<div style="padding:10px" class="note">无匹配</div>`);
+}
+document.addEventListener("DOMContentLoaded",()=>renderDict(""));
+/* 点击字段解释（事件委托） */
+document.addEventListener("click",e=>{
+  const t=e.target.closest("[data-dict]");
+  const pop=$("dictPop");
+  if(!t||!t.dataset.dict){ pop.style.display="none"; return; }
+  const row=DICT.find(r=>r[0]===t.dataset.dict||r[0].startsWith(t.dataset.dict));
+  if(!row){ pop.style.display="none"; return; }
+  pop.innerHTML=`<div class="h">${row[0]}</div><div class="r">来源：<b>${row[1]}</b> · 单位：${row[2]}<br>${row[3]}<br><span class="note">溯源：${row[4]}</span></div>`;
+  pop.style.display="block";
+  const r=t.getBoundingClientRect();
+  pop.style.left=Math.min(window.innerWidth-360,r.left)+"px";
+  pop.style.top=(r.bottom+8)+"px";
+  e.stopPropagation();
+});
+
+</script>
+</body>
+</html>

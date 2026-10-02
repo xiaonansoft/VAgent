@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>提钒—半钢冶炼本体（Ontology）类图 v1.1</title>
+<style>
+  :root{
+    --bg:#0f172a; --panel:#1e293b; --panel2:#273449;
+    --txt:#e2e8f0; --muted:#94a3b8;
+    --material:#3b82f6; --process:#10b981; --device:#f59e0b;
+    --param:#a855f7; --rule:#ef4444; --link:#64748b; --energy:#22d3ee;
+    --accent:#38bdf8;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--txt);
+    font-family:"Segoe UI","PingFang SC","Microsoft YaHei",system-ui,sans-serif;
+    padding:28px 32px;line-height:1.55}
+  h1{font-size:24px;margin:0 0 4px;color:#fff}
+  .sub{color:var(--muted);font-size:13px;margin-bottom:20px}
+  .legend{display:flex;flex-wrap:wrap;gap:14px;margin:14px 0 22px;font-size:12.5px}
+  .legend span{display:inline-flex;align-items:center;gap:6px}
+  .dot{width:12px;height:12px;border-radius:3px;display:inline-block}
+  .layers{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:24px}
+  .layer{background:var(--panel);border:1px solid #334155;border-radius:12px;padding:14px 16px}
+  .layer h3{margin:0 0 8px;font-size:14px;color:var(--accent)}
+  .layer p{margin:0;font-size:12px;color:var(--muted)}
+  .layer ul{margin:8px 0 0;padding-left:18px;font-size:12.5px}
+  .layer li{margin:3px 0}
+  .cards{display:grid;grid-template-columns:repeat(6,1fr);gap:12px;margin:18px 0 8px}
+  .card{background:var(--panel2);border-radius:10px;padding:12px;font-size:12px;border-top:3px solid var(--muted)}
+  .card h4{margin:0 0 6px;font-size:12.5px;color:#fff}
+  .card.mat{border-top-color:var(--material)} .card.pro{border-top-color:var(--process)}
+  .card.dev{border-top-color:var(--device)} .card.par{border-top-color:var(--param)}
+  .card.rul{border-top-color:var(--rule)} .card.ins{border-top-color:var(--accent)}
+  .card span{display:block;color:var(--muted);font-size:11.5px;margin:2px 0}
+  svg{width:100%;height:auto;background:var(--panel);border:1px solid #334155;border-radius:12px;margin-top:8px}
+  .edge{stroke:var(--link);stroke-width:1.5;fill:none}
+  .edge-lab{fill:var(--muted);font-size:11px}
+  .sec-title{font-size:15px;margin:26px 0 6px;color:#fff;border-left:3px solid var(--accent);padding-left:10px}
+  table{width:100%;border-collapse:collapse;margin-top:10px;font-size:12.5px;background:var(--panel);border-radius:10px;overflow:hidden}
+  th,td{border:1px solid #334155;padding:8px 10px;text-align:left}
+  th{background:var(--panel2);color:var(--accent)}
+  td code{color:#fbbf24}
+  .note{font-size:12px;color:var(--muted);margin-top:6px}
+  .rev{background:#14304a;border:1px solid #2563eb;border-radius:8px;padding:8px 12px;font-size:12px;color:#bfdbfe;margin-bottom:16px}
+</style>
+</head>
+<body>
+  <h1>提钒 — 半钢冶炼 · 本体（Ontology）类图 v1.1</h1>
+  <div class="sub">基于 CROS（Cao et al. 2022）扩展 · 用于冶炼智能体的共享语义底座与长期记忆 · 经四维度专家评审修订</div>
+
+  <div class="rev">v1.1 修订：① 顶层谱系由误用 BFO 改为随 CROS（MASON/MSDL/SOSA-SSN/UFO）或 IOF Core；② 补 Observation/Sensor(SSN)、Energy、Quality/Measurement 类；③ 关系规范化为动词谓词并加箭头/边标签；④ 约束经 <code>hasConstraint</code>（红虚线）关联工序，数值窗口用 SHACL 承载；⑤ 温度区分顶吹/底吹、[Si] 放宽为 ≤0.02%。</div>
+
+  <div class="legend">
+    <span><i class="dot" style="background:var(--material)"></i>物料 Material</span>
+    <span><i class="dot" style="background:var(--process)"></i>工序 Process</span>
+    <span><i class="dot" style="background:var(--device)"></i>设备 Device</span>
+    <span><i class="dot" style="background:var(--param)"></i>参数 Quality/Measurement</span>
+    <span><i class="dot" style="background:var(--rule)"></i>约束 Constraint</span>
+    <span><i class="dot" style="background:var(--energy)"></i>能源/观测 Energy/Sensor</span>
+  </div>
+
+  <div class="layers">
+    <div class="layer">
+      <h3>① 顶层本体（二选一，不可混用）</h3>
+      <ul>
+        <li><b>A（推荐，随 CROS）</b>：MASON / MSDL / SOSA-SSN / UFO</li>
+        <li><b>B</b>：IOF Core（BFO 谱系，顶层 Continuant/Occurrent）</li>
+      </ul>
+      <p>原文误将 CROS 与 BFO 并列；"SSO" 应为 SOSA/SSN；Resource/Capability 属 IOF/CCO，Constraint 为信息实体。</p>
+    </div>
+    <div class="layer">
+      <h3>② 领域层（提钒 + 半钢专属）</h3>
+      <ul><li>物料/设备/工序/参数</li><li>钢种/缺陷/规则</li><li>动词谓词关系 + 方向 + domain/range</li><li>工艺窗口约束（SHACL）</li><li>if-then 规则模板</li></ul>
+      <p>参数归入 Quality/Measurement；钒渣用 Role 模式（兼冷却剂）。</p>
+    </div>
+    <div class="layer">
+      <h3>③ 实例层（知识图谱）</h3>
+      <ul><li>炉次/设备/工序实例</li><li>结构+语义+属性融合</li><li>图嵌入支撑预测/控制</li><li>异常案例自动补全</li></ul>
+      <p>从 MES/SCADA/LIMS/文档实例化（OBDA + 流式）。</p>
+    </div>
+  </div>
+
+  <div class="sec-title">领域层实体类（Domain Classes）</div>
+  <div class="cards">
+    <div class="card mat"><h4>物料 Material</h4><span>含钒铁水</span><span>钒渣（Role:冷却剂）</span><span>半钢</span><span>钢水</span><span>冷却剂</span><span>造渣剂</span></div>
+    <div class="card pro"><h4>工序 Process</h4><span>高炉冶炼</span><span>提钒</span><span>半钢炼钢</span><span>精炼</span><span>连铸</span><span>precedes 链</span></div>
+    <div class="card dev"><h4>设备 Device</h4><span>高炉</span><span>提钒转炉</span><span>炼钢转炉</span><span>氧枪/顶底复吹</span><span>底吹元件</span></div>
+    <div class="card par"><h4>参数 Quality/Meas.</h4><span>温度</span><span>[V]/余钒</span><span>[C]</span><span>[Si]/[Mn]</span><span>碱度</span><span>FeO</span></div>
+    <div class="card rul"><h4>约束 Constraint</h4><span>提钒保碳窗口</span><span>化渣约束</span><span>脱硫受限</span><span>安全/环保</span><span>SHACL shape</span></div>
+    <div class="card ins"><h4>能源/观测(补)</h4><span>Energy:煤气/电</span><span>提温剂热值</span><span>Observation</span><span>Sensor(接SCADA)</span><span>Measurement</span></div>
+  </div>
+
+  <div class="sec-title">核心本体关系网络（动词谓词 + 箭头 + 边标签）</div>
+  <svg viewBox="0 0 1240 660" role="img" aria-label="本体关系网络 v1.1">
+    <defs>
+      <marker id="arr" markerWidth="10" markerHeight="8" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 Z" fill="#94a3b8"/></marker>
+      <marker id="arrR" markerWidth="10" markerHeight="8" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 Z" fill="#ef4444"/></marker>
+    </defs>
+
+    <!-- 工序 precedes 链 -->
+    <line class="edge" x1="240" y1="270" x2="280" y2="270" marker-end="url(#arr)"/>
+    <line class="edge" x1="450" y1="270" x2="500" y2="270" marker-end="url(#arr)"/>
+    <line class="edge" x1="660" y1="270" x2="700" y2="270" marker-end="url(#arr)"/>
+    <line class="edge" x1="860" y1="270" x2="900" y2="270" marker-end="url(#arr)"/>
+
+    <!-- 物料 -> 工序 (hasInput) -->
+    <line class="edge" x1="250" y1="130" x2="270" y2="240" marker-end="url(#arr)"/>
+    <line class="edge" x1="490" y1="130" x2="490" y2="240" marker-end="url(#arr)"/>
+    <line class="edge" x1="690" y1="130" x2="690" y2="240" marker-end="url(#arr)"/>
+    <!-- 含钒铁水 -> 钒渣 (hasByproduct) -->
+    <line class="edge" x1="240" y1="100" x2="365" y2="100" marker-end="url(#arr)"/>
+    <!-- 提钒 -> 半钢 (hasOutput) -->
+    <line class="edge" x1="365" y1="130" x2="490" y2="130" marker-end="url(#arr)"/>
+    <!-- 半钢 -> 钢水 (hasOutput) -->
+    <line class="edge" x1="660" y1="130" x2="780" y2="130" marker-end="url(#arr)"/>
+
+    <!-- 设备 participatesIn 工序 -->
+    <line class="edge" x1="365" y1="370" x2="365" y2="300" marker-end="url(#arr)"/>
+    <line class="edge" x1="580" y1="370" x2="580" y2="300" marker-end="url(#arr)"/>
+    <line class="edge" x1="795" y1="370" x2="450" y2="300" marker-end="url(#arr)"/>
+    <line class="edge" x1="1000" y1="370" x2="620" y2="300" marker-end="url(#arr)"/>
+
+    <!-- 参数 Measurement of 工序/设备 -->
+    <line class="edge" x1="160" y1="470" x2="365" y2="310" marker-end="url(#arr)"/>
+    <line class="edge" x1="385" y1="470" x2="385" y2="310" marker-end="url(#arr)"/>
+    <line class="edge" x1="575" y1="470" x2="580" y2="310" marker-end="url(#arr)"/>
+    <line class="edge" x1="765" y1="470" x2="700" y2="310" marker-end="url(#arr)"/>
+
+    <!-- Energy consumesBy 工序 -->
+    <line class="edge" x1="980" y1="470" x2="700" y2="300" marker-end="url(#arr)"/>
+
+    <!-- 观测 Observation/Sensor 接参数 -->
+    <line class="edge" x1="160" y1="560" x2="160" y2="510" marker-end="url(#arr)"/>
+    <line class="edge" x1="400" y1="560" x2="385" y2="510" marker-end="url(#arr)"/>
+
+    <!-- 约束 hasConstraint (红虚线) -->
+    <line class="edge" x1="365" y1="200" x2="365" y2="240" stroke="#ef4444" stroke-dasharray="5,4" marker-end="url(#arrR)"/>
+    <line class="edge" x1="580" y1="200" x2="580" y2="240" stroke="#ef4444" stroke-dasharray="5,4" marker-end="url(#arrR)"/>
+    <line class="edge" x1="780" y1="200" x2="780" y2="240" stroke="#ef4444" stroke-dasharray="5,4" marker-end="url(#arrR)"/>
+    <!-- 化渣约束 causesDefect 缺陷 -->
+    <line class="edge" x1="580" y1="200" x2="980" y2="560" stroke="#ef4444" stroke-dasharray="5,4" marker-end="url(#arrR)"/>
+
+    <!-- 边标签 -->
+    <text class="edge-lab" x="255" y="190">hasInput</text>
+    <text class="edge-lab" x="295" y="95">hasByproduct</text>
+    <text class="edge-lab" x="395" y="120">hasOutput</text>
+    <text class="edge-lab" x="675" y="120">hasOutput</text>
+    <text class="edge-lab" x="600" y="290">precedes</text>
+    <text class="edge-lab" x="340" y="345">participatesIn</text>
+    <text class="edge-lab" x="700" y="345">participatesIn</text>
+    <text class="edge-lab" x="270" y="205" fill="#ef4444">hasConstraint</text>
+    <text class="edge-lab" x="700" y="210" fill="#ef4444">hasConstraint</text>
+    <text class="edge-lab" x="850" y="270" fill="#ef4444">causesDefect</text>
+    <text class="edge-lab" x="900" y="400">consumes</text>
+    <text class="edge-lab" x="120" y="555">Observation→Measurement</text>
+
+    <!-- 物料节点 -->
+    <g><rect x="60" y="72" width="180" height="56" rx="8" fill="var(--material)"/><text x="150" y="105" text-anchor="middle" fill="#fff" font-size="13">含钒铁水</text></g>
+    <g><rect x="280" y="72" width="170" height="56" rx="8" fill="var(--material)"/><text x="365" y="100" text-anchor="middle" fill="#fff" font-size="12">钒渣</text><text x="365" y="118" text-anchor="middle" fill="#dbeafe" font-size="10">Role:冷却剂</text></g>
+    <g><rect x="490" y="72" width="160" height="56" rx="8" fill="var(--material)"/><text x="570" y="105" text-anchor="middle" fill="#fff" font-size="13">半钢</text></g>
+    <g><rect x="700" y="72" width="160" height="56" rx="8" fill="var(--material)"/><text x="780" y="105" text-anchor="middle" fill="#fff" font-size="13">钢水</text></g>
+
+    <!-- 约束节点 -->
+    <g><rect x="280" y="172" width="170" height="48" rx="8" fill="var(--rule)"/><text x="365" y="200" text-anchor="middle" fill="#fff" font-size="12">提钒保碳窗口</text></g>
+    <g><rect x="490" y="172" width="160" height="48" rx="8" fill="var(--rule)"/><text x="570" y="200" text-anchor="middle" fill="#fff" font-size="12">化渣约束</text></g>
+    <g><rect x="700" y="172" width="160" height="48" rx="8" fill="var(--rule)"/><text x="780" y="200" text-anchor="middle" fill="#fff" font-size="12">脱硫受限</text></g>
+
+    <!-- 工序节点 -->
+    <g><rect x="60" y="242" width="180" height="56" rx="8" fill="var(--process)"/><text x="150" y="275" text-anchor="middle" fill="#fff" font-size="13">高炉冶炼</text></g>
+    <g><rect x="280" y="242" width="170" height="56" rx="8" fill="var(--process)"/><text x="365" y="275" text-anchor="middle" fill="#fff" font-size="13">提钒</text></g>
+    <g><rect x="490" y="242" width="160" height="56" rx="8" fill="var(--process)"/><text x="570" y="275" text-anchor="middle" fill="#fff" font-size="13">半钢炼钢</text></g>
+    <g><rect x="700" y="242" width="160" height="56" rx="8" fill="var(--process)"/><text x="780" y="275" text-anchor="middle" fill="#fff" font-size="13">精炼</text></g>
+    <g><rect x="900" y="242" width="160" height="56" rx="8" fill="var(--process)"/><text x="980" y="275" text-anchor="middle" fill="#fff" font-size="13">连铸</text></g>
+
+    <!-- 设备节点 -->
+    <g><rect x="60" y="372" width="160" height="56" rx="8" fill="var(--device)"/><text x="140" y="405" text-anchor="middle" fill="#fff" font-size="13">高炉</text></g>
+    <g><rect x="280" y="372" width="170" height="56" rx="8" fill="var(--device)"/><text x="365" y="405" text-anchor="middle" fill="#fff" font-size="13">提钒转炉</text></g>
+    <g><rect x="490" y="372" width="180" height="56" rx="8" fill="var(--device)"/><text x="580" y="405" text-anchor="middle" fill="#fff" font-size="13">炼钢转炉</text></g>
+    <g><rect x="700" y="372" width="190" height="56" rx="8" fill="var(--device)"/><text x="795" y="405" text-anchor="middle" fill="#fff" font-size="12">氧枪/顶底复吹</text></g>
+    <g><rect x="920" y="372" width="160" height="56" rx="8" fill="var(--device)"/><text x="1000" y="405" text-anchor="middle" fill="#fff" font-size="12">底吹元件</text></g>
+
+    <!-- 参数节点 (Quality/Measurement) -->
+    <g><rect x="60" y="472" width="200" height="52" rx="8" fill="var(--param)"/><text x="160" y="503" text-anchor="middle" fill="#fff" font-size="12">温度/碱度/FeO</text></g>
+    <g><rect x="300" y="472" width="170" height="52" rx="8" fill="var(--param)"/><text x="385" y="503" text-anchor="middle" fill="#fff" font-size="12">[V]/余钒</text></g>
+    <g><rect x="490" y="472" width="150" height="52" rx="8" fill="var(--param)"/><text x="565" y="503" text-anchor="middle" fill="#fff" font-size="12">[C]</text></g>
+    <g><rect x="680" y="472" width="170" height="52" rx="8" fill="var(--param)"/><text x="765" y="503" text-anchor="middle" fill="#fff" font-size="12">[Si]/[Mn]</text></g>
+
+    <!-- 能源 / 观测 节点 -->
+    <g><rect x="880" y="472" width="210" height="52" rx="8" fill="var(--energy)"/><text x="985" y="503" text-anchor="middle" fill="#06283d" font-size="12">Energy:煤气/电/提温剂</text></g>
+    <g><rect x="60" y="572" width="240" height="52" rx="8" fill="var(--energy)"/><text x="180" y="603" text-anchor="middle" fill="#06283d" font-size="12">Observation / Sensor(SSO)</text></g>
+    <g><rect x="360" y="572" width="200" height="52" rx="8" fill="var(--energy)"/><text x="460" y="603" text-anchor="middle" fill="#06283d" font-size="12">Measurement</text></g>
+    <g><rect x="900" y="572" width="190" height="52" rx="8" fill="var(--rule)"/><text x="995" y="603" text-anchor="middle" fill="#fff" font-size="12">缺陷 Defect</text></g>
+  </svg>
+  <div class="note">语义边（动词谓词，带 domain/range 与方向）：<b>hasInput / hasOutput(含 hasByproduct) / participatesIn / precedes / consumes / constrains(红虚线 hasConstraint) / causesDefect</b>。约束为 Constraint 节点，数值窗口由 SHACL shape 承载，经 hasConstraint 关联工序。</div>
+
+  <div class="sec-title">工艺窗口约束（Constraint / if-then 规则模板，已校正）</div>
+  <table>
+    <thead><tr><th>约束对象</th><th>工艺窗口 / 规则（校正后）</th><th>智能体动作</th></tr></thead>
+    <tbody>
+      <tr><td>提钒保碳</td><td><code>顶吹 1350–1420℃ / 底吹 1300–1400℃</code>（热力学上限 &lt;1400℃）；余钒 <code>&lt;0.04%</code>；[Si] 升高抑制 V/C 氧化</td><td>动态调节吹氧/冷却剂，余钒超限触发补吹</td></tr>
+      <tr><td>半钢热源</td><td>化学反应热比铁水 <code>−20%</code>；[C] 3.0–3.9%</td><td>推荐提温剂加入量、废钢比上限</td></tr>
+      <tr><td>化渣</td><td>渣系退化为 CaO–FeO；熔点升高、成渣慢</td><td>造渣剂推荐 + 粘枪风险预警</td></tr>
+      <tr><td>脱磷脱硫</td><td>提钒酸性渣无脱硫能力；**前提**：S 0.04–0.07% 为建龙高硫不预脱硫场景，攀钢预脱硫后可 0.002–0.03%；目标 S≤0.002%</td><td>炼钢段脱硫路径规划</td></tr>
+      <tr><td>成分</td><td>[Si] <code>≤0.02%</code>（原 &lt;0.01% 偏严）、[Mn] 0.02–0.04%</td><td>窄窗口质量判定</td></tr>
+      <tr><td>安全</td><td>半钢开吹无 Si 氧化期，干法除尘易泄爆（CN104313235B）</td><td>开吹节奏/泄爆风险预警</td></tr>
+      <tr><td>环保</td><td>钠化焙烧含盐废水 / 含铵芒硝 / 尾渣钠高</td><td>排放与尾渣利用合规检索与告警</td></tr>
+    </tbody>
+  </table>
+
+  <div class="sec-title">与冶炼智能体的结合点</div>
+  <div class="layers">
+    <div class="layer"><h3>共享语义底座</h3><p>本体解决"炉次/设备/工序/钢种"命名不一致，跨系统语义互操作。</p></div>
+    <div class="layer"><h3>RAG 检索</h3><p>规程/案例/经验检索给 LLM 降幻觉；POKREM 文档检索 99.7%（采购场景）。</p></div>
+    <div class="layer"><h3>SHACL 实时校验</h3><p>工艺窗口变可机读约束，冶炼过程实时校验与告警。</p></div>
+    <div class="layer"><h3>任务编排</h3><p>按动词谓词关系自动串联 感知→推理→执行 链路。</p></div>
+    <div class="layer"><h3>长期记忆</h3><p>异常案例自动补全图谱，知识持续沉淀。</p></div>
+    <div class="layer"><h3>诊断/控制</h3><p>多层图谱诊断准确率 92.76%（实验值）、诊断时间 −58.44%（实验值）。</p></div>
+  </div>
+
+  <div class="note">构建七步：定范围 → 复用扩展（CROS/MASON 或 IOF Core）→ 专家+文档抽取 → OWL 形式化（SWRL 推理 + SHACL 约束）→ MES/SCADA/LIMS 实例化（OBDA + 流式）→ 接智能体 → 持续演进。</div>
+</body>
+</html>

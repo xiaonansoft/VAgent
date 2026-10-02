@@ -1,120 +1,163 @@
-# VERO 项目交接文档（HANDOVER）
+# VERO 项目交接文档（HANDOVER）v2
 
-> 交接日期：2026-09-23 · 交接对象：workbuddy · 接手前必读
-> 工作目录：`~/Documents/VAgent`（OpenCode 会话所在，git 已初始化的本地克隆）
+> 交接日期：2026-10-02 · 面向：workbuddy / minimax code / 任何新接手的会话
+> v1（2026-09-23，pre-workbuddy）见 git 历史（commit 7499aee 时代）；本文所有状态均为 2026-10-02 当日实测，非转抄。
 
 ---
+
+## 0. 30 秒状态 TLDR
+
+- **产品方向已锁定**：不做通用工业智能体平台，做**提钒—半钢双联工序的工艺决策辅助智能体（ADSS）**——推荐型、非执行型、可治理。7 篇外部文章核查后此方向未被推翻，反而被 4 篇独立互证（详见 §5）。
+- **系统已可端到端演示（2026-10-02 夜）**：后端在系统 Python 3.9 可直接 `python3 -m uvicorn app.main:app` 启动；**冶炼中实时推理**以 blow 会话实现（真值炉/认知炉双模型 + 副枪/烟气/红外观测融合 + 滚动终点预测 + Tc 风险建议卡 + 采纳留痕 + 复盘揭示）；三段式工作台 `webapp/VERO_WORKBENCH.html` 由后端同源托管（`http://127.0.0.1:8000` 自动进入）。演示脚本见 `docs/VERO_PLANT_ROLLOUT_PLAN.md` §7。
+- **回归基线**：75/75 黄金（0.0002%）· pytest 46/46 · 安全扫描 4/4 · CF-001 真实证据 0.999 vs 1.466 本机可复现 · blow 三场景确定性 PASS（normal 零建议/hot_metal 与 high_si 必触发且可复现）。
+- **文档四件套**：`VERO_ARTICLE_REVIEW_AND_DIRECTION`（方向）→ `VERO_ONTOLOGY_DESIGN`（本体/痛点/工具/工作流）→ `VERO_PLANT_ROLLOUT_PLAN`（两厂落地+系统对接清单）→ 本文件（状态）。
+- **仍开放**：① git 历史实绩清理（法务决策，勿 force push）；② 专家A知识包重建；③ 蓝图 HTML 待产（workbuddy 主做，须吸收 ONTOLOGY §5~§7）；④ 数据源适配层（12 人日，等厂方点表——真实数据接入的唯一缺口）；⑤ B 厂查表口径接入 blow/配料 API（P2）。
 
 ## 1. 项目一句话
 
-**提钒冶炼智能体（VERO）**：把专家A专家的四大多平衡 Excel 模型（703 公式）变成可治理、可学习、可解释的工业智能体。当前进度：**MVP 驾驶舱已交付并通过验收**，下一步是数据接口规范与后端真实 API 接入。
+**VERO（提钒冶炼智能体）**：把专家A的四大平衡机理模型（703 公式，已复现 75/75）与专家B查表经验，工程化为可解释、可溯源、可治理的**提钒→半钢双联工序工艺决策辅助智能体**。当前阶段：MVP 驾驶舱已验收，双工序全流程蓝图规格已定，**蓝图 HTML 文档待产出**，真实数据接入与标定未启动。
 
-## 2. 目录即地图
+## 2. 必读文档索引（按此顺序）
 
-```
-~/Documents/VAgent/
-│
-├─ 核心结论文档（按阅读顺序）
-│   ├─ ① PLANT_A_EXCEL_DECODED.md     专家A秘诀 Excel 解码报告
-│   │     8 表 703 公式全解码；专家常数清单（1.157 系数、Ti 折算比、
-│   │     凝固点双公式）；6 处引用怪癖 Q1–Q6；与仓库专家B口径的 5+1 条冲突
-│   ├─ ② VERO_AGENT_BRAINSTORM.html    第一轮：多专家头脑风暴（四层架构定案）
-│   ├─ ③ VERO_TECH_DEEPDIVE.html       第二轮：前沿技术辩论（七项技术裁决：采 3 试点 3 拒 1）
-│   ├─ ④ VERO_DEV_PROCESS_PLAN.html    第三轮：开发方法论 + 14 份待写文档清单 + RACI
-│   ├─ ⑤ VERO_MVP.html                 ★ 可运行 MVP v0.2（浏览器直接打开，离线，单文件）
-│   ├─ ⑥ ARBITRATION_DEMO.md           双引擎冲突仲裁演示报告（CF-001~006）
-│   └─ ⑦ docs/MVP_SPEC.md              MVP 规格（验收硬条款 A1–A8）★ 已达成
-│
-├─ knowledge/packs/industry/base.yaml   行业基线知识包（行业通用规则：枪位模式/去钒保碳/终点目标/判据）
-├─ knowledge/packs/plant_a/base.yaml  ★ 专家知识包 YAML（厂级：专家A四大平衡）
-│     31 类参数全部溯源到 Excel 单元格 · status: draft · 待专家批准
-│     ⚠️ 与 plant_a_reference.py 的常数一致性由 plant_a_pack.py 校验（必须保持同步）
-├─ knowledge/packs/plant_b/base.yaml  专家B L1 配料知识包（厂级：查表法+枪位默认值）
-│     ★ scope 分层：行业基线(industry) < 厂(plant) < 车间 < 炉座；引擎经 resolve_parameters()
-│       以行业基线打底、厂级包覆盖合并取值（默认厂 plant_b，可用 VERO_PLANT 覆盖）
-│
-├─ backend/                            Python 后端（⚠️ 需 Python 3.10+，系统只有 3.9）
-│   app/tools/plant_a_reference.py    ★ 四大平衡参考实现（黄金 75/75，误差 0.0002%）
-│   app/tools/plant_a_pack.py         知识包加载 + 包/代码一致性校验
-│   app/tools/v_heat_calibration.py   V 氧化热反演（16 炉，文献 15000 占优）
-│   app/tools/arbitration_demo.py     双引擎仲裁演示
-│   app/tools/initial_charge.py       专家B查表 L1 引擎（硬编码，待迁知识包）
-│   app/tools/{kinetics_simulator, equilibrium_model, thermal_balance, lance_profile,
-│               critical_temp, diagnose_process_quality}.py
-│   app/agents/{core,team}.py         LangGraph 多智能体（配料/仿真/诊断 Agent）
-│   app/mcp/                          MCP 工具服务器雏形（jsonrpc/tools_server/data_server）
-│   app/data/soft_sensor.py           软测量（热平衡推断 + 烟气反算）
-│   tests/test_plant_a_reference.py   ★ 黄金用例（python3 直接可跑，无需 pytest）
-│   pytest.ini / requirements.txt     FastAPI+LangGraph 栈（需 3.10+ 环境）
-│
-├─ frontend/ web/                     原有前端骨架（本次未动）
-├─ docker-compose.yml                 P4 部署形态基础
-├─ .agents/skills/                    已装 12 个方法论技能（见 §5）
-├─ README.md / MODEL_ALGORITHM.md / API_DOCUMENTATION.md / DEPLOYMENT.md
-│   DEVELOPMENT_PLAN.md / SOLUTION_PITCH.md / USER_MANUAL.md
-│   └─ 仓库原有文档（专家B口径基线，部分数字已过时——冲突见 DECODED §3）
-└─ 提钒冶炼智能体 VERO v6.0 实施 PRD.md   原始 PRD（Source 106/95 引用体系）
-```
+| 序 | 文档 | 内容 |
+|---|---|---|
+| ① | `docs/PRODUCT_DEFINITION.md` | 产品定义 v1.0 + 三条边界（注意：边界 2 已按 9-28 规划修订为「事中只推理与建议，不执行」） |
+| ② | `docs/VERO_ARTICLE_REVIEW_AND_DIRECTION.md` | 7 篇外部文章核查 + 产品方向收敛（2026-10-02） |
+| ③ | `VERO_STRATEGY_v0.1.html` | 战略：定位/三年技术路线/商业化/三条死线/话术红白名单 |
+| ④ | `VERO_PRODUCT_PLAN_v0.1.html` | 三段式功能 22 项 + 14 屏 + 中段代码实况盘点（含三处造假位置） |
+| ⑤ | `VERO_BOUNDARY_AND_REPLICATION.html` | 产品边界 + 跨厂复制 SKU + GATE-2 脱敏方案 + CC-1 合同出口 |
+| ⑥ | `docs/VERO_FULLCHAIN_SPEC.md`（+ DESIGN / CONTENT） | 双工序全流程蓝图三契约（M1-M18 / C1-C18 / AC-01~12），蓝图 HTML 的唯一规格依据 |
+| ⑦ | `docs/DATA_INTERFACE_SPEC.md` / `docs/EXPERIENCE_CAPTURE.md` / `docs/MVP_SPEC.md` | 数据接口 v0.2 / 经验捕获 SOP / MVP 验收硬条款 |
+| ⑧ | `SOLUTION_PITCH.md` | 对外演示脚本 v7.2（已经工艺/法务/厂长三方会审，话术以此为准） |
 
-**仓库之外的关联资产**
+**仓库外资产**：专家A Excel 原件在移动硬盘 `/Volumes/数据/提钒/`（IP 秘诀，严禁入库）；3 份 PDF 语料（专家B规程/动力学/讲课稿）在仓库根目录，P2 RAG 素材。
 
-- 专家A专家 Excel 原件：`/Volumes/数据/提钒/提钒预算测算钒品位低原因说明(1).xlsx`（移动硬盘；未入库，系 IP 秘诀，勿提交）
-- 3 份 PDF 语料（专家B规程/动力学/讲课稿）在仓库根目录，P2 RAG 素材
-- Node v22.23.2：`~/.local/node22/`（已写入 ~/.zshrc PATH）
-- Python 3.9.6（系统自带）：仅够跑 plant_a 工具链；backend 完整栈需升级
+## 3. 产品方向与边界（锁定口径，接手者不得擅自更改）
 
-## 3. 已验证资产（信任基底——不要重造）
+**方向一句话**：不做一个"通用工业智能体平台"，而做"提钒—半钢双联工序的工艺决策辅助智能体（ADSS）"——以已验证的机理资产为护城河，在权限与安全边界内输出"可解释、可溯源、可采纳留痕"的冶炼参数与操作建议。
+
+**三条死线**（宁可不智能也不能越）：
+1. 任何写 PLC/执行机构的路径物理不可达（`ProductionControlWriter` 的 `NotImplementedError` 锁保留并升级为架构级隔离）；
+2. 无"无人工确认的执行"——建议可给、执行必过人；
+3. 未标定不上线——取 ≥N 炉真值标定前，事中建议只进影子模式，不进生产界面。
+
+**四道边界**：
+- **功能**：在 = 三阶段（前配料/中推荐/后复盘）× 双工序 + 跨工序契约 + 双厂知识包；不在 = 控制回路自动执行、MES/ERP 改造、设备维护/能碳/EHS/排产、钒渣焙烧工艺模型、大模型进入 10s 决策路径。
+- **数据**：只读采集、数据不出厂、断链显式降级（非静默）。
+- **组织**：三岗制（炉长推荐岗/配料规划岗/工艺分析师岗），交付物是建议卡与报告，不是原始数据。
+- **演进**：MVP（仿真+SSE+16炉回放）→ P2（半钢机理适配+契约）→ P3（双段 shadow 阶梯）→ P4（治理），一次只推一个变更面。
+
+**话术纪律**：禁用「AI 炉长/智能炉长/全自动/自动提枪/自动配加/自学习/数字孪生」；必用「配吃、机理、证据链、黄金回归、基线±Δ」。他人工业案例数字一律不得进入本项目 KPI 与效益基线。
+
+**待用户拍板的三个决策点**（文章核查产出，见评审文档 §六）：
+- D-1 知识包是否升级为工艺本体（倾向：做，但只覆盖冶炼前/后，冶炼中走机理直算）；
+- D-2 效益基线口径（倾向：只用本厂实绩 + 16 炉回放）；
+- D-3 产品形态确认（倾向：厂内服务 + Web 工作台 + API，先离线/仿真后 shadow）。
+
+## 4. 已验证资产（信任基底——不要重造）
 
 | 资产 | 验证方式 | 结果 |
 |---|---|---|
-| Python 四大平衡参考实现 | 75 项黄金用例对照 Excel 缓存值 | 75/75，最大误差 0.0002% |
-| 「热平衡富余 93MJ」之谜 | 修正口径验证 | 确认系 Excel 表格漏项（Q5），修正后闭合 1e-16 |
-| JS 引擎（MVP 内嵌） | JavaScriptCore 独立运行 11 项 + RMSE 对照 | 11/11，RMSE 2.178/1.679 与 Python 完全一致 |
-| 知识包一致性 | plant_a_pack.py 逐项核对 | 31 类参数零漂移 |
-| V 氧化热（2777 vs 15000） | 16 炉回放 | 文献 15000 RMSE 优（0.999 vs 1.466），**未终审** |
+| Python 四大平衡参考实现 `backend/app/tools/plant_a_reference.py` | 75 项黄金用例对照 Excel 缓存值 | **75/75，最大误差 0.0002%（2026-10-02 复跑通过）** |
+| 8 状态动力学 ODE `kinetics_simulator.py` | scipy.odeint + 枪位 mixing_factor 建模 | 在位，k 常数未标定 |
+| 卡尔曼同化 + SSE 流 | `KalmanFilter1D`、`data_server.py:17`、前端 `useProcessStream.ts` | 代码在位；**KF 默认关、SSE 前端未接线（死代码）** |
+| 专家B查表 L1 引擎 + 知识包 | 108 组等价对照 + 回归 | 行为零漂移 |
+| JS 引擎（MVP 内嵌） | JavaScriptCore 11 项 + RMSE 对照 | 11/11，与 Python 一致 |
+| V 氧化热（2777 vs 15000） | 16 炉回放反演 | 文献 15000 RMSE 优，**未终审（CF-001，甲方权威裁决）** |
 
-## 4. 排期状态（P1–P4 / D1–D10）
+## 5. 外部文章核查结论（2026-10-02，含 xAgent 补查）
 
-- **P1 规则引擎/知识资产（✅ 收尾）**：✅ 解码/复现/YAML/校验器/仲裁演示；✅ 知识包接入 initial_charge 替代硬编码（专家B包 `knowledge/packs/plant_b/base.yaml`，108 组等价对照 + 回归通过，行为零漂移）
-- **P2 认知层（下一步主攻）**：⬜ D6 数据接口规范（最紧急）· 真 RAG+IP 分级 · 三要素回答模板 · 仲裁工作台
-- **P3 学习闭环**：炉次误差回流 RLS/PINN 残差 · TabPFN 试点 · 漂移检测
-- **P4 治理**：审批流/跨厂判例/例外率看板
-- MVP 已按 D1–D5 交付：`VERO_MVP.html`（验收硬条款 A1–A8 除 A7 演示脚本人工完成外全部通过）
+7 篇均**非提钒工艺内容**，全部是工业智能体通用方法论——不能作工艺建模依据，只能校验方法论与边界。逐篇处置见 `docs/VERO_ARTICLE_REVIEW_AND_DIRECTION.md`（结论经当日独立复核，与原文一致）。要点：
 
-## 5. 工具链状态
+- **采纳互证 4 篇**：文章 2（本体语义层——但排除高频动态场景，本体只用于冶炼前/后）、文章 4（语义层决定算得对、校验决定敢不敢信——互证知识包=口径唯一源+黄金用例门禁）、文章 5（部署五问法——第 5 问"谁有权向执行器发指令"互证永不写控制回路）、文章 6（信通院口径"认知可以概率化、执行必须受约束"+ 执行与能力更新分离——互证 shadow→advisory 双闸）。
+- **工具性采纳 1 篇**：文章 7（岗位说明书三判据 → 三岗表；痛点40/技术30/ROI30 三维框架，与 RICE 结论同向）。
+- **不采纳 1 篇**：文章 3（47 页智能体工具目录，通识盘点，与提钒零相关）。
+- **文章 1（宝武 xAgent）补查结论**（原文为图片排版无法抓取，经公开检索补齐）：宝信软件 2026-05-09 发布"宝武智能体平台"，2026-07-18 WAIC 同频论坛介绍企业智能体框架 xAgent 与工业视觉 xVue——属**大厂横向平台生态**发布，无提钒/转炉工艺能力细节，不构成竞品威胁，反而佐证"窄赛道巨头不下场"的护城河判断；远期可观察其生态作为集成渠道。注意与开源项目 XAgent（面壁智能/清华，无关）同名勿混淆。不引用其任何数字。
+- **硬冲突拒绝 1 条**：文章 7"多岗协同一键决策下达 MOM/设备" → 降级为"建议工单 + 人工确认"。定调：**可以"建议到执行器面前"，不可以"越过执行器"**。
 
-- OpenCode 桌面版（`/Applications/OpenCode.app`，自带 CLI v2.0.13，软链到 `~/.local/bin/opencode`）
-- Node v22.23.2 @ `~/.local/node22`（PATH 已入 ~/.zshrc）
-- 已装 Agent Skills（`.agents/skills/`，OpenCode 已识别）：brainstorming / writing-plans / executing-plans / test-driven-development / verification-before-completion / systematic-debugging / to-spec / to-tickets / implement / tdd / code-review / skill-creator / find-skills / opencode
-- Python 包（--user）：openpyxl / pyyaml / pytest
-- 技巧：GitHub 直连会超时，用 jsDelivr CDN（apk 文件级）或 gh-proxy 镜像浅克隆拉取开源资源
+## 6. 当前真实状态（2026-10-02 实测）
 
-## 6. 未决事项（挂责任人，来自第三轮 §07）
+### 绿（可用、已验证 · 2026-10-02 开发后更新）
+- 引擎基线 75/75 当日复跑通过；环境已修复可用：系统 Python 3.9 已装 `pydantic` + `eval_type_backport` + `numpy` + `scipy` + `pytest-asyncio`（--user）。
+- 文档体系齐备且互相咬合（§2 索引）；`SOLUTION_PITCH.md` v7.2 已完成三方会审清理；厂名脱敏已完成（攀钢→专家A、建龙→专家B，commit 0be1e43/1fe27b7）。
+- `knowledge/packs/` 现存 industry 与 plant_b 两包，resolve 分层链路可用；plant_b 包/代码核对零漂移。
+- **P0 缺陷五处已修复并有回归测试（`backend/tests/test_p0_fixes.py`，python3 直跑或 pytest）**：
+  ① `list_conflicts` 重写为三层聚合（industry + plant_a + 当前厂），包缺失显式上报 `degraded/missing`，不再把"包缺失"伪装成"零冲突"；
+  ② `resolve_parameters` 厂级包缺失不崩溃，显式降级行业基线单层 + `last_resolve_status()` 供 UI 标注；
+  ③ `ValidationControlWriter` 四方法诚实拒绝（`ControlWriteRefused`），不再 `return True # Pretend success`；
+  ④ `/api/system/mode` 已 `await switch_mode`；
+  ⑤ `/api/heat/confirm` `learned_entries` 改为 DB 真实计数。
+  另修出一个被测试跳过掩盖的潜在 bug：`ModeController` 限频器初值导致新控制器首次切换被误拒（`_last_switch_time` 初始化为 `-cooldown`）。
+- **GATE-2 前向清理已完成**（四类载体全处理）：16 炉实绩从 `v_heat_calibration.py` 外置（代码零数据，`load_heats()` 注入式 API + 缺数据恢复指引，不静默回退合成）；`arbitration_demo.py` 改数据入参、报告带数据来源标注，入库版为合成数据（真实证据 0.999 vs 1.466 本机可复现）；MVP 演示页收敛为 **v0.9 一份合成基线**（文案同步去除"实绩"表述），其余 7 份移入 `archive/legacy_demos/`（git 已 rm --cached）。
+- **CI 安全门禁上线**：`scripts/security_scan.py` 四项断言（控制写入 AST 锁 / opcua·pymodbus·snap7 禁入 / 路由扫描 / 实绩指纹扫描），已接入 `.github/workflows/ci.yml`（security-gate job），本地可跑；泄露注入自检通过。
+- **`docs/VERO_ONTOLOGY_DESIGN.md` v0.1 产出**：痛点/能力/业务参与/工具工作流/本体 TBox 设计；评审文档 §七 的 5 项文档增量已落地其中（§2 三岗表、§0 语义层定位、§5 部署决策表、§6 基线纪律、§7 六大维度映射），待蓝图 HTML 吸收。
+- pytest 回归：46/46 通过（环境可跑模块全覆盖，含 mode_control 全套）。
+- **【10-02 夜班增量】系统端到端可演示**：
+  - 后端 3.9 可启动：requirements 补 `sse-starlette`；`db/models.py` Mapped 注解 3.9 化；main.py langgraph 导入降级保护；`pip install --user fastapi uvicorn sse-starlette sqlalchemy aiosqlite langgraph langchain-core` 已装。
+  - **冶炼中实时推理 `app/blow/`**：`BlowSession` 双模型（真值炉按场景施加扰动、对界面不可见；认知炉从化验单出发，炉口红外每 5s 弱融合 + 副枪 2/7min 强融合 + 烟气 dC/dt 融合）；滚动终点预测（积分到残钒达标，σ=KF 口径）；建议引擎（去钒完成前越 Tc → 散状冷料建议带倒计时，块状料炉次诚实告知无通道；去钒滞后 → 降枪位建议）；采纳=模拟操作工执行施加于真值炉（系统无执行通道）；决策/过期全程留痕；report 揭示真值 + σ 带覆盖率。API：`POST /api/blow/start`、`GET /api/blow/{id}/stream`（SSE）、`POST /api/blow/{id}/decision`、`POST /api/blow/{id}/stop`、`GET /api/blow/{id}/report`、`GET /api/knowledge/conflicts|param`。
+  - **动力学标定旋钮**：`calculate_kinetics_derivatives` 新增 `k_v_scale/k_c_scale/k_si_scale`（默认 1.0 = 原行为，黄金用例与 DataSimulator 零漂移）；blow 会话用演示标定 k_v×2.5/k_c×0.10 + 计划冷量调度（3413kg 散状 60~240s 窗），明标"待 ≥50 炉真实标定替换"。
+  - **三段式工作台 `webapp/VERO_WORKBENCH.html`**：开吹（配料+双口径仲裁+证据卡）/ 吹炼（SSE 大数+轨迹图基线/估计/σ带/Tc 线/副枪点+建议卡倒计时+留痕流水）/ 复盘（真值揭示+σ覆盖率对账+入台账 DB）/ 治理（模式切换 403 诚实拒绝+三层冲突清单+参数溯源+红线四断言）。由后端 `/ui` 同源托管（规避 file:// CORS 已知坑），`GET /` 重定向。
+  - **演示确定性**：会话噪声种子 = 场景+初值哈希，同场景演示可复现；三场景回归 PASS（normal 干净到标零建议；hot_metal/high_si 必触发建议）。
+  - **`docs/VERO_PLANT_ROLLOUT_PLAN.md` v0.1**：两厂差异化定位 + 8 项系统对接清单（LIMS/二级机 PLC/副枪/烟气/称量天车/MES/historian/大屏）+ 阶段门 KPI + 15 分钟演示脚本。
 
-1. **[冶炼**] CF-001 V 氧化热终审——证据已备（反演脚本可复跑）
-2. **[冶炼**] 1.157 系数适用边界（是否随铁水来源变化）
-3. **[工艺**] 专家B基准 45 vs 上限 25 内部矛盾澄清（CF-006）
-4. **[冶炼**] 金属铁/块矿冷料的成分行映射意图确认（Q1/Q3/Q4/Q6）
-5. **[工艺**] 品位归因口径：14 日专家算 12.48% vs 复现 12.91%，差 0.4pp 待解释
-6. **[产品**] 知识包批准签字流程 + 仲裁判例字段定义
-7. **[数据**] TSC/TSO/烟气/氧枪 数据接口规范（D6，决定 P3 一切成败）
-8. **[安全**] shadow mode 并行炉数与切换标准
-9. **[AI**] L2 10 秒步长的延迟预算切分
-10. **[产品**] KPI 定义（品位达标率/例外率/采纳率）
+### 红（未完成，按风险排序）
+1. **git 历史仍含 16 炉实绩与专家A常数（public 仓库）**——前向清理已完成（见绿区 GATE-2 项），但历史提交、fork、镜像不受影响。处置（下架/转私有/重写历史/通知义务）属法务与用户决策，**接手者不得自行 force push**；证据保全已完成（历史可查 + 本机私有文件保留）。
+2. **专家A知识包（`knowledge/packs/plant_a/base.yaml`）仍缺失**：从未入库、无 stash，需按 `plant_a_reference.py`（44 常数带 Excel 溯源注释，75/75 可回归）重建 YAML；重建后仍严禁入库（放 `knowledge/data/private/` 类 gitignored 路径或本机私有目录）。重建后 `list_conflicts` 的 CF-001~006 自动恢复。
+3. **`VERO_FULLCHAIN_BLUEPRINT.html` 未产出**：三契约（SPEC/DESIGN/CONTENT）齐备 + 半成品在 `.blueprint_parts/`；产出时须吸收 `VERO_ONTOLOGY_DESIGN.md` §5~§7（评审五项增量）。
+4. **实时数据零接入（R1 最高风险）**：全仓无 OPC/Kafka/Modbus 接入（CI 已断言禁直连，接入须经 resource:// 适配层）；模型系统性偏高 0.6~1.7pp 未去偏；k 常数未标定；CF-001 未终审（转正门槛按分档：默认档粗渣 ≤0.9pp / 精渣 ≤1.3pp）。
+5. **D-1/D-2/D-3 三个决策点待用户正式拍板**（评审文档 §六）；D-1 的落地设计已在 `VERO_ONTOLOGY_DESIGN.md`。
 
-## 7. 接手后第一个 commands
+## 7. 建议待办排序与分工（2026-10-02 开发后更新）
+
+| 序 | 事项 | 量级 | 建议归属 | 状态 |
+|---|---|---|---|---|
+| 1 | GATE-2 数据脱敏（四类载体 + CI 扫描门禁） | 5 人日 | — | ✅ **前向清理已完成（本会话）**；历史清理待法务 |
+| 2 | 修三个 P0 缺陷 + 回归验证 | 1~2 人日 | — | ✅ **已完成（本会话，五处 + 限频 bug，46/46 回归）** |
+| 3 | 产出 `VERO_FULLCHAIN_BLUEPRINT.html`（按三契约 + AC-01~12 验收，吸收 ONTOLOGY_DESIGN §5~§7） | 见 SPEC | workbuddy（保有专家团会话记忆与三契约上下文） | ⬜ 待产 |
+| 4 | 评审 5 项文档增量落地 | 0.5 人日 | — | ✅ **已落地 `docs/VERO_ONTOLOGY_DESIGN.md` §2/§5/§6/§7（本会话）**，待蓝图吸收 |
+| 5 | 数据源适配层骨架（OPC/Modbus/Kafka → resource://） | 12 人日 | 待厂方点表后启动 | ⬜ |
+| 6 | plant_a 知识包重建（按 plant_a_reference.py，不入库） | 1 人日 | 任意会话 | ⬜ 需用户确认本地无备份后重建 |
+
+**多智能体协作纪律**（workbuddy / minimax code / ZCode 共同遵守）：
+1. 本文件 + `docs/` 是**单一事实源**；方向与边界的任何变更先改文档再动代码，禁止绕过。
+2. 每个会话结束：更新本文件 §6（实测状态）与 §7（待办勾选），并 git commit；重要裁决写进各自 memory 时必须与仓库文档一致，冲突时以仓库文档为准。
+3. 引擎与知识包改动必须过黄金用例回归（75/75）+ `plant_a_pack.py` 一致性校验，零漂移才可合入。
+4. 所有新数字必须有出处（仓库已验证资产/文献/专利），未标定项一律标注"未标定"，不以估算充证据。
+
+## 8. 环境与接手第一步
 
 ```bash
-cd ~/Documents/VAgent
-git add -A && git commit -m "chore: lock in P1 artifacts + MVP v0.2 (pre-handover state)"   # 先锁定现场
-python3 backend/tests/test_plant_a_reference.py                                          # 验证引擎基线
-open VERO_MVP.html                                                                       # 看当前 MVP
+cd ~/Documents/VAgent/backend
+python3 -m uvicorn app.main:app --port 8000   # 启动（系统 Python 3.9 即可）
+open http://127.0.0.1:8000                    # 自动进入 VERO 工作台（开吹/吹炼/复盘/治理）
+python3 tests/test_plant_a_reference.py       # 黄金用例应 75/75
+python3 ../scripts/security_scan.py           # 四项安全断言
 ```
 
-然后二选一推进：
-- **A 路（数据线）**：起草 `docs/DATA_INTERFACE_SPEC.md`（字段/频率/网络边界），解锁 P3 全部学习类任务
-- **B 路（产品线）**：把 MVP 接上真实后端 API（需先升级 Python 3.10 环境），MVP 静态页 → P2 内网 Web
+- 演示脚本（15 分钟走完三段）：`docs/VERO_PLANT_ROLLOUT_PLAN.md` §7。
+- Python 3.9（系统自带）：--user 已装 pydantic/eval_type_backport/numpy/scipy/pytest-asyncio/fastapi/uvicorn/sse-starlette/sqlalchemy/aiosqlite/langgraph/langchain-core；backend 完整栈仍建议升 3.12（P2 前置）。
+- Node v22.23.2 @ `~/.local/node22`（PATH 已入 ~/.zshrc）。
+- GitHub 直连易超时，用 jsDelivr CDN 或 gh-proxy 浅克隆。
+
+## 9. 未决事项（承接 v1 十项 + 增补）
+
+| # | 事项 | 责任域 | 状态 |
+|---|---|---|---|
+| 1 | CF-001 V 氧化热终审（2777 vs 15000） | 甲方权威 | 未决，已升格合同里程碑 CC-1 双出口 |
+| 2 | 1.157 系数适用边界 | 冶炼 | 未决 |
+| 3 | 专家B基准 45 vs 上限 25 内部矛盾（CF-006） | 工艺 | 未决 |
+| 4 | 金属铁/块矿冷料成分行映射意图（Q1/Q3/Q4/Q6） | 冶炼 | 未决 |
+| 5 | 品位归因口径：14 日 12.48% vs 复现 12.91% | 工艺 | 未决 |
+| 6 | 知识包批准签字流程 + 仲裁判例字段 | 产品 | 未决；**plant_a 包需先重建** |
+| 7 | TSC/TSO/烟气/氧枪数据接口落地（D6） | 数据 | 规范 v0.2 已写，厂方未启动 |
+| 8 | shadow mode 并行炉数与切换标准 | 安全 | 未决 |
+| 9 | L2 10s 步长延迟预算切分 | AI | 已入蓝图 SPEC P0 |
+| 10 | KPI 定义（品位达标率/例外率/采纳率） | 产品 | 七项口径表已入 SPEC §9，待基线审计 |
+| 11 | **GATE-2 公开仓库实绩暴露处置** | 合规/法务 | ✅ 前向清理完成（2026-10-02）；⬜ 历史清理/下架决策待法务 |
+| 12 | plant_a 知识包重建 + 是否有本地备份确认 | 知识工程 | ⬜ 待用户确认 |
 
 ---
 
-*交接完成。规则：系统只呈证据不代决策；所有新数字都过黄金用例这道门。*
+*交接完成。规则不变：系统只呈证据不代决策；所有新数字都过黄金用例这道门；可以"建议到执行器面前"，不可以"越过执行器"。*
+
+**变更记录**：v4.2（2026-10-02 晨·产品重设计收尾）——P1 余项全部清零：演示设置收进 details 折叠抽屉（仅演示模式可见）、温度图 hover 十字线+读数（修 strict 模式 out2 未声明）、底栏红线 CI 徽章四枚（控制写入0/协议直连0/写控端点0/实绩指纹0 + security_scan v5）、四步术语中文化（它在看/它觉得/它打算/它在做）。至此 UI_REDESIGN_PLAN P1 全部清零；产品重设计三方向（算料先生/五幕剧/真智能体内核）全量落地。回归：75/75 · 25/25 快速套件 · 扫描 4/4 · 端到端快照（黑板8/计划8/播报9）。工作台 v7.2（82.5KB 单文件）。改动未提交，建议分批 commit（feat: agent 内核/feat: 五幕剧壳/style: v5 视觉/security: 前批脱敏）。v4.1 ｜ v4.1（2026-10-02 晨·产品重设计 P2/P4 完成）——P2 五幕剧壳：删页签导航，五幕进度条（接单→开吹→吹炼→决断→交班）由物理事件驱动换幕（锁化验单→setAct1/配吃成功→2/开吹→3/建议触发→4/收炉→5），顶栏常驻炉况条（距Tc/状态灯/提枪倒计时），态势/家底/说明收进 actsbar 次级按钮。P4 黑板协作：感知员（30s 例行事实）/工艺员（proposal）/质检员（超余量即 veto 压回）三角色读写黑板，界面协作黑板卡。跨炉记忆（v3.x 蓝图）已闭环：收炉 Reviewer 写 agent_memory.json，下炉开炉显式引用（红外偏置/σ覆盖教训/干预记录）。v4.0 ｜ v4.0（2026-10-02 晨·产品重设计 P1 开工）——用户批准三大方向（算料先生/五幕剧/真智能体内核），spec 落盘 `docs/superpowers/specs/2026-10-02-verov7-product-redesign-design.md`；三专家头脑风暴（冶金老兵/智能体架构师/人因工程）结论存对话史。已实施 P1：TaskGraph 替换静态清单（G1-G8 节点带 depends_on）+ **反事实预演**（建议触发前跑 不作为/足量/减半 三支线前推，建议卡显示三条路对比——"什么都不做 1.5′ 后越线；按建议补 512kg 余钒可到 0.030"）；前端 cf_text+依赖显示。待续：五幕剧壳/跨炉记忆/黑板协作。v3.6 ｜ v3.6（2026-10-02 晨·零填报兑现）——化验单 7 格手敲改「化验单据卡」：LIMS 单据样式（单号+七字段格）+「确认化验单无误，锁定」按钮——锁定前禁算配吃，锁定后值只读（确认即留痕的表单语义）；与叙述器（v3.5）同批。P1 余项：管理员抽屉/图表库化/红线 CI 徽章/话术余量。 ｜ v3.5（2026-10-02 晨·语言生成层）——新增 `app/blow/narrator.py` 叙述器：智能体的"嘴"——把规则引擎的结构化结论**多事实合成为人话**（补冷建议/否决回应/重规划说明/提枪通知四通道），零数值计算权（数字全部引擎传入，叙述器只组句加缓和语）；双通道：VERO_LLM_BASE_URL 配置即走内网 LLM 润色（禁止改数），未配置模板兜底离线可用，LLM 异常自动回退。建议文案实测："按现在的升温势头，大约 0.8 分钟后熔池就会冲过碳钒转化温度（1369℃）……建议马上从称量斗补 512 公斤球团压一压——采不采，炉长定。"回归：75/75 · 28/28 · 扫描 4/4 · normal 仅提枪参考 PASS。v3.4 ｜ v3.4（2026-10-02 晨·智能体内核）——回应用户"还是普通系统不是智能体"：blow 会话新增智能体三件套 ①目标（每炉声明）②计划（8 项触发器驱动任务清单：副枪校准×2/越线预判/冷料窗/提枪窗/终判，随偏差**重规划**——否决补冷即转入加强监控并说明理由）③主动播报（接单/任务完成/否决回应，气泡流上屏）。工作台智能体卡新增：目标行+计划清单（✓/▶/○ 状态）+播报气泡。snapshot 增 goal/plan/feed/replans。v3.3 ｜ v3.3（2026-10-02 晨·IA 重构开工）——实施 UI_REDESIGN_PLAN P1 前 6 项：①态势墙默认落地（炉次卡片墙：温度/余钒/距Tc/告警数/SOP阶段，3 秒轮询，点卡片进炉）；②开吹+吹炼合并为「当前炉次」页；③收炉自动跳结账+提醒横幅；④话术替换首批（采纳→按它说的干(我确认)、入台账→记入本班台账、SIMULATION→演示模式、外推中→副枪数据没来机器在猜）；⑤大数砍至 3+枪位上屏；⑥复盘 session 选择。sessions API 增强（est/tc/alarms/progress/phase）。待续：化验单据卡化/管理员抽屉/图表库化。 ｜ v3.2（2026-10-02 晨·大厂界面评审）——产品总监/产品经理/UI 设计师三角色直读代码评审，判决与方案见 `docs/UI_REDESIGN_PLAN.md`；已即时实施 v5.0 视觉层：Vercel 系近黑实色令牌（删 13 渐变/7 辉光/3 层环境光/玻璃拟态）、修复 v4.0 换肤丢失的 11 个 CSS 类（智能体面板/时间轴/分区标签曾裸奔）、统一三橙两红色彩噪声、版本号统一 v5.0、明文口令遮蔽；P1 十项待下一迭代（态势墙/合并时间流/话术表全量等）。 ｜ v3.1（2026-10-02 晨·可用性补完）——回应用户"界面功能怎么用/SOP 匹配/专家看不懂"：工作台新增 ⑤使用说明页（默认落地页：提钒 SOP 5 步逐条对应界面 + 半钢 SOP 规划视图 5 步标注 P2 接入状态 + 14 屏怎么用表（谁用/何时/三步操作）+ 话术对照）；t1~t4 页首加"这屏怎么用"引导卡（可关）；场景名中文化（铁水超温/化验滞后）；维护注意：webapp HTML 的 python replace 补丁必须逐条 assert 命中（本次多次静默未命中的教训）。v3.0（2026-10-02 晨·Premium 视觉）——回应用户"界面还是太土"：工作台 v4.0 纯视觉层重写（结构零改动）：玻璃拟态卡片（backdrop-blur+渐变描边 mask 技法）、环境光背景（铁水橙顶辉+钢蓝底辉+细网格 mask）、大数渐变填充字+顶部状态色条+辉光角、渐变按钮+悬停辉光、玻璃左栏/顶栏、告警条渐变辉光、滚动条细化、对比度全 ≥4.5:1。v2.9（2026-10-02 晨·A/B 融合）——回应用户"A、B 厂融合"：/api/plant_a/charge 内建融合方案 fused（A 机理总量×品位 + B 查表品种分配 → 单一推荐：总量 3276kg = 铁皮 655kg(20%) + 球团 2621kg(80%)），口径声明"品种等效吸热属 CF-002 未仲裁，暂按重量配比口径"；工作台开吹页以融合方案为主卡（原始 A 口径降为参考列），指令单改用融合配方。v2.8（2026-10-02 晨·智能体显性化）——回应用户三问（智能在哪/调度在哪/SOP 在哪）：① SOP 模型（session.py `SOP`：4 阶段 Si氧化→去钒主→控温收钒→终点判定，含枪位曲线/检查点/出口判据，演示口径待工艺科审定后外置知识包）；② 炼钢时间轴（工作台吹炼页：阶段带+当前位+副枪检查点菱标+建议/阶段事件钉）；③ 智能体运行时面板（每周期可见的 感知→判断(带置信)→规划→动作 四步 + 思维流滚动 + 任务编排管线每拍耗时：采集/同化/预测/判据/建议）。snapshot 增 sop/agent/timeline。v2.7（2026-10-02 晨·壳层对齐 2023 界面）——用户确认全深色系：工作台 v3.1 吸收 2023 界面骨架（左侧图标栏导航/顶栏深蓝化/开吹页色块分区标签：灰=铁水条件、橙=配吃推荐、蓝=仲裁对照与敏感性），配色统一深色（墨阶+铁水橙+钢蓝）。v2.6（2026-10-02 晨·字段精细化+界面重做）——新增 `docs/DATA_DICTIONARY.md`（字段→表→单位→作用→溯源，含 DB 两表/blow 快照/配料复盘载荷/常数单一来源声明 + 演示标定集中声明）；工作台升 v3.0：样式全面锚定 design-system/design-tokens（墨色阶派生暗面/铁水橙/钢蓝，tabular-nums、4px 网格、focus-visible、SVG 图标零 emoji、160ms 过渡、对比度 ≥4.5:1），治理页内嵌可检索数据字典 + 大数/建议卡字段点击解释（data-dict 浮层）。回归：75/75 · 46/46 · 扫描 4/4。v2.5（2026-10-02 晨·四角色评审+系统补完）——钢铁专家/操作工/产品总监三角色评审（AI 专家并入），11+10+12 项修正全部实施：动态 Tc（1361+(V-0.12)×80 单一来源）、终判三条件矩阵、采纳→估计回传+冷却期、补加池防双计、告警条 3 类、氧量进度、V 双图、提枪参考倒计时、Si what-if、指令单、B 厂查表对照 /api/plant_b/charge、批次统计、模式审计、半钢交接卡、审计导出、SQLite 通用列迁移。收敛总表（14 屏×功能×使用方）= `docs/VERO_PANEL_CONVERGENCE.md`（单一事实来源）。工作台升 v2.0。回归：75/75 · 46/46 · 扫描 4/4 · 三场景 PASS · HTTP 全链路实测。v2.4（2026-10-02 晨）——对齐 workbuddy 本体产物（存档 `docs/reference/`）：`VERO_ONTOLOGY_DESIGN` 升 v0.2（§0b 对齐三表：吸收 Device/Energy/Observation/Constraint 类与 hasByproduct/precedes/hasConstraint 关系 + CROS 谱系锚点；拒绝"下发 DCS/分级执行"等 C1 冲突；**竞争定位修正：攀钢 2014 省二等奖已核证（攀枝花市年鉴 2016），"提钒空白"话术作废 → 改为"智能体级+本体+跨工序协同治理"空白，投标物料以此为准**）。v2.3（2026-10-02 夜班）——系统端到端可演示：blow 会话实时推理 + 工作台 + 两厂落地方案；§0/§6/§8 全面更新。v2.2（2026-10-02 白班）——P0 五处修复 + GATE-2 前向脱敏 + CI 门禁 + 本体设计。v2.1/v2.0（2026-10-02 早）。v1（2026-09-23，git 历史）。
