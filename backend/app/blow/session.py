@@ -125,6 +125,13 @@ class BlowSession:
                  pred_grade_plan: Optional[float] = None) -> None:
         self.id = uuid.uuid4().hex[:12]
         self.created = _time.time()
+        # 人类可读的炉次标识：跨炉记忆的溯源锚点。
+        # 历史教训：曾用 self.id（uuid）当 heat_id，界面上出现 "03dd2c87ba11" 这种
+        # 无人能识别的标签——被问"这是哪一炉的经验"时无法作答，记忆沦为表演。
+        # 现改为「第N炉」序号 + 会话短码，炉长可识别，且同一次演示内可数清。
+        self._heat_seq = getattr(BlowManager, "_seq", 0) + 1
+        BlowManager._seq = self._heat_seq
+        self.heat_label = f"第{self._heat_seq}炉"
         self.scenario = scenario
         self.time_scale = max(1.0, min(60.0, time_scale))
         self.total_s = total_min * 60.0
@@ -185,6 +192,21 @@ class BlowSession:
                 if mm:
                     return float(mm.group(1))
         return 8.0
+
+    def _sigma_memory_hits(self) -> List[Dict[str, Any]]:
+        """命中的 σ 相关教训条目（含来源炉次，供审计展示）。"""
+        return [m for m in self.mem_refs
+                if "σ" in m["content"] or "覆盖率" in m["content"]
+                or "误差带" in m["content"]]
+
+    def _sigma_gain_from_memory(self) -> float:
+        """跨炉记忆接入点之二：σ 增长增益。
+
+        上炉教训"σ 带覆盖率仅 X% —— 误差带过窄，下炉同场景应放宽 σ 增长"，
+        在此生效：命中则 σ 增速 ×1.6（可解释的固定系数，非拟合出的魔数）。
+        **无相关记忆时返回 1.0，行为与迁移前逐点一致**——这是双跑门禁的基线保证。
+        """
+        return 1.6 if self._sigma_memory_hits() else 1.0
 
     def _bb(self, agent: str, kind: str, text: str) -> None:
         """黑板写入：kind ∈ fact(感知员)/hypothesis(工艺员)/proposal(工艺员)/veto(质检员)"""
@@ -310,7 +332,10 @@ class BlowSession:
         self.o2_cum_m3 += self._true_o2() * dt_sim / 3600.0
 
         # σ 随外推时间增长（演示口径）
-        grow = dt_sim / 60.0
+        # 跨炉记忆接入点之二：上炉"σ 覆盖率过低 → 误差带过窄"的教训，
+        # 在此真正生效为 σ 增长系数（记忆只调阈值/先验，不写 k 常数）。
+        # 无此记忆时 grow_gain=1.0，行为与迁移前完全一致（双跑门禁可验证）。
+        grow = dt_sim / 60.0 * self._sigma_gain_from_memory()
         self.sigma["T"] += 0.5 * grow
         self.sigma["V"] += 0.0006 * grow
         self.sigma["C"] += 0.003 * grow
@@ -713,7 +738,7 @@ class BlowSession:
                         for (e, t), x in zip(pairs, self.traj_est)) if abs(eT - tT) <= max(sT, 3)) / n
             adopted = sum((a.get("kg") or 0) for a in self.advices if a["status"] == "adopted" and a["type"] == "coolant")
             entries = agent_memory.build_review_entries(
-                self.scenario, self.id, ir_bias_c=bias, coverage_t=cov,
+                self.scenario, self.heat_label, ir_bias_c=bias, coverage_t=cov,
                 adopted_kg=adopted, tc_crossed=any(p["T"] >= _tc(p["V"]) for p in self.traj_true),
                 final_v=self.true[2])
             agent_memory.save_memories(entries)
@@ -765,6 +790,7 @@ class BlowSession:
             "last_measure": self.last_measure,
             "measure_age_min": last_meas_age,
             "advices": active, "audit_tail": self.audit[-8:],
+            "memories": self._memory_view(),
             "scatter_remaining_kg": round(self.scatter_remaining, 1),
             "lance_plan_mm": _lance_plan(self.t_s / 60.0),
             "series": self._series(),
@@ -781,6 +807,54 @@ class BlowSession:
             "timeline": self.timeline[-24:],
             "o2_nm3_h": self.o2_nm3_h, "time_scale": self.time_scale,
             "finished": self.finished,
+        }
+
+    def _memory_view(self) -> Dict[str, Any]:
+        """跨炉记忆的可审计视图（snapshot 契约 v2 · 惊艳时刻数据源）。
+
+        设计约束（红线条目）：
+        - **条目级可溯**：每条都带来源炉次 heat_id、类型 kind、置信度 confidence、来源 source。
+          现场被问"它凭什么这么判断"时，必须能当场答出"依据哪一炉的哪条经验"。
+        - **只读先验**：记忆只用于估计先验与监控阈值，**绝不自动写 k 常数**
+          （见 memory.py 头部红线）。本方法不产生任何写入。
+        - **不静默**：有记忆就是有记忆，retrieved=0 时前端据实显示"无参考经验"，
+          不做"看起来很聪明"的伪装。
+        """
+        items = []
+        for m in self.mem_refs:
+            items.append({
+                "id": m.get("id"),
+                "heat_id": m.get("heat_id", "unknown"),
+                "scenario": m.get("scenario", "any"),
+                "kind": m.get("kind", "模式"),
+                "content": m.get("content", ""),
+                "confidence": round(float(m.get("confidence", 0.0)), 3),
+                "source": m.get("source", "reviewer"),
+            })
+        # 是否实际影响判断：逐条声明「哪条记忆 → 影响了什么」
+        ir_from_mem = any(m["kind"] == "教训" and "红外" in m["content"]
+                          for m in self.mem_refs)
+        sig_hits = self._sigma_memory_hits()
+        applied = []
+        for m in self.mem_refs:
+            if m["kind"] == "教训" and "红外" in m["content"]:
+                applied.append({"memory_id": m.get("id"), "heat_id": m.get("heat_id"),
+                                "affects": "红外偏置先验（_ir_bias）",
+                                "effect": f"偏置取 {self._ir_bias():+.0f}℃（缺省 +8℃）"})
+        if sig_hits:
+            applied.append({"memory_id": sig_hits[-1].get("id"),
+                            "heat_id": sig_hits[-1].get("heat_id"),
+                            "affects": "σ 增长速率（_sigma_gain_from_memory）",
+                            "effect": "σ 增速 ×1.6（覆盖率不足教训生效）"})
+        return {
+            "retrieved": len(items),
+            "items": items,
+            "influence": {
+                "ir_bias_calibrated_by_memory": ir_from_mem,
+                "sigma_gain": self._sigma_gain_from_memory(),
+                "applied": applied,
+                "note": "记忆仅调先验与阈值，不写常数；条目均可溯源可审计",
+            },
         }
 
     def _series(self) -> Dict[str, List[float]]:
