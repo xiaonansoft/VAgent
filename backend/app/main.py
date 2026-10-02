@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import logging
 from contextlib import asynccontextmanager
 from typing import Any, AsyncGenerator, Optional, Dict, List
@@ -17,6 +19,8 @@ from app.mcp.data_server import build_data_router
 from app.data.simulator import DataSimulator
 from app.agents.team import CoordinatorAgent
 from app.core.mode_control import ModeController, SystemMode
+from app.blow.session import BlowManager
+from app.blow.routes import build_blow_router
 from pydantic import BaseModel
 
 # Setup logging
@@ -26,6 +30,7 @@ logger = logging.getLogger(__name__)
 # Initialize Simulator & Mode Controller
 simulator = DataSimulator()
 mode_controller = ModeController(simulator=simulator)
+blow_manager = BlowManager()
 
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
@@ -45,6 +50,24 @@ app = FastAPI(
 
 # Include MCP Routers
 app.include_router(build_data_router(simulator=simulator), prefix="/api")
+app.include_router(build_blow_router(blow_manager), prefix="/api")
+
+# ---------------------------------------------------------------------------
+# 工作台静态托管（同源部署，规避 file:// CORS 陷阱——见 FULLCHAIN_SPEC §10 已知坑）
+# ---------------------------------------------------------------------------
+import os as _os
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse, RedirectResponse
+
+_WEBAPP_DIR = _os.path.normpath(_os.path.join(_os.path.dirname(__file__), "..", "..", "webapp"))
+if _os.path.isdir(_WEBAPP_DIR):
+    app.mount("/ui", StaticFiles(directory=_WEBAPP_DIR), name="ui")
+
+@app.get("/")
+async def root():
+    if _os.path.isdir(_WEBAPP_DIR):
+        return RedirectResponse("/ui/VERO_WORKBENCH.html")
+    return {"status": "ok", "docs": "/docs"}
 
 class ModeSwitchRequest(BaseModel):
     mode: SystemMode
@@ -54,8 +77,9 @@ class ModeSwitchRequest(BaseModel):
 @app.post("/api/system/mode")
 async def set_system_mode(req: ModeSwitchRequest):
     try:
-        mode_controller.switch_mode(req.mode, user=req.user, auth_token=req.token)
-        return {"status": "ok", "mode": mode_controller.current_mode}
+        # 必须 await：switch_mode 是协程，未 await 时模式实际未切换却返回 ok（造假已修复）
+        await mode_controller.switch_mode(req.mode, user=req.user, auth_token=req.token)
+        return {"status": "ok", "mode": mode_controller.current_mode.value}
     except PermissionError as e:
         raise HTTPException(status_code=403, detail=str(e))
     except Exception as e:
@@ -144,7 +168,12 @@ async def get_advice_logs(
 
 from app.agents.core import agent_graph
 import uuid
-from langgraph.errors import GraphInterrupt
+# A3 降级纪律：langgraph 缺失时 app 仍可启动（仅 Graph 编排路由不可用，返回 503）
+try:
+    from langgraph.errors import GraphInterrupt
+except ImportError:  # pragma: no cover
+    class GraphInterrupt(Exception):
+        """langgraph 缺失时的占位实现。"""
 
 # ... existing imports ...
 
@@ -373,18 +402,77 @@ def _run_plant_a_case(req: PlantAChargeRequest, dh_v: float) -> dict:
     finally:
         _pg_ref.DH_V = saved
 
+def _b_structure(req: "PlantAChargeRequest") -> dict:
+    """B 厂查表品种分配结构（M18：A 供总量×B 供结构——边界文档 §3.2 教义）。"""
+    from app.tools.initial_charge import calculate_initial_charge
+    from app.schemas import InitialChargeInputs, IronInitialAnalysis
+    inp = InitialChargeInputs(
+        iron_weight_t=req.iron_weight_kg / 1000.0, iron_temp_c=req.iron_temp_c,
+        iron_analysis=IronInitialAnalysis(C=req.C, Si=req.Si, V=req.V, Ti=req.Ti or 0.10,
+                                          P=0.08, S=0.03, Mn=0.20),
+        is_one_can=req.is_one_can)
+    r = calculate_initial_charge(inp)
+    total_b = sum(r.recipe.values()) or 1.0
+    props = {k: round(v / total_b, 3) for k, v in r.recipe.items()}
+    return {"structure": r.recipe, "proportions": props, "warnings": r.warnings}
+
+
 @app.post("/api/plant_a/charge")
 async def plant_a_charge(req: PlantAChargeRequest):
     primary_dh = req.dh_v if req.dh_v is not None else _pg_ref.DH_V
+    primary = _run_plant_a_case(req, primary_dh)
+    # 融合方案（A×B）：A 机理定总量与品位，B 查表定品种分配。
+    # 口径声明：品种等效吸热属 CF-002 未仲裁，融合暂按重量配比口径。
+    b = _b_structure(req)
+    total_a = sum(v for v in primary["recipe_kg"].values() if v)
+    fused = {k: round(total_a * p, 0) for k, p in b["proportions"].items()}
     return {
         "rule_version": "plant_a four-balance v7.0.0 (golden regression 75/75, max err 0.0002%)",
-        "primary": _run_plant_a_case(req, primary_dh),
+        "fused": {
+            "rule": "A 总量 × B 结构（M18：同一引擎 · 双厂知识包）",
+            "total_kg": round(total_a, 0),
+            "recipe_kg": fused,
+            "proportions": b["proportions"],
+            "grade_pct": primary["v2o5_grade_pct"],
+            "b_warnings": b["warnings"],
+            "note": "品种等效吸热属 CF-002 未仲裁——融合按重量配比口径，终审后可切热当量口径",
+        },
+        "sources": {"a_total": primary["recipe_kg"], "b_structure": b["structure"]},
+        "primary": primary,
         "arbitration": {
             "case_2777": _run_plant_a_case(req, 2777.0),
             "case_15000": _run_plant_a_case(req, 15000.0),
         },
     }
 
+
+@app.get("/api/system/mode/audit")
+async def get_mode_audit():
+    """模式切换审计出口（S14）：谁/何时/从哪切到哪。"""
+    return [
+        {"ts": r.timestamp.isoformat(), "user": r.user, "from": r.from_mode.value,
+         "to": r.to_mode.value, "reason": r.reason}
+        for r in mode_controller.audit_log
+    ]
+
+@app.get("/api/stats/accuracy")
+async def get_stats_accuracy(limit: int = 50, session: AsyncSession = Depends(get_db)):
+    """批次偏差带统计（S13）：入库炉次的温度偏差与采纳率。诚实降级：样本 <5 标"样本不足"。"""
+    result = await session.execute(
+        select(Heat).order_by(Heat.timestamp.desc()).limit(min(limit, 200)))
+    heats = result.scalars().all()
+    n = len(heats)
+    devs = [abs(h.l2_final_temp - h.actual_final_temp)
+            for h in heats if h.l2_final_temp and h.actual_final_temp]
+    adopted = sum(1 for h in heats if h.advice_adopted)
+    return {
+        "n": n,
+        "sample_note": "样本不足，未启用漂移判据" if n < 5 else "样本可用",
+        "temp_mae_c": round(sum(devs) / len(devs), 2) if devs else None,
+        "temp_max_dev_c": round(max(devs), 2) if devs else None,
+        "adoption_rate": round(adopted / n, 3) if n else None,
+        "drift_flag": False,
+    }
 
 @app.get("/api/heats")
 async def get_heats(
@@ -439,11 +527,16 @@ async def confirm_heat(
         session.add(new_heat)
         await session.commit()
         await session.refresh(new_heat)
-        
+
+        # 诚实口径：learned_entries = 已确认入库的炉次总数（模型"经验"的真实规模）
+        from sqlalchemy import func
+        total = await session.execute(select(func.count()).select_from(Heat))
+        learned = int(total.scalar() or 0)
+
         return {
             "status": "success",
             "heat_id": new_heat.heat_id,
-            "learned_entries": 1 # Mock value
+            "learned_entries": learned
         }
     except Exception as e:
         logger.error(f"Error saving heat: {e}")

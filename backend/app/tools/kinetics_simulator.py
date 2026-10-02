@@ -68,16 +68,22 @@ class KalmanFilter1D:
 
 
 
-def calculate_kinetics_derivatives(y, t, bath_weight_kg, mols_o2_per_s, heat_loss_w=200000.0, 
-                                   stirring_factor: float = 1.0, lance_height_mm: float = 1400.0):
+def calculate_kinetics_derivatives(y, t, bath_weight_kg, mols_o2_per_s, heat_loss_w=200000.0,
+                                   stirring_factor: float = 1.0, lance_height_mm: float = 1400.0,
+                                   k_v_scale: float = 1.0, k_c_scale: float = 1.0,
+                                   k_si_scale: float = 1.0):
     """
     Core Differential Equation Function for Vanadium Extraction Kinetics.
     Can be used by ODE solver or Step-wise Simulator.
-    
+
     Args:
         stirring_factor: Degradation factor for mass transfer (0.0 - 1.0)
                          due to bottom plug clogging (Furnace Life).
         lance_height_mm: Current lance height (affects mixing and PCR).
+        k_v_scale / k_c_scale / k_si_scale: 动力学常数标定旋钮（默认 1.0 = 原行为，
+                         零漂移）。k 常数系拍值未标定（见 PRODUCT_PLAN §八）；
+                         吹炼会话等新调用方以「演示标定参数」传入，待 ≥50 炉
+                         真实标定后替换。既有黄金用例与 DataSimulator 不受影响。
     """
     C, Si, V, Ti, T_c, FeO, V2O5, SiO2 = y
     T_k = T_c + 273.15
@@ -91,13 +97,13 @@ def calculate_kinetics_derivatives(y, t, bath_weight_kg, mols_o2_per_s, heat_los
     # Base Mass Transfer Coefficients (1/s)
     # Apply Bottom-Stirring Degradation Factor & Lance Mixing
     # k_v and k_ti are most affected by stirring energy
-    k_si_base = 0.003 * stirring_factor * mixing_factor
-    k_ti_base = 0.003 * stirring_factor * mixing_factor
-    k_v_base = 0.002 * stirring_factor * mixing_factor
+    k_si_base = 0.003 * k_si_scale * stirring_factor * mixing_factor
+    k_ti_base = 0.003 * k_si_scale * stirring_factor * mixing_factor
+    k_v_base = 0.002 * k_v_scale * stirring_factor * mixing_factor
     k_c_base = 0.0005 # C oxidation is less dependent on stirring (gas-liquid interface), but still affected.
                       # Let's keep C relatively stable or apply sqrt(factor).
                       # For simplicity, apply full factor to V/Ti (slag-metal), and partial to C.
-    k_c_base = k_c_base * (0.5 + 0.5 * stirring_factor * mixing_factor)
+    k_c_base = k_c_base * k_c_scale * (0.5 + 0.5 * stirring_factor * mixing_factor)
 
     # Rate constants (1/s)
 
